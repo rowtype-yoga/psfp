@@ -15,7 +15,7 @@ mkP = do
     makeStyles \(theme ∷ Theme) ->
       { p:
         css
-          { color: theme.foregroundColour
+          { color: theme.textColour
           , fontFamily: theme.textFontFamily
           , fontSize: "1em"
           , margin: "0.67em 0 0.33em 0"

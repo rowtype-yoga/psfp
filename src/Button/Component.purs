@@ -1,6 +1,7 @@
 module Button.Component where
 
 import Prelude
+
 import Data.Foldable (intercalate)
 import Data.Monoid (guard)
 import Effect (Effect)
@@ -11,7 +12,7 @@ import React.Basic.Hooks (ReactComponent, component, element)
 import React.Basic.Hooks as React
 import Record (union)
 import Theme.Styles (classNames, makeStyles)
-import Theme.Types (Theme)
+import Theme.Types (CSSTheme)
 
 data ButtonType
   = PlainButton
@@ -36,7 +37,7 @@ mkButton ∷
     )
 mkButton = do
   useStyles <-
-    makeStyles \(theme ∷ Theme) ->
+    makeStyles \(theme ∷ CSSTheme) ->
       { "@keyframes gradientBG":
         css
           { "0%": css { backgroundPosition: "0% 50%" }
@@ -46,17 +47,31 @@ mkButton = do
       , btn:
         css
           { background:
-            linearGradient
-              [ "180deg", theme.backgroundColourLighter, theme.backgroundColourLight ]
-          , color: theme.foregroundColourDarker
-          , boxShadow: "1px 1px 10px rgba(0,0,0,0.66)"
+            if theme.isLight
+            then
+              theme.interfaceColourLightest
+            else
+              linearGradient
+                [ theme.interfaceColourLightest
+                , theme.interfaceColourLighter
+                ]
+          , color: theme.textColour
+          , boxShadow:
+            if theme.isLight
+            then "none"
+            else
+              "1px 1px 10px rgba(0,0,0,0.66)"
+          , border:
+            if theme.isLight
+            then "1px solid " <> theme.interfaceColourLighter
+            else
+              "none"
           , borderRadius: "20px"
           , padding: "0px 18px 0px 18px"
           , marginLeft: "2px"
           , marginRight: "2px"
           , minWidth: "100px"
           , height: "40px"
-          , borderWidth: "0px"
           , fontFamily: theme.textFontFamily
           , letterSpacing: "0.2em"
           , textTransform: "uppercase"
@@ -66,11 +81,11 @@ mkButton = do
               { background:
                 linearGradient
                   [ "-5deg"
-                  , theme.backgroundColourDark
+                  , theme.interfaceColourDarker
                   , theme.highlightColourDark
                   , theme.highlightColour
                   ]
-              , color: theme.foregroundColourLighter
+              , color: theme.interfaceColourLighter
               , backgroundSize: "400% 400%, 100% 100%"
               , animation: "$gradientBG 3s ease infinite"
               }
@@ -79,28 +94,34 @@ mkButton = do
               { background:
                 linearGradient
                   [ "180deg"
-                  , theme.backgroundColourLight
-                  , theme.backgroundColourLighter
+                  , theme.interfaceColourLighter
+                  , theme.interfaceColourLightest
                   ]
               , boxShadow: "inset 0 0 2px black"
               }
           , "&:disabled":
             css
               { boxShadow: "0 0 0 black"
-              , background: theme.backgroundColourLight
+              , background: theme.backgroundColour
+              , border: "1px dotted " <> theme.interfaceColourLightest
               , textDecoration: "line-through"
+              , textDecorationColor: theme.red
               }
           }
       , highlightedButton:
         css
           { background:
-            linearGradient [ theme.highlightColour, theme.highlightColourDark ]
+            if theme.isLight
+            then
+              theme.highlightColour
+            else
+              linearGradient [ theme.highlightColour, theme.highlightColourDark ]
           , "&:active":
             css
               { background:
                 linearGradient [ theme.highlightColourDark, theme.highlightColour ]
               }
-          , color: theme.foregroundColourLighter
+          , color: theme.textColour
           }
       }
   component "Button" \{ children, buttonType, buttonProps } -> React.do

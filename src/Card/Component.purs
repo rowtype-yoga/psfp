@@ -2,7 +2,6 @@ module Card.Component where
 
 import Prelude
 
-import Data.Foldable (intercalate)
 import Effect (Effect)
 import React.Basic (JSX)
 import React.Basic.DOM (css)
@@ -10,7 +9,7 @@ import React.Basic.DOM as R
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
 import Theme.Styles (classNames, makeStyles)
-import Theme.Types (Theme)
+import Theme.Types (CSSTheme)
 
 mkCard ∷
   Effect
@@ -20,19 +19,15 @@ mkCard ∷
     )
 mkCard = do
   useStyles <-
-    makeStyles \(theme ∷ Theme) ->
+    makeStyles \(theme ∷ CSSTheme) ->
       { card:
         css
-          { backgroundImage:
-            "linear-gradient("
-              <> intercalate ","
-                  [ "46deg"
-                  , theme.backgroundColourLighter
-                  , theme.backgroundColourLight
-                  ]
-              <> ")"
-          , color: theme.foregroundColour
-          , boxShadow: "1px 1px 20px rgba(0,0,0,0.66)"
+          { background: theme.backgroundColourLighter
+          , color: theme.textColour
+          , margin: "20px"
+          , boxShadow:
+            "1px 1px 20px rgba(0,0,0,0." <>
+              (if theme.isLight then "17" else "43") <> ")"
           , borderRadius: "5px"
           , padding: "36px 40px 32px 40px"
           }
@@ -55,10 +50,10 @@ mkCardTitle ∷
     )
 mkCardTitle = do
   useStyles <-
-    makeStyles \(theme ∷ Theme) ->
+    makeStyles \(theme ∷ CSSTheme) ->
       { cardtitle:
         css
-          { color: theme.foregroundColourLighter
+          { color: theme.textColourLightest
           , fontSize: "1.2em"
           , fontWeight: "400"
           , fontFamily: theme.headingFontFamily
@@ -83,10 +78,10 @@ mkCardSubtitle ∷
     )
 mkCardSubtitle = do
   useStyles <-
-    makeStyles \(theme ∷ Theme) ->
+    makeStyles \(theme ∷ CSSTheme) ->
       { cardtitle:
         css
-          { color: theme.foregroundColourDarker
+          { color: theme.textColourDarker
           , opacity: "0.8"
           , fontSize: "1.0em"
           , fontWeight: "500"
@@ -112,11 +107,11 @@ mkCardContent ∷
     )
 mkCardContent = do
   useStyles <-
-    makeStyles \(theme ∷ Theme) ->
+    makeStyles \(theme ∷ CSSTheme) ->
       { cardContent:
         css
           { fontFamily: theme.textFontFamily
-          , color: theme.foregroundColourDark
+          , color: theme.textColourDarker
           , fontSize: "0.8em"
           , fontWeight: "300"
           , "WebkitFontSmoothing": "subpixel-antialiased"

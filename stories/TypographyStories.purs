@@ -4,16 +4,19 @@ import Prelude hiding (add)
 
 import Container.Component (mkContainer)
 import Data.Maybe (Maybe(..))
+import Decorator.FullScreen (fullScreenDecorator)
 import Effect (Effect)
 import React.Basic (element)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
 import Theme.Default (darkTheme)
+import Theme.Types (fromTheme)
 import Typography.Header (HeadingLevel(..), mkH)
 import Typography.Paragraph (mkP)
 
 stories ∷ Effect Storybook
 stories =
   storiesOf "Typography" do
+    addDecorator fullScreenDecorator
     add "All" mkH
       [ { text: "A first level heading", level: H1, className: Nothing }
       , { text: "Second level", level: H2, className: Nothing }
@@ -21,17 +24,6 @@ stories =
       , { text: "Finally, a pretty long h4 heading", level: H4, className: Nothing }
       , { text: "A subheading", level: Subheading, className: Nothing }
       ]
-    addDecorator \jsx -> do
-      container <- mkContainer
-      p <- mkP
-      pure
-        $ element container
-            { theme: darkTheme
-            , children: [
-              jsx,
-              element p { text: loremIpsum }
-            ]
-            }
     add "H1" mkH
       [ { text: "Purescript (H1)", level: H1, className: Nothing } ]
     add "H2" mkH

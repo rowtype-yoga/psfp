@@ -1,6 +1,7 @@
 module Typography.Header where
 
 import Prelude
+
 import Data.Array as Array
 import Data.Foldable (intercalate)
 import Data.Maybe (Maybe)
@@ -10,7 +11,7 @@ import React.Basic.DOM as R
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
 import Theme.Styles (makeStyles)
-import Theme.Types (Theme)
+import Theme.Types (CSSTheme)
 
 data HeadingLevel
   = H1
@@ -23,10 +24,10 @@ mkH ∷
   Effect (ReactComponent { level ∷ HeadingLevel, text ∷ String, className ∷ Maybe String })
 mkH = do
   useStyles <-
-    makeStyles \(theme ∷ Theme) ->
+    makeStyles \(theme ∷ CSSTheme) ->
       { common:
         css
-          { color: theme.foregroundColour
+          { color: theme.textColour
           , fontFamily: theme.headingFontFamily
           }
       , h1:
@@ -62,7 +63,7 @@ mkH = do
           { fontSize: "1.0em"
           , margin: 0
           , padding: 0
-          , color: theme.foregroundLowContrastColour
+          , color: theme.textColourLighter
           }
       }
   component "Heading" \{ level, text, className } -> React.do

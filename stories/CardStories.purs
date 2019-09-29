@@ -5,6 +5,7 @@ import Prelude hiding (add)
 import Card.Component (mkCard, mkCardContent, mkCardSubtitle, mkCardTitle)
 import Decorator.FullScreen (fullScreenDecorator)
 import Effect (Effect)
+import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Hooks (component, element)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
@@ -27,12 +28,17 @@ stories =
     cardContent <- mkCardContent
     component "ExampleCard" \{ title, subtitle, content } -> React.do
       pure
-        $ element card
+        $ R.div
             { children:
-              [ element cardTitle { children: [ R.text title ] }
-              , element cardSubtitle { children: [ R.text subtitle ] }
-              , element cardContent { children: [ content ] }
-              ]
+              pure
+                $ element card
+                    { children:
+                      [ element cardTitle { children: [ R.text title ] }
+                      , element cardSubtitle { children: [ R.text subtitle ] }
+                      , element cardContent { children: [ content ] }
+                      ]
+                    }
+            , style: css { width: "400px" }
             }
 
 loremIpsum ∷ String

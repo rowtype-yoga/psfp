@@ -12,14 +12,14 @@ import Theme.Provider (mkThemeProvider)
 import Theme.Styles (makeStyles)
 import Theme.Types (Theme)
 
-mkToggleButton ∷ Effect (ReactComponent { label :: String })
+mkToggleButton ∷ Effect (ReactComponent { label ∷ String })
 mkToggleButton = do
   useStyles <-
     makeStyles \(theme ∷ Theme) -> -- do
       { button:
         css
           { backgroundColor: theme.highlightColour
-          , color: theme.foregroundColour
+          , color: theme.textColour
           , fontFamily: theme.textFontFamily
           , fontSize: "1em"
           , paddingTop: "10px"

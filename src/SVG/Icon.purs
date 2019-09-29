@@ -15,7 +15,7 @@ import Unsafe.Coerce (unsafeCoerce)
 
 type ImageProps = ( width ∷ Int, height ∷ Int )
 
-type Raw = ReactComponent {  width ∷ Int, height ∷ Int }
+type Raw = ReactComponent {  width ∷ Int, height ∷ Int, className ∷ String }
 
 foreign import alternativeIconRaw ∷ Raw
 alternativeIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
@@ -79,7 +79,7 @@ mkMenu = do
     makeStyles \(theme ∷ Theme) ->
       { arrow:
         css
-          { fill: theme.foregroundColour
+          { fill: theme.textColour
           , transition: "0.3s ease-out"
           }
       , arrowInactive:

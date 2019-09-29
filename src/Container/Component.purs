@@ -10,12 +10,12 @@ import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Hooks ((/\), ReactComponent, component, element, useState)
 import React.Basic.Hooks as React
-import SVG.Icon (appendIcon, applyflippedIcon, bindIcon, mapIcon, mapflippedIcon)
+import SVG.Icon (appendIcon, applyflippedIcon, bindIcon, mapIcon)
 import Theme.Provider (mkThemeProvider)
 import Theme.Styles (makeStyles)
-import Theme.Types (Theme)
+import Theme.Types (CSSTheme)
 
-mkContainer ∷ Effect (ReactComponent { theme ∷ Theme, children ∷ Array JSX })
+mkContainer ∷ Effect (ReactComponent { theme ∷ CSSTheme, children ∷ Array JSX })
 mkContainer = do
   themeProvider <- mkThemeProvider
   containerContent <- mkContainerContent
@@ -33,22 +33,27 @@ mkContainerContent = do
   sidebar <- mkSidebar
   header <- mkHeader
   useStyles <-
-    makeStyles \(theme ∷ Theme) ->
+    makeStyles \(theme ∷ CSSTheme)->
       { container:
         css
           { backgroundColor: theme.backgroundColour
           , fontFamily: theme.textFontFamily
-          , color: theme.foregroundColour
+          , color: theme.textColour
           , display: "grid"
+          , transition: "0.2s ease-in-out"
           , gridTemplateAreas:
-            "'nav header header' "
-              <> "'nav content content'"
+               "'landing landing landing'"
+            <> "'header header header' "
+            <> "'nav content content'"
           -- , "footer footer footer"
           -- , gridTemplateColumns: "max-content auto"
           , minWidth: "100%"
           , minHeight: "100%"
+          , height: "5000px"
           }
+      , landing: css { width: "100vw", height: "100vh", gridArea: "landing" }
       , content: css { gridArea: "content" }
+      , icon: css { fill: "theme.textColour" }
       }
   sidebarLink <- mkSidebarLink
   component "ContainerContent" \{ children } -> React.do
@@ -58,7 +63,11 @@ mkContainerContent = do
       $ R.div
           { className: classes.container
           , children:
-            [ element sidebar
+            [ R.img
+              { src: "https://images.unsplash.com/photo-1537498425277-c283d32ef9db?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9"
+              , className: classes.landing
+              }
+            , element sidebar
                 { collapsed
                 , modifyCollapsed
                 , children:

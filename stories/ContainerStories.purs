@@ -2,33 +2,29 @@ module ContainerStories where
 
 import Prelude hiding (add)
 import Container.Component (mkContainer)
+import Decorator.FullScreen (fullScreenDecorator)
 import Effect (Effect)
 import React.Basic.DOM (css)
 import React.Basic.DOM as R
-import Storybook.React (Storybook, add, storiesOf)
+import React.Basic.Hooks (component, element)
+import React.Basic.Hooks as React
+import Storybook.React (Storybook, add, addDecorator, storiesOf)
 import Theme.Default (darkTheme)
+import Theme.Styles (useTheme)
+import Theme.Types (fromTheme)
 
 stories ∷ Effect Storybook
 stories =
   storiesOf "Container" do
-    add "Container" mkContainer
-      [ { theme: darkTheme
-        , children:
-          [ R.h1
-              { children: [ R.text "PURESCRIPT" ]
-              , style:
-                css
-                  { textAlign: "center"
-                  , marginTop: "20px"
-                  , fontSize: "2em"
-                  , fontFamily: darkTheme.headingFontFamily
-                  , letterSpacing: "0.07em"
-                  }
-              }
-          , R.div
-              { children: [ R.text "what the fuck?" ]
-              , style: css { height: "400px", textAlign: "center", marginTop: "100px" }
-              }
-          ]
-        }
-      ]
+    addDecorator fullScreenDecorator
+    add "Container" mkExample [ {} ]
+  where
+  mkExample = do
+    container <- mkContainer
+    component "ContainerExample" \{} -> React.do
+      theme <- useTheme
+      pure
+        $ element container
+            { theme
+            , children: []
+            }

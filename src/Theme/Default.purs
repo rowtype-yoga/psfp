@@ -3,19 +3,38 @@ module Theme.Default where
 import Color as Color
 import Theme.Types (Theme)
 
+lightTheme ∷ Theme
+lightTheme =
+  { textColour:         Color.hsl 225.0 0.18 0.25
+  , backgroundColour:   Color.hsl 210.0 0.00 0.98
+  , interfaceColour:    Color.hsl 210.0 0.10 0.70
+  , highlightColour:    Color.hsl 150.0 0.55 0.78
+  , altHighlightColour: Color.hsl 84.0 0.617 0.631
+  , textFontFamily: ["-apple-system", "BlinkMacSystemFont", "Helvetica", "Arial", "sans-serif"]
+  , headingFontFamily: ["Montserrat", "Monaco", "sans-serif"]
+  , yellow:    Color.rgb 255 235 149
+  , green:     Color.rgb 173 219 103
+  , pink:      Color.rgb 199 146 234
+  , orange:    Color.rgb 255 203 139
+  , turquoise: Color.rgb 127 219 202
+  , red:       Color.rgb 255 88 116
+  , blue:      Color.rgb 130 170 255
+  }
+
 darkTheme ∷ Theme
 darkTheme =
-  { backgroundColour:        Color.hsl 225.0 0.28 0.20 -- hsl(100, 10%, 50%)
-  , foregroundColour:        Color.hsl 220.0 0.22 0.90
-  , highlightColour:         Color.rgb 0xb7 0x82 0xda
-  , altHighlightColour:      Color.hsl 84.0 0.617 0.631
-  , textFontFamily: ["'Montserrat'", "-apple-system", "BlinkMacSystemFont", "sans-serif"]
-  , headingFontFamily: ["'Montserrat'", "sans-serif"]
-  , yellow: Color.rgb 0xFF 0xEB 0x95
-  , green: Color.rgb 0xad 0xdb 0x67
-  , pink: Color.rgb 0xc7 0x92 0xea
-  , orange: Color.rgb 0xff 0xcb 0x8b
-  , turquoise: Color.rgb 0x7f 0xdb 0xca
-  , red: Color.rgb 0xff 0x58 0x74
-  , blue: Color.rgb 0x82 0xAA 0xFF
+  { backgroundColour:   Color.hsl 215.0 0.28 0.20
+  , textColour:         Color.hsl 225.0 0.28 0.90
+  , interfaceColour:    Color.hsl 215.0 0.28 0.20
+  , highlightColour:    Color.rgb 183 130 218
+  , altHighlightColour: Color.hsl 84.0 0.617 0.631
+  , textFontFamily: ["-apple-system", "BlinkMacSystemFont", "Helvetica", "Arial", "sans-serif"]
+  , headingFontFamily: ["Montserrat", "Monaco", "sans-serif"]
+  , yellow:    Color.rgb 255 235 149
+  , green:     Color.rgb 173 219 103
+  , pink:      Color.rgb 199 146 234
+  , orange:    Color.rgb 255 203 139
+  , turquoise: Color.rgb 127 219 202
+  , red:       Color.rgb 255 88 116
+  , blue:      Color.rgb 130 170 255
   }

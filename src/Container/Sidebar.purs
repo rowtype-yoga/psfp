@@ -1,8 +1,7 @@
 module Container.Sidebar where
 
 import Prelude
-import Card.Component (mkCard, mkCardContent)
-import Data.Foldable (intercalate)
+
 import Data.Monoid (guard)
 import Effect (Effect)
 import React.Basic (JSX)
@@ -13,7 +12,7 @@ import React.Basic.Hooks (ReactComponent, component, element)
 import React.Basic.Hooks as React
 import SVG.Icon (ActiveArrowDirection(..), mkMenu)
 import Theme.Styles (classNames, makeStyles)
-import Theme.Types (Theme)
+import Theme.Types (CSSTheme)
 
 mkSidebar ∷
   Effect
@@ -25,18 +24,12 @@ mkSidebar ∷
     )
 mkSidebar = do
   useStyles <-
-    makeStyles \(theme ∷ Theme) ->
+    makeStyles \(theme ∷ CSSTheme) ->
       { sidebar:
         css
-          { background:
-            "linear-gradient(-45deg,"
-              <> intercalate ","
-                  [ theme.foregroundColourLighter
-                  , theme.foregroundColourLight
-                  ]
-              <> ")"
+          { background: theme.backgroundColour
           , fontFamily: theme.textFontFamily
-          , color: theme.foregroundColour
+          , color: theme.textColour
           , gridArea: "nav"
           , display: "flex"
           , flexDirection: "column"
@@ -87,14 +80,14 @@ mkSidebar = do
 mkSidebarLink ∷ Effect (ReactComponent { name ∷ String, icon ∷ JSX, collapsed ∷ Boolean })
 mkSidebarLink = do
   useStyles <-
-    makeStyles \(theme ∷ Theme) ->
+    makeStyles \(theme ∷ CSSTheme) ->
       { sidebarEntry:
         css
           { fontFamily: theme.headingFontFamily
           , alignSelf: "flex-end"
           , justifyContent: "space-between"
           , alignContent: "stretch"
-          , color: theme.foregroundColour
+          , color: theme.textColour
           , gridArea: "nav"
           , display: "flex"
           , flexDirection: "row"
@@ -112,7 +105,7 @@ mkSidebarLink = do
       , label:
         css
           { fontFamily: theme.textFontFamily
-          , color: theme.backgroundColour
+          , color: theme.textColour
           , paddingLeft: "20px"
           , textTransform: "uppercase"
           , lineHeight: "60px"
@@ -126,6 +119,7 @@ mkSidebarLink = do
           , transition: "0.2s ease-in-out"
           , transitionDelay: "0.1s"
           , alignSelf: "flex-end"
+          , fill: theme.textColour <> " !important"
           }
       }
   component "SidebarLink" \{ name, icon, collapsed } -> React.do
