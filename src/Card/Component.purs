@@ -2,9 +2,9 @@ module Card.Component where
 
 import Prelude
 
+import CSS.Safer (cssSafer)
 import Effect (Effect)
 import React.Basic (JSX)
-import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
@@ -21,7 +21,7 @@ mkCard = do
   useStyles <-
     makeStyles \(theme ∷ CSSTheme) ->
       { card:
-        css
+        cssSafer
           { background: theme.backgroundColourLighter
           , color: theme.textColour
           , margin: "20px"
@@ -52,7 +52,7 @@ mkCardTitle = do
   useStyles <-
     makeStyles \(theme ∷ CSSTheme) ->
       { cardtitle:
-        css
+        cssSafer
           { color: theme.textColourLightest
           , fontSize: "1.2em"
           , fontWeight: "400"
@@ -80,7 +80,7 @@ mkCardSubtitle = do
   useStyles <-
     makeStyles \(theme ∷ CSSTheme) ->
       { cardtitle:
-        css
+        cssSafer
           { color: theme.textColourDarker
           , opacity: "0.8"
           , fontSize: "1.0em"
@@ -109,7 +109,7 @@ mkCardContent = do
   useStyles <-
     makeStyles \(theme ∷ CSSTheme) ->
       { cardContent:
-        css
+        cssSafer
           { fontFamily: theme.textFontFamily
           , color: theme.textColourDarker
           , fontSize: "0.8em"

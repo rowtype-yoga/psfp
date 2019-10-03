@@ -6,7 +6,6 @@ import Button.Component (ButtonType(..), mkButton)
 import Decorator.FullScreen (fullScreenDecorator)
 import Effect (Effect)
 import Effect.Console (log)
-import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
 import React.Basic.Hooks (component, element)

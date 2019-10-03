@@ -1,25 +1,26 @@
 module ThemeStories where
 
 import Prelude hiding (add)
+
 import Effect (Effect)
 import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Hooks (component, element)
 import Storybook.React (Storybook, add, storiesOf)
+import Theme (fromTheme)
 import Theme.Default (darkTheme, lightTheme)
-import Theme.Types (fromTheme)
 
 stories ∷ Effect Storybook
 stories =
   storiesOf "Theme" do
     add "The swatches in the themes" mkExample
-      [ { theme: darkTheme, name: "Dark theme" }
-      , { theme: lightTheme, name: "Light theme" }
+      [ { theme: darkTheme, themeName: "Dark theme" }
+      , { theme: lightTheme, themeName: "Light theme" }
       ]
   where
   mkExample = do
     swatch <- mkSwatch
-    component "ExampleSwatches" \{ theme, name } -> React.do
+    component "ExampleSwatches" \{ theme, themeName } -> React.do
       let
         cssTheme = fromTheme theme
 
@@ -39,7 +40,7 @@ stories =
                       , fontFamily: cssTheme.headingFontFamily
                       , padding: "20px 0 30px 10px"
                       }
-                  , children: [ R.text name ]
+                  , children: [ R.text themeName ]
                   }
               , R.div
                   { style:
@@ -71,11 +72,11 @@ stories =
     component "Swatch" \{ name, colour, fontFamily } -> React.do
       pure
         $ R.div
-            { style: css { display: "flex", flexDirection: "column", alignItems: "center" }
+            { style: css{ display: "flex", flexDirection: "column", alignItems: "center" }
             , children:
               [ R.div
                   { children: [ R.text name ]
-                  , style: css { fontFamily, paddingBottom: "5px" }
+                  , style: css{ fontFamily, paddingBottom: "5px" }
                   }
               , R.div
                   { style:

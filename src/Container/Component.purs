@@ -1,12 +1,12 @@
 module Container.Component where
 
 import Prelude
-
+import CSS.Safer (cssSafer)
 import Container.Header (mkHeader)
+import Container.Landing (mkLandingPage)
 import Container.Sidebar (mkSidebar, mkSidebarLink)
 import Effect (Effect)
 import React.Basic (JSX)
-import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Hooks ((/\), ReactComponent, component, element, useState)
 import React.Basic.Hooks as React
@@ -30,30 +30,34 @@ mkContainer = do
 
 mkContainerContent ∷ Effect (ReactComponent { children ∷ Array JSX })
 mkContainerContent = do
+  landingPage <- mkLandingPage
   sidebar <- mkSidebar
   header <- mkHeader
   useStyles <-
-    makeStyles \(theme ∷ CSSTheme)->
+    makeStyles \(theme ∷ CSSTheme) ->
+      --  { "@global": cssSafer { "*": { outline: "1px solid red" } }
       { container:
-        css
+        cssSafer
           { backgroundColor: theme.backgroundColour
           , fontFamily: theme.textFontFamily
           , color: theme.textColour
           , display: "grid"
           , transition: "0.2s ease-in-out"
           , gridTemplateAreas:
-               "'landing landing landing'"
-            <> "'header header header' "
-            <> "'nav content content'"
+            "'landing landing landing'"
+              <> "'header header header' "
+              <> "'nav content content'"
           -- , "footer footer footer"
           -- , gridTemplateColumns: "max-content auto"
           , minWidth: "100%"
-          , minHeight: "100%"
-          , height: "5000px"
+          , maxWidth: "100%"
           }
-      , landing: css { width: "100vw", height: "100vh", gridArea: "landing" }
-      , content: css { gridArea: "content" }
-      , icon: css { fill: "theme.textColour" }
+      , content:
+        cssSafer
+          { gridArea: "content"
+          , minHeight: "200vh"
+          }
+      , icon: cssSafer { fill: "theme.textColour" }
       }
   sidebarLink <- mkSidebarLink
   component "ContainerContent" \{ children } -> React.do
@@ -63,10 +67,7 @@ mkContainerContent = do
       $ R.div
           { className: classes.container
           , children:
-            [ R.img
-              { src: "https://images.unsplash.com/photo-1537498425277-c283d32ef9db?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9"
-              , className: classes.landing
-              }
+            [ element landingPage {}
             , element sidebar
                 { collapsed
                 , modifyCollapsed

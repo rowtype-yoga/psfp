@@ -2,11 +2,11 @@ module Typography.Header where
 
 import Prelude
 
+import CSS.Safer (cssSafer)
 import Data.Array as Array
 import Data.Foldable (intercalate)
 import Data.Maybe (Maybe)
 import Effect (Effect)
-import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
@@ -26,12 +26,12 @@ mkH = do
   useStyles <-
     makeStyles \(theme ∷ CSSTheme) ->
       { common:
-        css
+        cssSafer
           { color: theme.textColour
           , fontFamily: theme.headingFontFamily
           }
       , h1:
-        css
+        cssSafer
           { textTransform: "uppercase"
           , fontSize: "3.6em"
           , letterSpacing: "0.07em"
@@ -39,7 +39,7 @@ mkH = do
           , padding: 0
           }
       , h2:
-        css
+        cssSafer
           { textTransform: "uppercase"
           , fontSize: "3em"
           , letterSpacing: "0.05em"
@@ -47,19 +47,19 @@ mkH = do
           , padding: 0
           }
       , h3:
-        css
+        cssSafer
           { fontSize: "2.2em"
           , margin: 0
           , padding: 0
           }
       , h4:
-        css
+        cssSafer
           { fontSize: "1.5em"
           , margin: 0
           , padding: 0
           }
       , h5:
-        css
+        cssSafer
           { fontSize: "1.0em"
           , margin: 0
           , padding: 0

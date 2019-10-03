@@ -1,23 +1,24 @@
 module Element where
 
 import Prelude
+
+import CSS.Safer (cssSafer)
 import Effect (Effect)
 import Effect.Console (log)
-import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
 import React.Basic.Hooks (ReactComponent, component, element, useEffect, useState, (/\))
 import React.Basic.Hooks as React
 import Theme.Provider (mkThemeProvider)
 import Theme.Styles (makeStyles)
-import Theme.Types (Theme)
+import Theme.Types (CSSTheme)
 
 mkToggleButton ∷ Effect (ReactComponent { label ∷ String })
 mkToggleButton = do
   useStyles <-
-    makeStyles \(theme ∷ Theme) -> -- do
+    makeStyles \(theme ∷ CSSTheme) -> -- do
       { button:
-        css
+        cssSafer
           { backgroundColor: theme.highlightColour
           , color: theme.textColour
           , fontFamily: theme.textFontFamily

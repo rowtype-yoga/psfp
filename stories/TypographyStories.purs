@@ -2,16 +2,11 @@ module TypographyStories where
 
 import Prelude hiding (add)
 
-import Container.Component (mkContainer)
 import Data.Maybe (Maybe(..))
 import Decorator.FullScreen (fullScreenDecorator)
 import Effect (Effect)
-import React.Basic (element)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
-import Theme.Default (darkTheme)
-import Theme.Types (fromTheme)
 import Typography.Header (HeadingLevel(..), mkH)
-import Typography.Paragraph (mkP)
 
 stories ∷ Effect Storybook
 stories =

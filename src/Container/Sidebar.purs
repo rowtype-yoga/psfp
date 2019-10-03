@@ -2,10 +2,10 @@ module Container.Sidebar where
 
 import Prelude
 
+import CSS.Safer (cssSafer)
 import Data.Monoid (guard)
 import Effect (Effect)
 import React.Basic (JSX)
-import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
 import React.Basic.Hooks (ReactComponent, component, element)
@@ -26,7 +26,7 @@ mkSidebar = do
   useStyles <-
     makeStyles \(theme ∷ CSSTheme) ->
       { sidebar:
-        css
+        cssSafer
           { background: theme.backgroundColour
           , fontFamily: theme.textFontFamily
           , color: theme.textColour
@@ -37,10 +37,10 @@ mkSidebar = do
           , transition: "0.2s ease-in-out"
           , overflowX: "hidden"
           }
-      , sidebarCollapsed: css { width: "70px" }
-      , sidebarExpanded: css { width: "250px" }
+      , sidebarCollapsed: cssSafer { width: "70px" }
+      , sidebarExpanded: cssSafer { width: "250px" }
       , logo:
-        css
+        cssSafer
           { width: "60px"
           , height: "60px"
           , padding: "0 5px 0 5px"
@@ -49,7 +49,7 @@ mkSidebar = do
           , alignSelf: "flex-end"
           }
       , logoCollapsed:
-        css
+        cssSafer
           {} -- transform: "rotate(180deg)"}
       }
   menu <- mkMenu
@@ -82,7 +82,7 @@ mkSidebarLink = do
   useStyles <-
     makeStyles \(theme ∷ CSSTheme) ->
       { sidebarEntry:
-        css
+        cssSafer
           { fontFamily: theme.headingFontFamily
           , alignSelf: "flex-end"
           , justifyContent: "space-between"
@@ -97,13 +97,12 @@ mkSidebarLink = do
           , borderRadius: "5px 0 0 5px"
           , cursor: "pointer"
           , "&:hover":
-            css
               { background: theme.highlightColour
               }
-          -- , "&:hover": css { opacity: "1.0"}
+          -- , "&:hover": cssSafer{ opacity: "1.0"}
           }
       , label:
-        css
+        cssSafer
           { fontFamily: theme.textFontFamily
           , color: theme.textColour
           , paddingLeft: "20px"
@@ -112,7 +111,7 @@ mkSidebarLink = do
           , fontSize: "1.4em"
           }
       , icon:
-        css
+        cssSafer
           { width: "50px"
           , height: "50px"
           , padding: "5px 10px 5px 5px"

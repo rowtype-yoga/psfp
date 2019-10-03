@@ -16,4 +16,5 @@
         "replace": "∀$1"
     },
 ],
+"purescript.buildCommand": "spago build --purs-args '--json-errors'",
 }

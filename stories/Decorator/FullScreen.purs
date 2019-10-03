@@ -1,7 +1,7 @@
 module Decorator.FullScreen where
 
 import Prelude
-
+import CSS.Safer (cssSafer)
 import Data.Array (find)
 import Data.Map (Map)
 import Data.Maybe (Maybe, fromMaybe)
@@ -15,9 +15,11 @@ import React.Basic.Events (handler)
 import React.Basic.Hooks (ReactComponent, component, element, useState, (/\))
 import React.Basic.Hooks as React
 import Simple.JSON (readJSON_, writeJSON)
+import Theme (fromTheme)
 import Theme.Default (darkTheme, lightTheme)
 import Theme.Provider (mkThemeProvider)
-import Theme.Types (CSSTheme, fromTheme)
+import Theme.Styles (makeStyles_)
+import Theme.Types (CSSTheme)
 import Web.HTML (window)
 import Web.HTML.Window (localStorage)
 import Web.Storage.Storage (getItem, setItem)
@@ -26,15 +28,14 @@ fullScreenDecorator ∷ JSX -> Effect JSX
 fullScreenDecorator child = do
   let
     dark = fromTheme darkTheme
+
     light = fromTheme lightTheme
   themeSwitcher <- mkThemeSwitcher
   pure
     $ R.div
         { style:
           css
-            { width: "100vw"
-            , minHeight: "900px"
-            , minWidth: "1440px"
+            { minWidth: "100vw"
             , height: "100vh"
             }
         , children:
@@ -42,9 +43,9 @@ fullScreenDecorator child = do
               { children: [ child ]
               , defaultTheme: { name: "Dark", theme: dark }
               , themes:
-                  [ { name: "Dark", theme: dark }
-                  , { name: "Light", theme: light }
-                  ]
+                [ { name: "Dark", theme: dark }
+                , { name: "Light", theme: light }
+                ]
               }
           ]
         }
@@ -52,7 +53,8 @@ fullScreenDecorator child = do
 type ThemesWithNames
   = Map String CSSTheme
 
-type DefaultTheme = { name ∷ String, theme ∷ CSSTheme }
+type DefaultTheme
+  = { name ∷ String, theme ∷ CSSTheme }
 
 mkThemeSwitcher ∷
   Effect
@@ -60,9 +62,20 @@ mkThemeSwitcher ∷
     )
 mkThemeSwitcher = do
   themeProvider <- mkThemeProvider
+  useStyles <-
+    makeStyles_
+      { selector:
+        cssSafer
+          { position: "absolute"
+          , zIndex: 20
+          , top: 10
+          , right: 10
+          }
+      }
   storage <- window >>= localStorage
   saved ∷ (Maybe DefaultTheme) <- getItem "theme" storage <#> (_ >>= readJSON_)
   component "ThemeSwitcher" \{ defaultTheme, themes, children } -> React.do
+    classes <- useStyles
     { theme, name } /\ modTheme <- useState $ fromMaybe defaultTheme saved
     let
       setTheme newTheme = do
@@ -78,8 +91,10 @@ mkThemeSwitcher = do
         R.select
           { onChange: handler targetValue handleClicked
           , value: name
+          , className: classes.selector
           , children:
-            themes <#> \x ->
+            themes
+              <#> \x ->
                   R.option
                     { value: x.name
                     , key: x.name

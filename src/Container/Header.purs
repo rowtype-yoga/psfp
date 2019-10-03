@@ -2,24 +2,25 @@ module Container.Header where
 
 import Prelude
 
-import Control.Alt ((<|>))
+import CSS.Safer (cssSafer)
 import Data.Int (toNumber)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
-import Data.Nullable (null)
-import Debug.Trace (spy)
+import Data.Newtype (class Newtype)
+import Data.Nullable (Nullable, null)
 import Effect (Effect)
-import React.Basic.DOM (css)
+import Effect.Class.Console (log)
 import React.Basic.DOM as R
-import React.Basic.Hooks (ReactComponent, component, element, readRef, readRefMaybe, useEffect, useLayoutEffect, useRef, useState, writeRef, (/\))
+import React.Basic.Hooks (type (/\), Hook, ReactComponent, Ref, UseLayoutEffect, UseRef, UseState, coerceHook, component, element, readRefMaybe, useLayoutEffect, useRef, useState, (/\))
 import React.Basic.Hooks as React
-import SVG.Icon (pslogoIcon)
+import SVG.Icon (trianglelogoIcon)
 import Theme.Styles (makeStyles)
 import Theme.Types (CSSTheme)
 import Typography.Header (HeadingLevel(..), mkH)
+import Web.DOM (Node)
 import Web.Event.Event (EventType(..))
-import Web.Event.EventTarget (addEventListener, eventListener, removeEventListener)
-import Web.HTML (window)
+import Web.Event.EventTarget (EventListener, addEventListener, eventListener, removeEventListener)
+import Web.HTML (HTMLElement, window)
 import Web.HTML.HTMLElement (offsetTop)
 import Web.HTML.HTMLElement as HTMLElement
 import Web.HTML.Window (scrollY, toEventTarget)
@@ -30,73 +31,76 @@ mkHeader = do
   useStyles <-
     makeStyles \(theme ∷ CSSTheme) ->
       { header:
-        css
+        cssSafer
           { backgroundColor: theme.backgroundColour
-          , borderBottom: "1px solid " <> theme.highlightColour
-          , paddingLeft: "20px"
-          , fontFamily: theme.textFontFamily
+          , borderBottom: "0"
+          , fontFamily: theme.headingFontFamily
           , gridArea: "header"
           , display: "flex"
           , alignItems: "center"
-          , width: "100vw"
+          , justifyContent: "flex-end"
+          , width: "100%"
           , height: "80px"
           }
-      , sticky: css { position: "fixed", top: "0" }
+      , sticky: cssSafer { position: "fixed", top: "0" }
+      , title: cssSafer { paddingRight: "30px"}
       , logo:
-        css
+        cssSafer
           { width: "70px"
           , height: "70px"
           , padding: "5px"
+          , marginTop: "9px"
           , marginRight: "7px"
           , fill: theme.textColour
           }
       }
-  useScrollYPosition <- mkUseScrollYPosition
   component "Header" \{} -> React.do
     classes <- useStyles
-    mustBeSticky /\ modifyMustBeSticky <- useState false
-    nodeY /\ modifyNodeY <- useState 0
-    nodeOffset /\ modifyONP <- useState Nothing
-    nodeRef <- useRef null
-    scrollYPos <- useScrollYPosition
-    useEffect scrollYPos do
-      maybeNode <- readRefMaybe nodeRef
-      let maybeElem = maybeNode >>= HTMLElement.fromNode
-      case maybeElem of
-        Nothing -> pure (pure unit)
-        Just element -> do
-          offset <- offsetTop element
-          modifyONP case _ of
-            Just x -> Just x
-            Nothing -> Just offset
-          let offset' = fromMaybe offset nodeOffset
-          modifyMustBeSticky
-            if toNumber scrollYPos > offset'
-            then const true
-            else const false
-          pure (pure unit)
-
+    shouldBeSticky /\ nodeRef <- useShouldBeSticky
     pure
       $ R.header
           { ref: nodeRef
-          , className: classes.header <> " " <> guard mustBeSticky classes.sticky
+          , className: classes.header <> " " <> guard shouldBeSticky classes.sticky
           , children:
-            [ R.div { children: [ element pslogoIcon {} ], className: classes.logo }
-            , element h { level: H2, text: "Purescript", className: Nothing }
+            [ element h { level: H2, text: "Kleislove", className: Just classes.title }
+            , R.div { children: [ element trianglelogoIcon {} ], className: classes.logo }
             ]
           }
 
-mkUseScrollYPosition = do
-  initialPosition <- window >>= scrollY
-  pure $ React.do
-    scrollPosY /\ modifyScrollPosY <- useState initialPosition
+newtype UseShouldBeSticky hooks
+  = UseShouldBeSticky (UseLayoutEffect Unit (UseState Boolean (UseRef (Nullable Node) hooks)))
+
+derive instance ntUseScrollYPosition ∷ Newtype (UseShouldBeSticky hooks) _
+
+useShouldBeSticky ∷ Hook UseShouldBeSticky (Boolean /\ Ref (Nullable Node))
+useShouldBeSticky =
+  coerceHook React.do
+    nodeRef <- useRef null
+    mustBeSticky /\ modifyMustBeSticky <- useState false
+    let setSticky = modifyMustBeSticky <<< const
     useLayoutEffect unit do
-        target <- window <#> toEventTarget
-        let eventType = EventType "scroll"
-        listener <- eventListener
-          \_ -> window >>= scrollY >>= \newPos -> modifyScrollPosY (const newPos)
-        addEventListener eventType listener false target
-        let _ = spy "registered event listener" unit
-        pure $
-          removeEventListener eventType listener false target
-    pure $ scrollPosY
+      maybeNode <- readRefMaybe nodeRef
+      case maybeNode >>= HTMLElement.fromNode of
+        Nothing -> do
+          log "Could not register listener because there was no node"
+          pure (pure unit)
+        Just element -> do
+          listener <- makeListener setSticky element
+          registerListener listener
+    pure (mustBeSticky /\ nodeRef)
+
+scrollEventType ∷ EventType
+scrollEventType = EventType "scroll"
+
+registerListener ∷ EventListener -> Effect (Effect Unit)
+registerListener listener = do
+  target <- window <#> toEventTarget
+  addEventListener scrollEventType listener false target
+  pure $ removeEventListener scrollEventType listener false target
+
+makeListener ∷ (Boolean -> Effect Unit) -> HTMLElement -> Effect EventListener
+makeListener setSticky element = do
+  nodeStartPos <- offsetTop element
+  eventListener $ const do
+    yPos <- window >>= scrollY <#> toNumber
+    setSticky $ nodeStartPos < yPos

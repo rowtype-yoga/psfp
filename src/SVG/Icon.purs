@@ -2,69 +2,72 @@ module SVG.Icon where
 
 import Prelude
 
+import CSS.Safer (cssSafer)
 import Data.Monoid (guard)
 import Effect (Effect)
 import Prim.Row (class Union)
-import React.Basic.DOM (css)
 import React.Basic.DOM.SVG as SVG
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
 import Theme.Styles (makeStyles)
-import Theme.Types (Theme)
+import Theme.Types (CSSTheme)
 import Unsafe.Coerce (unsafeCoerce)
 
-type ImageProps = ( width ∷ Int, height ∷ Int )
+type ImageProps = ( width ∷ Int, height ∷ Int, className ∷ String )
 
-type Raw = ReactComponent {  width ∷ Int, height ∷ Int, className ∷ String }
+type Raw r = ReactComponent { | r }
 
-foreign import alternativeIconRaw ∷ Raw
+foreign import alternativeIconRaw ∷ ∀ r. Raw r
 alternativeIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 alternativeIcon = unsafeCoerce alternativeIconRaw
 
-foreign import apIconRaw ∷ Raw
+foreign import apIconRaw ∷ ∀ r. Raw r
 apIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 apIcon = unsafeCoerce apIconRaw
 
-foreign import appendIconRaw ∷ Raw
+foreign import appendIconRaw ∷ ∀ r. Raw r
 appendIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 appendIcon = unsafeCoerce appendIconRaw
 
-foreign import applyIconRaw ∷ Raw
+foreign import applyIconRaw ∷ ∀ r. Raw r
 applyIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 applyIcon = unsafeCoerce applyIconRaw
 
-foreign import applyflippedIconRaw ∷ Raw
+foreign import applyflippedIconRaw ∷ ∀ r. Raw r
 applyflippedIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 applyflippedIcon = unsafeCoerce applyflippedIconRaw
 
-foreign import bindIconRaw ∷ Raw
+foreign import bindIconRaw ∷ ∀ r. Raw r
 bindIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 bindIcon = unsafeCoerce bindIconRaw
 
-foreign import composeIconRaw ∷ Raw
+foreign import composeIconRaw ∷ ∀ r. Raw r
 composeIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 composeIcon = unsafeCoerce composeIconRaw
 
-foreign import forallIconRaw ∷ Raw
+foreign import forallIconRaw ∷ ∀ r. Raw r
 forallIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 forallIcon = unsafeCoerce forallIconRaw
 
-foreign import kleisliIconRaw ∷ Raw
+foreign import kleisliIconRaw ∷ ∀ r. Raw r
 kleisliIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 kleisliIcon = unsafeCoerce kleisliIconRaw
 
-foreign import mapIconRaw ∷ Raw
+foreign import mapIconRaw ∷ ∀ r. Raw r
 mapIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 mapIcon = unsafeCoerce mapIconRaw
 
-foreign import mapflippedIconRaw ∷ Raw
+foreign import mapflippedIconRaw ∷ ∀ r. Raw r
 mapflippedIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 mapflippedIcon = unsafeCoerce mapflippedIconRaw
 
-foreign import pslogoIconRaw ∷ Raw
+foreign import pslogoIconRaw ∷ ∀ r. Raw r
 pslogoIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 pslogoIcon = unsafeCoerce pslogoIconRaw
 
+foreign import trianglelogoIconRaw ∷ ∀ r. Raw r
+trianglelogoIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
+trianglelogoIcon = unsafeCoerce trianglelogoIconRaw
 
 
 data ActiveArrowDirection
@@ -76,22 +79,18 @@ derive instance eqActiveArrowDirection ∷ Eq ActiveArrowDirection
 mkMenu ∷ Effect (ReactComponent { activeArrowDirection ∷ ActiveArrowDirection })
 mkMenu = do
   useStyles <-
-    makeStyles \(theme ∷ Theme) ->
-      { arrow:
-        css
+    makeStyles \(theme ∷ CSSTheme) ->
+      { arrow: cssSafer
           { fill: theme.textColour
           , transition: "0.3s ease-out"
           }
-      , arrowInactive:
-        css
+      , arrowInactive: cssSafer
           { fillOpacity: ".1"
           }
-      , svg:
-        css
+      , svg: cssSafer
           { width: "100%"
           , height: "100%"
           , "&:hover":
-            css
               { fill: theme.backgroundColour
               }
           }

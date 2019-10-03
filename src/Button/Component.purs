@@ -2,15 +2,20 @@ module Button.Component where
 
 import Prelude
 
+import CSS (ColorSpace(..), mix, toHexString)
+import CSS.Safer (cssSafer)
+import Color (fromHexString)
 import Data.Foldable (intercalate)
+import Data.Maybe (fromMaybe)
 import Data.Monoid (guard)
 import Effect (Effect)
 import Prim.Row (class Lacks, class Union)
 import React.Basic (JSX)
-import React.Basic.DOM (Props_button, css, unsafeCreateDOMComponent)
+import React.Basic.DOM (Props_button, unsafeCreateDOMComponent)
 import React.Basic.Hooks (ReactComponent, component, element)
 import React.Basic.Hooks as React
 import Record (union)
+import Theme (increaseContrast)
 import Theme.Styles (classNames, makeStyles)
 import Theme.Types (CSSTheme)
 
@@ -39,13 +44,13 @@ mkButton = do
   useStyles <-
     makeStyles \(theme ∷ CSSTheme) ->
       { "@keyframes gradientBG":
-        css
-          { "0%": css { backgroundPosition: "0% 50%" }
-          , "50%": css { backgroundPosition: "100% 50%" }
-          , "100%": css { backgroundPosition: "0% 50%" }
+        cssSafer
+          { "0%": { backgroundPosition: "0% 50%" }
+          , "50%": { backgroundPosition: "100% 50%" }
+          , "100%": { backgroundPosition: "0% 50%" }
           }
       , btn:
-        css
+        cssSafer
           { background:
             if theme.isLight
             then
@@ -77,7 +82,6 @@ mkButton = do
           , textTransform: "uppercase"
           , outline: "none"
           , "&:focus":
-            css
               { background:
                 linearGradient
                   [ "-5deg"
@@ -90,7 +94,6 @@ mkButton = do
               , animation: "$gradientBG 3s ease infinite"
               }
           , "&:active":
-            css
               { background:
                 linearGradient
                   [ "180deg"
@@ -100,7 +103,6 @@ mkButton = do
               , boxShadow: "inset 0 0 2px black"
               }
           , "&:disabled":
-            css
               { boxShadow: "0 0 0 black"
               , background: theme.backgroundColour
               , border: "1px dotted " <> theme.interfaceColourLightest
@@ -109,7 +111,7 @@ mkButton = do
               }
           }
       , highlightedButton:
-        css
+        cssSafer
           { background:
             if theme.isLight
             then
@@ -117,11 +119,17 @@ mkButton = do
             else
               linearGradient [ theme.highlightColour, theme.highlightColourDark ]
           , "&:active":
-            css
               { background:
                 linearGradient [ theme.highlightColourDark, theme.highlightColour ]
               }
-          , color: theme.textColour
+          , color: fromMaybe theme.textColour
+            do
+              hlc <- theme.highlightColour # fromHexString
+              hlcd <- theme.highlightColourDark # fromHexString
+              let bg = if theme.isLight then hlc else mix HSL hlc hlcd 0.5
+              tc  <- theme.textColour # fromHexString
+              pure $ increaseContrast bg tc # toHexString
+
           }
       }
   component "Button" \{ children, buttonType, buttonProps } -> React.do

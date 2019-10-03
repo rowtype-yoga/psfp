@@ -1,20 +1,21 @@
 module Typography.Paragraph where
 
 import Prelude
+
+import CSS.Safer (cssSafer)
 import Effect (Effect)
-import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
 import Theme.Styles (makeStyles)
-import Theme.Types (Theme)
+import Theme.Types (CSSTheme)
 
 mkP ∷ Effect (ReactComponent { text ∷ String })
 mkP = do
   useStyles <-
-    makeStyles \(theme ∷ Theme) ->
+    makeStyles \(theme ∷ CSSTheme) ->
       { p:
-        css
+        cssSafer
           { color: theme.textColour
           , fontFamily: theme.textFontFamily
           , fontSize: "1em"
