@@ -1,5 +1,5 @@
 module Storybook.React
-  (storiesOf
+  ( storiesOf
   , Storybook
   , add
   , addDecorator
@@ -10,7 +10,6 @@ import Prelude hiding (add)
 
 import Control.Monad.Reader (ReaderT, ask, lift, local, runReaderT)
 import Effect (Effect)
-import Effect.Unsafe (unsafePerformEffect)
 import React.Basic (JSX, ReactComponent, element, fragment)
 
 foreign import data Storybook ∷ Type
@@ -27,7 +26,7 @@ foreign import addImpl ∷
 
 foreign import addDecoratorImpl ∷
   Storybook ->
-  (Effect JSX -> JSX) ->
+  (Effect JSX -> Effect JSX) ->
   Effect Storybook
 
 add ∷ ∀ props. String -> Effect (ReactComponent { | props }) -> Array { | props } -> ReaderT Storybook Effect Unit
@@ -40,13 +39,12 @@ add name mkComponent propsArray = do
   newBook <- lift $ addImpl sb component name
   local (const newBook) (pure unit)
 
-addDecorator ∷ (JSX -> Effect JSX) -> ReaderT Storybook Effect Unit
+addDecorator ∷ (Effect JSX -> Effect JSX) -> ReaderT Storybook Effect Unit
 addDecorator decorate = do
   sb <- ask
   newBook <-
     lift
-      $ addDecoratorImpl sb \render ->
-          unsafePerformEffect $ render >>= decorate
+      $ addDecoratorImpl sb decorate
   local (const newBook) (pure unit)
 
 storiesOf ∷ ∀ a. String -> ReaderT Storybook Effect a -> Effect Storybook

@@ -27,7 +27,7 @@ mkSidebar = do
     makeStyles \(theme ∷ CSSTheme) ->
       { sidebar:
         cssSafer
-          { background: theme.backgroundColour
+          { background: theme.interfaceColour
           , fontFamily: theme.textFontFamily
           , color: theme.textColour
           , gridArea: "nav"

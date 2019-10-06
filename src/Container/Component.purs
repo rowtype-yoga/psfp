@@ -1,11 +1,13 @@
 module Container.Component where
 
 import Prelude
+
 import CSS.Safer (cssSafer)
 import Container.Header (mkHeader)
 import Container.Landing (mkLandingPage)
 import Container.Sidebar (mkSidebar, mkSidebarLink)
 import Effect (Effect)
+import Polyfill.SmoothScrolling (smoothScrollPolyfill)
 import React.Basic (JSX)
 import React.Basic.DOM as R
 import React.Basic.Hooks ((/\), ReactComponent, component, element, useState)
@@ -30,9 +32,7 @@ mkContainer = do
 
 mkContainerContent ∷ Effect (ReactComponent { children ∷ Array JSX })
 mkContainerContent = do
-  landingPage <- mkLandingPage
-  sidebar <- mkSidebar
-  header <- mkHeader
+  smoothScrollPolyfill
   useStyles <-
     makeStyles \(theme ∷ CSSTheme) ->
       --  { "@global": cssSafer { "*": { outline: "1px solid red" } }
@@ -59,6 +59,9 @@ mkContainerContent = do
           }
       , icon: cssSafer { fill: "theme.textColour" }
       }
+  landingPage <- mkLandingPage
+  sidebar <- mkSidebar
+  header <- mkHeader
   sidebarLink <- mkSidebarLink
   component "ContainerContent" \{ children } -> React.do
     classes <- useStyles

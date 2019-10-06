@@ -24,12 +24,13 @@ import Web.HTML (window)
 import Web.HTML.Window (localStorage)
 import Web.Storage.Storage (getItem, setItem)
 
-fullScreenDecorator ∷ JSX -> Effect JSX
-fullScreenDecorator child = do
+fullScreenDecorator ∷ Effect JSX -> Effect JSX
+fullScreenDecorator mkChild = do
   let
     dark = fromTheme darkTheme
 
     light = fromTheme lightTheme
+  child <- mkChild
   themeSwitcher <- mkThemeSwitcher
   pure
     $ R.div

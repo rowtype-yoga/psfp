@@ -17,7 +17,9 @@ exports.addImpl = function(sb) {
 exports.addDecoratorImpl = function(sb) {
   return function(addDeco) {
       return function() {
-        return sb.addDecorator(addDeco);
+        return sb.addDecorator(function(storyFn) {
+          return addDeco(storyFn)();
+        });
       }
   }
 }

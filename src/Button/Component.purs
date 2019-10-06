@@ -1,7 +1,6 @@
 module Button.Component where
 
 import Prelude
-
 import CSS (ColorSpace(..), mix, toHexString)
 import CSS.Safer (cssSafer)
 import Color (fromHexString)
@@ -30,7 +29,6 @@ mkButton ∷
   ∀ attrs attrs_.
   Union attrs attrs_ Props_button =>
   Lacks "children" attrs =>
-  Lacks "className" attrs =>
   Lacks "ref" attrs =>
   Lacks "key" attrs =>
   Effect
@@ -52,8 +50,7 @@ mkButton = do
       , btn:
         cssSafer
           { background:
-            if theme.isLight
-            then
+            if theme.isLight then
               theme.interfaceColourLightest
             else
               linearGradient
@@ -62,13 +59,13 @@ mkButton = do
                 ]
           , color: theme.textColour
           , boxShadow:
-            if theme.isLight
-            then "none"
+            if theme.isLight then
+              "none"
             else
               "1px 1px 10px rgba(0,0,0,0.66)"
           , border:
-            if theme.isLight
-            then "1px solid " <> theme.interfaceColourLighter
+            if theme.isLight then
+              "1px solid " <> theme.interfaceColourLighter
             else
               "none"
           , borderRadius: "20px"
@@ -82,54 +79,59 @@ mkButton = do
           , textTransform: "uppercase"
           , outline: "none"
           , "&:focus":
-              { background:
-                linearGradient
-                  [ "-5deg"
-                  , theme.interfaceColourDarker
-                  , theme.highlightColourDark
-                  , theme.highlightColour
-                  ]
-              , color: theme.interfaceColourLighter
-              , backgroundSize: "400% 400%, 100% 100%"
-              , animation: "$gradientBG 3s ease infinite"
-              }
+            { background:
+              linearGradient
+                [ "-5deg"
+                , theme.interfaceColourDarker
+                , theme.highlightColourDark
+                , theme.highlightColour
+                ]
+            , color:
+              fromMaybe theme.textColour do
+                hlc <- theme.highlightColour # fromHexString
+                hlcd <- theme.highlightColourDark # fromHexString
+                let bg = if theme.isLight then hlc else mix HSL hlc hlcd 0.5
+                tc <- theme.textColour # fromHexString
+                pure $ increaseContrast bg tc # toHexString
+            , backgroundSize: "400% 400%, 100% 100%"
+            , animation: "$gradientBG 3s ease infinite"
+            }
           , "&:active":
-              { background:
-                linearGradient
-                  [ "180deg"
-                  , theme.interfaceColourLighter
-                  , theme.interfaceColourLightest
-                  ]
-              , boxShadow: "inset 0 0 2px black"
-              }
+            { background:
+              linearGradient
+                [ "180deg"
+                , theme.interfaceColourLighter
+                , theme.interfaceColourLightest
+                ]
+            , boxShadow: "inset 0 0 2px black"
+            }
           , "&:disabled":
-              { boxShadow: "0 0 0 black"
-              , background: theme.backgroundColour
-              , border: "1px dotted " <> theme.interfaceColourLightest
-              , textDecoration: "line-through"
-              , textDecorationColor: theme.red
-              }
+            { boxShadow: "0 0 0 black"
+            , background: theme.backgroundColour
+            , border: "1px dotted " <> theme.interfaceColourLightest
+            , textDecoration: "line-through"
+            , textDecorationColor: theme.red
+            }
           }
       , highlightedButton:
         cssSafer
           { background:
-            if theme.isLight
-            then
+            if theme.isLight then
               theme.highlightColour
             else
               linearGradient [ theme.highlightColour, theme.highlightColourDark ]
           , "&:active":
-              { background:
-                linearGradient [ theme.highlightColourDark, theme.highlightColour ]
-              }
-          , color: fromMaybe theme.textColour
-            do
+            { background:
+              linearGradient [ theme.highlightColourDark, theme.highlightColour ]
+            }
+          , color:
+            fromMaybe theme.textColour do
               hlc <- theme.highlightColour # fromHexString
               hlcd <- theme.highlightColourDark # fromHexString
-              let bg = if theme.isLight then hlc else mix HSL hlc hlcd 0.5
-              tc  <- theme.textColour # fromHexString
+              let
+                bg = if theme.isLight then hlc else mix HSL hlc hlcd 0.5
+              tc <- theme.textColour # fromHexString
               pure $ increaseContrast bg tc # toHexString
-
           }
       }
   component "Button" \{ children, buttonType, buttonProps } -> React.do

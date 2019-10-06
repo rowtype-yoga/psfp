@@ -14,16 +14,16 @@ import React.Basic.DOM as R
 import React.Basic.Hooks (type (/\), Hook, ReactComponent, Ref, UseLayoutEffect, UseRef, UseState, coerceHook, component, element, readRefMaybe, useLayoutEffect, useRef, useState, (/\))
 import React.Basic.Hooks as React
 import SVG.Icon (trianglelogoIcon)
+import Scroll.Listener as Scroll
 import Theme.Styles (makeStyles)
 import Theme.Types (CSSTheme)
 import Typography.Header (HeadingLevel(..), mkH)
 import Web.DOM (Node)
-import Web.Event.Event (EventType(..))
-import Web.Event.EventTarget (EventListener, addEventListener, eventListener, removeEventListener)
+import Web.Event.EventTarget (EventListener, eventListener)
 import Web.HTML (HTMLElement, window)
 import Web.HTML.HTMLElement (offsetTop)
 import Web.HTML.HTMLElement as HTMLElement
-import Web.HTML.Window (scrollY, toEventTarget)
+import Web.HTML.Window (scrollY)
 
 mkHeader ∷ Effect (ReactComponent {})
 mkHeader = do
@@ -70,7 +70,7 @@ mkHeader = do
 newtype UseShouldBeSticky hooks
   = UseShouldBeSticky (UseLayoutEffect Unit (UseState Boolean (UseRef (Nullable Node) hooks)))
 
-derive instance ntUseScrollYPosition ∷ Newtype (UseShouldBeSticky hooks) _
+derive instance ntUseShouldBeSticky ∷ Newtype (UseShouldBeSticky hooks) _
 
 useShouldBeSticky ∷ Hook UseShouldBeSticky (Boolean /\ Ref (Nullable Node))
 useShouldBeSticky =
@@ -86,17 +86,8 @@ useShouldBeSticky =
           pure (pure unit)
         Just element -> do
           listener <- makeListener setSticky element
-          registerListener listener
+          Scroll.registerListener listener
     pure (mustBeSticky /\ nodeRef)
-
-scrollEventType ∷ EventType
-scrollEventType = EventType "scroll"
-
-registerListener ∷ EventListener -> Effect (Effect Unit)
-registerListener listener = do
-  target <- window <#> toEventTarget
-  addEventListener scrollEventType listener false target
-  pure $ removeEventListener scrollEventType listener false target
 
 makeListener ∷ (Boolean -> Effect Unit) -> HTMLElement -> Effect EventListener
 makeListener setSticky element = do

@@ -157,6 +157,33 @@ let additions =
          , version =
              "b872928414a887ccefbe857038af4e57227dad16"
          }
+     , pseudo-random =
+         { dependencies =
+             [ "prelude"
+             , "console"
+             , "effect"
+             , "lcg"
+             , "arrays"
+             , "st"
+             ]
+         , repo =
+             "https://github.com/opyapeus/purescript-pseudo-random.git"
+         , version =
+             "7715e8a2c096c480a093a5e0a6df1ece4df5ed2a"
+         }
+     , matryoshka =
+         { dependencies =
+             [ "prelude"
+             , "fixed-points"
+             , "free"
+             , "transformers"
+             , "profunctor"
+             ]
+         , repo =
+             "https://github.com/slamdata/purescript-matryoshka.git"
+         , version =
+             "caaca2d836d52159ba7963333996286a00428394"
+         }
      }
 
 in  upstream // overrides // additions

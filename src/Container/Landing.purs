@@ -13,7 +13,8 @@ import React.Basic.Events (handler_)
 import React.Basic.Hooks (ReactComponent, component, element, readRefMaybe, useRef)
 import React.Basic.Hooks as React
 import SVG.Icon (trianglelogoIcon)
-import SVG.Image (landingPageDark, landingPageLight)
+import SVG.Image (mkLandingPageBackground)
+import Scroll.Hook (useScrollYPosition)
 import Theme.Styles (makeStyles, useTheme)
 import Theme.Types (CSSTheme)
 import Typography.Header (mkH)
@@ -82,16 +83,12 @@ mkLandingPage = do
       }
   h <- mkH
   button <- mkButton
+  backgroundImage <- mkLandingPageBackground
   component "LandingPage" \{ } -> React.do
     classes <- useStyles
     theme <- useTheme
     ref <- useRef null
-    let
-      backgroundImage =
-        if theme.isLight then
-          landingPageLight
-        else
-          landingPageDark
+    scrollY <- useScrollYPosition
     pure
       $ R.div
           { ref

@@ -9,12 +9,15 @@ You can edit this file as you like.
     , "css"
     , "debug"
     , "effect"
+    , "matryoshka"
     , "psci-support"
+    , "pseudo-random"
     , "react-basic"
     , "react-basic-hooks"
     , "react-testing-library"
     , "record-extra"
     , "spec-discovery"
+    , "string-parsers"
     , "web-html"
     ]
 , packages =
