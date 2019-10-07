@@ -31,6 +31,24 @@ exports.setThemeImpl = function(monacoInstance) {
   }
 }
 
+exports.registerLanguageImpl = function(monacoInstance) {
+  return function(languageId) {
+    return function() {
+      monacoInstance.languages.register({ id: languageId})
+    }
+  }
+}
+
+exports.setMonarchTokensProviderImpl = function(monacoInstance) {
+  return function(name) {
+    return function(monarchLanguage) {
+      return function() {
+        return monacoInstance.languages.setMonarchTokensProvider(name, monarchLanguage);
+      }
+    }
+  }
+}
+
 exports.nightOwlTheme = {
   "base": "vs-dark",
   "inherit": true,
@@ -708,3 +726,167 @@ exports.nightOwlTheme = {
   }
 }
 
+exports.purescriptSyntax = {
+    "displayName": "Purescript",
+    "name": "purescrript",
+    "mimeTypes": ["text/purescript"],
+    "fileExtensions": ["purs"],
+
+    "editorOptions": { "tabSize": 2, "insertSpaces": true },
+
+    "lineComment":      "--",
+    "blockCommentStart": "{-",
+    "blockCommentEnd":   "-}",
+
+    "keywords": [
+      "case", "class", "data", "derive", "do", "else",
+      "if", "import", "in", "infix", "infixl", "infixr", "instance",
+      "let", "module", "newtype", "of", "then", "type", "where",
+      "->", "|", "=>", "::", "\\", "=", "|", "foreign", "forall", "∷"
+    ],
+
+    "extraKeywords": [
+    ],
+
+    "typeKeywords": [
+    ],
+
+    "dataStart": [
+      "^data"
+    ],
+
+    "typeStart": [
+      "class","instance","type", "derive"
+    ],
+
+
+    "escapes" :  "\\\\(?:[nrt\\\\\"'\\?]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{6})",
+    "symbols0": "[\\$%&\\*\\+@!\\/\\\\\\^~=\\.:\\-\\?]",
+    "symbols" : "(?:@symbols0|[\\|<>])+",
+    "idchars" : "(?:[\\w'])*",
+
+    "tokenizer": {
+      "root": [
+
+        ["((?:[A-Z]@idchars\\.)+)([a-z]@idchars)", ["identifier.namespace","identifier"]],
+        ["((?:[A-Z]@idchars\\.)+)([A-Z]@idchars)", ["identifier.namespace","constructor"]],
+
+        ["[a-z]@idchars(?!\\.)",
+          { "cases":{ "@dataStart": { "token": "keyword", "next" : "@type_data" },
+                    "@typeStart": { "token": "keyword", "next" : "@type_type" },
+                    "@keywords": "keyword",
+                    "@extraKeywords": "keyword",
+                    "@default" : "identifier" }
+          }
+        ],
+
+        ["[A-Z]@idchars", "type.identifier" ],
+
+        ["_@idchars", "identifier.wildcard"],
+
+
+        ["([a-z]@idchars\\.)+", "identifier.namespace" ],
+
+
+        { "include": "@whitespace" },
+
+        ["[{}()\\[\\]]", "@brackets"],
+        ["[,`]", "delimiter"],
+
+
+        ["::(?!@symbols0)", "type.operator", "@type_line"],
+        ["@symbols", { "cases": { "@keywords": "keyword.operator",
+                                "@extraKeywords": "keyword.operator",
+                                "@default": "operator" }}
+        ],
+
+
+        ["[0-9]+\\.[0-9]+([eE][\\-+]?[0-9]+)?", "number.float"],
+        ["0[xX][0-9a-fA-F]+", "number.hex"],
+        ["[0-9]+", "number"],
+
+
+        ["\"([^\"\\\\]|\\\\.)*$", "string.invalid" ],
+        ["\"",  { "token": "string.quote", "bracket": "@open", "next": "@string" } ],
+
+
+        ["'[^\\\\']'", "string"],
+        ["(')(@escapes)(')", ["string","string.escape","string"]],
+        ["'", "string.invalid"],
+
+
+        ["^[ ]*#.*", "namespace"]
+      ],
+
+      "whitespace": [
+        ["[ \\r\\n]+", ""],
+        ["{-", "comment", "@comment" ],
+        ["--.*$",  "comment"]
+      ],
+
+      "comment": [
+        ["[^\\{\\-]+", "comment" ],
+        ["{-",  "comment", "@push" ],
+        ["-}",  "comment", "@pop"  ],
+        ["[\\{\\-]", "comment"]
+      ],
+
+      "string": [
+        ["[^\\\\\"]+",  "string"],
+        ["@escapes", "string.escape"],
+        ["\\\\.",      "string.escape.invalid"],
+        ["\"",        { "token": "string.quote", "bracket": "@close", "next": "@pop" } ]
+      ],
+
+      "type_type": [
+        [ "\\=", "keyword"],
+         ["^\\s*(?!\\-\\-|\\{\\-)[^\\s]", { "token": "@rematch", "next": "@pop" } ],
+       { "include": "@type" }
+      ],
+
+      "type_data": [
+        [ "([=|])(\\s*)([A-Z]@idchars)", ["keyword.operator","","constructor"]],
+        ["^\\s*$", { "token": "", "next": "@pop" } ],
+        { "include": "@type" }
+      ],
+
+      "type_line": [
+        ["^\\s*(?!\\-\\-|\\{\\-)[_a-z]", { "token": "@rematch", "next": "@pop" } ],
+        ["[^=]*=", { "token": "@rematch", "next": "@pop" } ],
+        { "include": "@type" }
+      ],
+
+      "type": [
+        [ "[(\\[]", { "token": "@brackets.type" }, "@type_nested"],
+        { "include": "@type_content" }
+      ],
+
+      "type_nested": [
+        ["[)\\]]", { "token": "@brackets.type" }, "@pop" ],
+        ["[(\\[]", { "token": "@brackets.type" }, "@push"],
+        [",", "delimiter.type"],
+        { "include": "@type_content" }
+      ],
+
+      "type_content": [
+        { "include": "@whitespace" },
+
+
+        ["[a-z]\\d*\\b", "type.identifier.typevar"],
+        ["_@idchars", "type.identifier.typevar"],
+
+        ["((?:[A-Z]@idchars\\.)*)([A-Z]@idchars)",
+          ["type.identifier.namespace","type.identifier"]
+        ],
+        ["((?:[A-Z]@idchars\\.)*)([a-z]@idchars)",
+          { "cases": { "@typeKeywords": ["type.identifier.namespace","type.keyword"],
+                     "@keywords": { "token": "@rematch", "next": "@pop" },
+                     "@default": ["type.identifier.namespace","type.identifier"]
+          }}
+        ],
+
+        ["::|->|[\\.:|]", "type.operator"],
+        ["[\\s\\S]","@rematch","@pop"]
+      ]
+    }
+  }

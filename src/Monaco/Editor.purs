@@ -1,28 +1,26 @@
 module Editor where
 
 import Prelude
-
+import CSS.Safer (cssSafer)
 import Control.Promise (Promise)
 import Control.Promise as Promise
-import Data.Foldable (for_)
 import Data.Maybe (Maybe(..))
 import Data.Nullable (notNull, null)
-import Data.Tuple.Nested ((/\))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Class.Console (warn)
-import Effect.Uncurried (EffectFn1, EffectFn2, mkEffectFn1, mkEffectFn2, runEffectFn1)
-import Foreign (Foreign)
+import Effect.Uncurried (EffectFn2, mkEffectFn2)
+import Foreign (Foreign, unsafeToForeign)
 import Prim.Row (class Union)
 import React.Basic (JSX, ReactComponent, element, fragment)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
-import React.Basic.Hooks (component, readRefMaybe, useRef, useState, writeRef)
+import React.Basic.Hooks (component, readRefMaybe, useRef, writeRef)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Aff (useAff)
-import Simple.JSON as Foreign
+import React.Helpers (wrapperDiv)
+import Theme.Styles (makeStyles_)
 import Web.DOM (Node)
 
 type EditorProps
@@ -62,46 +60,72 @@ editor = editorImpl
 initMonaco ∷ Aff Monaco
 initMonaco = liftEffect initMonacoImpl >>= Promise.toAff
 
+themeName ∷ String
 themeName = "NightOwl"
+
+foreign import data MonarchLanguage ∷ Type
+
+foreign import purescriptSyntax ∷ MonarchLanguage
+
+foreign import registerLanguageImpl ∷ Monaco -> String -> Effect Unit
+
+foreign import setMonarchTokensProviderImpl ∷ Monaco -> String -> MonarchLanguage -> Effect Unit
 
 mkEditor ∷ Effect (ReactComponent {})
 mkEditor = do
+  useStyles <-
+    makeStyles_
+      { wrapper:
+        cssSafer
+          { margin: "0"
+          , boxSizing: "border-box"
+          , padding: "35px 40px"
+          , width: "100%"
+          , height: "100%"
+          , borderRadius: "32px"
+          , backgroundColor: "#011627"
+          }
+      }
   component "Editor" \{} -> React.do
+    classes <- useStyles
     ref <- useRef null
     useAff unit
       $ do
           monaco <- initMonaco
           defineThemeImpl monaco themeName nightOwlTheme # liftEffect
           setThemeImpl monaco themeName # liftEffect
+          registerLanguageImpl monaco "purescript" # liftEffect
+          setMonarchTokensProviderImpl monaco "purescript" purescriptSyntax # liftEffect
     pure
       $ fragment
-      [ R.button { onClick: handler_ do
-          maybeEditor <- readRefMaybe ref
-          case maybeEditor of
-            Nothing -> pure unit
-            Just ed -> do
-              v <- getValue ed
-              warn $ "Value: " <> v
-      }
-      , element editor
-          { theme: themeName
-          , options:
-            Foreign.write
-              { fontFamily: "PragmataPro"
-              , fontLigatures: true
-              , fontSize: "16pt"
-              , lineNumbers: "off"
-              , glyphMargin: false
-              , folding: false
-              , lineDecorationsWidth: 0
-              , lineNumbersMinChars: 0
-              , minimap: { enabled: false }
+          [ R.button
+              { onClick:
+                handler_ do
+                  maybeEditor <- readRefMaybe ref
+                  case maybeEditor of
+                    Nothing -> pure unit
+                    Just ed -> do
+                      v <- getValue ed
+                      warn $ "Value: " <> v
               }
-          , language: "haskell"
-          -- [TODO] :(
-          -- https://microsoft.github.io/monaco-editor/playground.html#extending-language-services-custom-languages
-          , editorDidMount:
-            mkEffectFn2 \node editor ->
-              (editor # notNull # writeRef ref)
-          }
-        ]
+          , wrapperDiv { className: classes.wrapper }
+              $ element editor
+                  { theme: themeName
+                  , options:
+                    unsafeToForeign
+                      { fontFamily: "PragmataPro"
+                      , fontLigatures: true
+                      , fontSize: "16pt"
+                      , lineNumbers: "off"
+                      , glyphMargin: false
+                      , folding: false
+                      , lineDecorationsWidth: 0
+                      , lineNumbersMinChars: 0
+                      , minimap: { enabled: false }
+                      }
+                  , language: "purescript"
+                  -- https://microsoft.github.io/monaco-editor/playground.html#extending-language-services-custom-languages
+                  , editorDidMount:
+                    mkEffectFn2 \_ -> notNull >>> writeRef ref
+                  }
+          ]
