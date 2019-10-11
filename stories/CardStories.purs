@@ -11,7 +11,7 @@ import React.Basic.Hooks (component, element)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
 
 stories ∷ Effect Storybook
-stories =
+stories = do
   storiesOf "Card" do
     addDecorator fullScreenDecorator
     add "Example card" mkExample

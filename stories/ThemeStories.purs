@@ -11,7 +11,7 @@ import Theme (fromTheme)
 import Theme.Default (darkTheme, lightTheme)
 
 stories ∷ Effect Storybook
-stories =
+stories = do
   storiesOf "Theme" do
     add "The swatches in the themes" mkExample
       [ { theme: darkTheme, themeName: "Dark theme" }

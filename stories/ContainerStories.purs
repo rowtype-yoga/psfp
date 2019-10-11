@@ -1,6 +1,7 @@
 module ContainerStories where
 
 import Prelude hiding (add)
+
 import Container.Component (mkContainer)
 import Decorator.FullScreen (fullScreenDecorator)
 import Effect (Effect)
@@ -10,7 +11,7 @@ import Storybook.React (Storybook, add, addDecorator, storiesOf)
 import Theme.Styles (useTheme)
 
 stories ∷ Effect Storybook
-stories =
+stories = do
   storiesOf "Container" do
     addDecorator fullScreenDecorator
     add "Container" mkExample [ {} ]

@@ -27,8 +27,6 @@ module.exports = merge(common, {
     stats: 'errors-only'
   },
 
-  entry: './src/entrypoint.js',
-
   plugins: [
     new webpack.LoaderOptionsPlugin({
       debug: true

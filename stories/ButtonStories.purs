@@ -6,22 +6,23 @@ import Button.Component (ButtonType(..), mkButton)
 import Decorator.FullScreen (fullScreenDecorator)
 import Effect (Effect)
 import Effect.Console (log)
+import Foreign (Foreign)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
 import React.Basic.Hooks (component, element)
-import SVG.Icon (alternativeIcon, apIcon, appendIcon, applyIcon, applyflippedIcon, bindIcon, composeIcon, forallIcon, kleisliIcon, mapIcon, mapflippedIcon, pslogoIcon)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
 
-stories ∷ Effect Storybook
-stories =
+stories ∷ Foreign -> Effect Storybook
+stories mod =
   storiesOf "Button" do
     addDecorator fullScreenDecorator
+
     add "Button" mkExample
       [ { text: "Cancel"
         , buttonType: PlainButton
         , buttonProps: { onClick: handler_ (log "clicked cancel") }
         }
-      , { text: "OK"
+      , { text: "Okay"
         , buttonType: HighlightedButton
         , buttonProps:
           { onClick: handler_ (log "clicked OK")
@@ -38,20 +39,20 @@ stories =
         , buttonProps: { onClick: handler_ (log "clicked very long...") }
         }
       ]
-    add "Icon Button" mkIconButton
-      [ { icon: alternativeIcon, buttonType: PlainButton }
-      , { icon: apIcon, buttonType: HighlightedButton }
-      , { icon: appendIcon, buttonType: PlainButton }
-      , { icon: applyflippedIcon, buttonType: PlainButton }
-      , { icon: applyIcon, buttonType: PlainButton }
-      , { icon: bindIcon, buttonType: PlainButton }
-      , { icon: composeIcon, buttonType: PlainButton }
-      , { icon: forallIcon, buttonType: PlainButton }
-      , { icon: kleisliIcon, buttonType: DisabledButton }
-      , { icon: mapflippedIcon, buttonType: PlainButton }
-      , { icon: mapIcon, buttonType: PlainButton }
-      , { icon: pslogoIcon, buttonType: PlainButton }
-      ]
+    -- add "Icon Button" mkIconButton
+    --   [ { icon: alternativeIcon, buttonType: PlainButton }
+    --   , { icon: apIcon, buttonType: HighlightedButton }
+    --   , { icon: appendIcon, buttonType: PlainButton }
+    --   , { icon: applyflippedIcon, buttonType: PlainButton }
+    --   , { icon: applyIcon, buttonType: PlainButton }
+    --   , { icon: bindIcon, buttonType: PlainButton }
+    --   , { icon: composeIcon, buttonType: PlainButton }
+    --   , { icon: forallIcon, buttonType: PlainButton }
+    --   , { icon: kleisliIcon, buttonType: DisabledButton }
+    --   , { icon: mapflippedIcon, buttonType: PlainButton }
+    --   , { icon: mapIcon, buttonType: PlainButton }
+    --   , { icon: pslogoIcon, buttonType: PlainButton }
+    --   ]
   where
   mkExample = do
     button <- mkButton
@@ -61,15 +62,15 @@ stories =
             { children: [ R.text text ], buttonProps, buttonType
             }
 
-  mkIconButton = do
-    button <- mkButton
-    component "ExampleIconButton" \{ icon, buttonType } -> React.do
-      pure
-        $ element button
-            { children: [ element icon { width: 30 } ]
-            , buttonProps: { }
-            , buttonType
-            }
+  -- mkIconButton = do
+  --   button <- mkButton
+  --   component "ExampleIconButton" \{ icon, buttonType } -> React.do
+  --     pure
+  --       $ element button
+  --           { children: [ element icon { width: 30 } ]
+  --           , buttonProps: { }
+  --           , buttonType
+  --           }
 
 loremIpsum ∷ String
 loremIpsum =

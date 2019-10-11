@@ -8,7 +8,7 @@ import Effect (Effect)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
 
 stories ∷ Effect Storybook
-stories =
+stories = do
   storiesOf "Editor" do
     addDecorator fullScreenDecorator
     add "The Editor" mkEditor

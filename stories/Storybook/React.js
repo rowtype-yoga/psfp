@@ -1,7 +1,7 @@
 var storybook = require('@storybook/react');
 
-exports.storiesOfImpl = function(name) {
-    return storybook.storiesOf(name, module);
+exports.storiesOfImpl = function(stories) {
+  return storybook.storiesOf(stories, module.parent);
 }
 
 exports.addImpl = function(sb) {

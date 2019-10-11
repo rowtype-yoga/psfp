@@ -17,7 +17,8 @@
     "webpack:watch": "DEBUG=purs-loader* DEBUG_DEPTH=100 webpack --config webpack.dev.js --progress --display-error-details --display verbose --watch",
     "webpack:server": "webpack-dev-server --config webpack.dev.js --progress --inline --hot",
     "webpack:server:debug": "DEBUG=purs-loader* DEBUG_DEPTH=100 webpack-dev-server --config webpack.dev.js --mode development --progress --inline --hot",
-    "storybook": "start-storybook -s ./server/static -p 9001"
+    "storybook": "start-storybook -s ./server/static -p 9001",
+    "replace-module": "sed -i '' -e 's/\"__module__\"/module/g' output/*Stories/index.js"
   },
   "repository": {
     "type": "git",
@@ -35,6 +36,7 @@
     "purty": "^4.5.1",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
+    "react-hot-loader": "^4.12.15",
     "smoothscroll-polyfill": "^0.4.4"
   },
   "devDependencies": {
@@ -43,6 +45,7 @@
     "@testing-library/react": "^9.1.4",
     "babel-loader": "^8.0.6",
     "css-loader": "^3.2.0",
+    "deep-equal": "^1.1.0",
     "jsdom": "^15.1.1",
     "jsdom-global": "^3.0.2",
     "purescript": "^0.13.3",

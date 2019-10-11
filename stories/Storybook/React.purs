@@ -14,15 +14,9 @@ import React.Basic (JSX, ReactComponent, element, fragment)
 
 foreign import data Storybook ∷ Type
 
-foreign import data Module ∷ Type
-
 foreign import storiesOfImpl ∷ String -> Storybook
 
-foreign import addImpl ∷
-  Storybook ->
-  Effect JSX ->
-  String ->
-  Effect Storybook
+foreign import addImpl ∷ Storybook -> Effect JSX -> String -> Effect Storybook
 
 foreign import addDecoratorImpl ∷
   Storybook ->

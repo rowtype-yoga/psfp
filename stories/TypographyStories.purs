@@ -9,7 +9,7 @@ import Storybook.React (Storybook, add, addDecorator, storiesOf)
 import Typography.Header (HeadingLevel(..), mkH)
 
 stories ∷ Effect Storybook
-stories =
+stories = do
   storiesOf "Typography" do
     addDecorator fullScreenDecorator
     add "All" mkH
