@@ -1,0 +1,20 @@
+{
+  "editor.formatOnSave": false,
+  "regreplace.commands": [
+    {
+        "name": "replace double colon with unicode version",
+        "match": "\\.purs?$",
+        "regexp": " ::(\\s)",
+        "global": true,
+        "replace": " ∷$1"
+    },
+    {
+        "name": "replace forall with unicode version",
+        "match": "\\.purs?$",
+        "regexp": "forall(\\s)",
+        "global": true,
+        "replace": "∀$1"
+    },
+],
+"purescript.buildCommand": "spago build --purs-args '--json-errors'",
+}

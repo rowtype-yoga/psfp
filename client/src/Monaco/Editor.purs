@@ -1,6 +1,7 @@
 module Editor where
 
 import Prelude
+
 import CSS.Safer (cssSafer)
 import Control.Promise (Promise)
 import Control.Promise as Promise
@@ -20,7 +21,8 @@ import React.Basic.Hooks (component, readRefMaybe, useRef, writeRef)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Aff (useAff)
 import React.Helpers (wrapperDiv)
-import Theme.Styles (makeStyles_)
+import Theme.Styles (makeStyles, useTheme)
+import Theme.Types (CSSTheme)
 import Web.DOM (Node)
 
 type EditorProps
@@ -45,6 +47,8 @@ foreign import setThemeImpl ∷ Monaco -> String -> Effect Unit
 
 foreign import nightOwlTheme ∷ MonacoTheme
 
+foreign import vsCodeTheme ∷ MonacoTheme
+
 foreign import getValue ∷ Editor -> Effect String
 
 foreign import data Monaco ∷ Type
@@ -53,15 +57,17 @@ foreign import data Editor ∷ Type
 
 foreign import data MonacoTheme ∷ Type
 
-editor ∷
-  ∀ attrs attrs_. Union attrs attrs_ EditorProps => ReactComponent { | attrs }
+editor ∷ ∀ attrs attrs_. Union attrs attrs_ EditorProps => ReactComponent { | attrs }
 editor = editorImpl
 
 initMonaco ∷ Aff Monaco
 initMonaco = liftEffect initMonacoImpl >>= Promise.toAff
 
-themeName ∷ String
-themeName = "NightOwl"
+darkThemeName ∷ String
+darkThemeName = "NightOwl"
+
+lightThemeName ∷ String
+lightThemeName = "VSCode"
 
 foreign import data MonarchLanguage ∷ Type
 
@@ -71,10 +77,18 @@ foreign import registerLanguageImpl ∷ Monaco -> String -> Effect Unit
 
 foreign import setMonarchTokensProviderImpl ∷ Monaco -> String -> MonarchLanguage -> Effect Unit
 
+initEditor ∷ Aff Unit
+initEditor = do
+  monaco <- initMonaco
+  defineThemeImpl monaco darkThemeName nightOwlTheme # liftEffect
+  defineThemeImpl monaco lightThemeName vsCodeTheme # liftEffect
+  registerLanguageImpl monaco "purescript" # liftEffect
+  setMonarchTokensProviderImpl monaco "purescript" purescriptSyntax # liftEffect
+
 mkEditor ∷ Effect (ReactComponent {})
 mkEditor = do
   useStyles <-
-    makeStyles_
+    makeStyles \(theme ∷ CSSTheme) ->
       { wrapper:
         cssSafer
           { margin: "0"
@@ -83,19 +97,15 @@ mkEditor = do
           , width: "100%"
           , height: "100%"
           , borderRadius: "32px"
-          , backgroundColor: "#011627"
+          , backgroundColor: theme.backgroundColour
           }
       }
   component "Editor" \{} -> React.do
     classes <- useStyles
     ref <- useRef null
-    useAff unit
-      $ do
-          monaco <- initMonaco
-          defineThemeImpl monaco themeName nightOwlTheme # liftEffect
-          setThemeImpl monaco themeName # liftEffect
-          registerLanguageImpl monaco "purescript" # liftEffect
-          setMonarchTokensProviderImpl monaco "purescript" purescriptSyntax # liftEffect
+    useAff unit initEditor
+    theme <- useTheme
+    let themeName = if theme.isLight then lightThemeName else darkThemeName
     pure
       $ fragment
           [ R.button

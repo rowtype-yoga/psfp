@@ -9,9 +9,13 @@ You can edit this file as you like.
     , "effect"
     , "express"
     , "maybe"
+    , "node-child-process"
     , "node-fs"
+    , "node-fs-aff"
     , "node-process"
     , "psci-support"
+    , "simple-json"
+    , "stringutils"
     ]
 , packages =
     ./packages.dhall

@@ -1,0 +1,2 @@
+{ "code":"module Main where\nimport Prelude\nimport Effect.Console (log)\nmain = log \"Freddy\""
+}
