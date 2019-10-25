@@ -30,3 +30,5 @@ playground/.psc*
 playground/.purs*
 playground/.psa*
 playground/.spago
+
+playground/src/Main.purs

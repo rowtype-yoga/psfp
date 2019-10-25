@@ -5,19 +5,15 @@ import Prelude
 import CSS.Safer (cssSafer)
 import Control.Promise (Promise)
 import Control.Promise as Promise
-import Data.Maybe (Maybe(..))
-import Data.Nullable (notNull, null)
+import Data.Nullable (Nullable, notNull)
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Effect.Class.Console (warn)
 import Effect.Uncurried (EffectFn2, mkEffectFn2)
 import Foreign (Foreign, unsafeToForeign)
 import Prim.Row (class Union)
 import React.Basic (JSX, ReactComponent, element, fragment)
-import React.Basic.DOM as R
-import React.Basic.Events (handler_)
-import React.Basic.Hooks (component, readRefMaybe, useRef, writeRef)
+import React.Basic.Hooks (Ref, component, writeRef)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Aff (useAff)
 import React.Helpers (wrapperDiv)
@@ -85,7 +81,7 @@ initEditor = do
   registerLanguageImpl monaco "purescript" # liftEffect
   setMonarchTokensProviderImpl monaco "purescript" purescriptSyntax # liftEffect
 
-mkEditor ∷ Effect (ReactComponent {})
+mkEditor ∷ Effect (ReactComponent { editorRef ∷ Ref (Nullable _) })
 mkEditor = do
   useStyles <-
     makeStyles \(theme ∷ CSSTheme) ->
@@ -100,25 +96,14 @@ mkEditor = do
           , backgroundColor: theme.backgroundColour
           }
       }
-  component "Editor" \{} -> React.do
+  component "Editor" \{ editorRef } -> React.do
     classes <- useStyles
-    ref <- useRef null
     useAff unit initEditor
     theme <- useTheme
     let themeName = if theme.isLight then lightThemeName else darkThemeName
     pure
       $ fragment
-          [ R.button
-              { onClick:
-                handler_ do
-                  maybeEditor <- readRefMaybe ref
-                  case maybeEditor of
-                    Nothing -> pure unit
-                    Just ed -> do
-                      v <- getValue ed
-                      warn $ "Value: " <> v
-              }
-          , wrapperDiv { className: classes.wrapper }
+          [ wrapperDiv { className: classes.wrapper }
               $ element editor
                   { theme: themeName
                   , options:
@@ -136,6 +121,6 @@ mkEditor = do
                   , language: "purescript"
                   -- https://microsoft.github.io/monaco-editor/playground.html#extending-language-services-custom-languages
                   , editorDidMount:
-                    mkEffectFn2 \_ -> notNull >>> writeRef ref
+                    mkEffectFn2 \_ -> notNull >>> writeRef editorRef
                   }
           ]

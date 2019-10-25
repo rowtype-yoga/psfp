@@ -10,6 +10,7 @@ You can edit this file as you like.
     , "debug"
     , "effect"
     , "matryoshka"
+    , "milkis"
     , "psci-support"
     , "pseudo-random"
     , "react-basic"
