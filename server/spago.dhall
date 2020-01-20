@@ -2,10 +2,11 @@
 Welcome to a Spago project!
 You can edit this file as you like.
 -}
-{ name =
-    "my-project"
+{ name = "my-project"
 , dependencies =
-    [ "console"
+    [ "avar"
+    , "console"
+    , "debug"
     , "effect"
     , "express"
     , "maybe"
@@ -15,10 +16,11 @@ You can edit this file as you like.
     , "node-process"
     , "psci-support"
     , "simple-json"
+    , "spec"
+    , "spec-discovery"
     , "stringutils"
+    , "uuid"
     ]
-, packages =
-    ./packages.dhall
-, sources =
-    [ "src/**/*.purs", "test/**/*.purs" ]
+, packages = ./packages.dhall
+, sources = [ "src/**/*.purs", "test/**/*.purs" ]
 }

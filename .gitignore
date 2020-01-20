@@ -1,3 +1,4 @@
+.history/
 client/bower_components/
 client/node_modules/
 client/.pulp-cache/
