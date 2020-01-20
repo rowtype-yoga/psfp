@@ -7,14 +7,19 @@
     "test": "test"
   },
   "scripts": {
-    "start": "spago run",
-    "test": "spago test"
+    "start": "npx spago run",
+    "test": "npx spago test"
   },
   "author": "mark.eibes@gmail.com",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
+    "fs-extra": "^8.1.0",
     "uuid": "^3.4.0"
+  },
+  "devDependencies": {
+    "purescript": "^0.13.6",
+    "spago": "^0.13.1"
   }
 }

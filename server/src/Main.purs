@@ -1,11 +1,13 @@
 module Main where
 
 import Prelude
+
 import Data.Array (fromFoldable, head, (..))
 import Data.Either (Either(..))
+import Data.Foldable (for_)
 import Data.Int (fromString)
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Newtype (class Newtype, un)
+import Data.Newtype (un)
 import Data.Posix.Signal (Signal(..))
 import Data.String.Utils (lines)
 import Data.Time.Duration (Seconds(..), fromDuration)
@@ -36,6 +38,7 @@ import Node.FS.Aff (readTextFile, writeTextFile)
 import Node.HTTP (Server)
 import Node.OS (numCpus)
 import Node.Process (lookupEnv)
+import Playground.Playground (Folder(..), copy)
 import Shared.Json (readAff)
 import Shared.Models.Body (RunResult, PursResult)
 import Shared.Models.Body as Body
@@ -88,11 +91,6 @@ execCommand folder command =
     childProcess <- exec command options (callback <<< Right)
     pure $ effectCanceler ((log $ "Killing " <> show (pid childProcess)) *> kill SIGKILL childProcess)
 
-newtype Folder
-  = Folder String
-
-derive instance ntFolder :: Newtype Folder _
-derive newtype instance eqFolder :: Eq Folder
 compileHandler ∷ Queue Folder -> HandlerM Unit
 compileHandler queue = do
   body <- getBody'
@@ -149,16 +147,24 @@ runHandler queue =
           setStatus 500
           Response.send $ write { error: "Queue full" }
 
+srcFolder :: String
+srcFolder = "../playground"
+
+destFolder :: String
+destFolder = "../playgrounds/"
+
 main ∷ Effect Unit
 main =
   launchAff_ do
     cpus <- numCpus # liftEffect
     let
-      foldersToUse = min 2 (max 15 (cpus - 1))
+      foldersToUse = max 2 (cpus - 1) -- use at least 2
 
-      mkFolder = Folder <<< ("../playground" <> _) <<< show
+      mkFolder = Folder <<< (destFolder <> _) <<< show
 
-      folderPool = ResourcePool $ mkFolder <$> (0 .. foldersToUse)
+      folders = mkFolder <$> (0 .. foldersToUse)
+      folderPool = ResourcePool folders
+    for_ folders \(Folder f) -> copy srcFolder f
     q <-
       Q.mkQueue
         { maxSize: 50

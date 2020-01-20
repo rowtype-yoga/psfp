@@ -10,7 +10,8 @@ import Effect.Ref (Ref)
 import Effect.Ref as Ref
 import JobQueue (EnqueueResult(..), NewJob(..), QueueParams, ResourcePool(..), mkQueue)
 import JobQueue as Q
-import Main (Folder(..), execCommand)
+import Main (execCommand)
+import Playground.Playground (Folder(..))
 import Test.Spec (Spec, describe, it)
 import Test.Spec.Assertions (shouldEqual, shouldNotEqual)
 

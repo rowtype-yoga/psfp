@@ -33,3 +33,5 @@ playground/.psa*
 playground/.spago
 
 playground/src/Main.purs
+playgrounds/**
+!playgrounds/.gitkeep 

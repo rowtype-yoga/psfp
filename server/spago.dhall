@@ -4,11 +4,13 @@ You can edit this file as you like.
 -}
 { name = "my-project"
 , dependencies =
-    [ "avar"
+    [ "aff-promise"
+    , "avar"
     , "console"
     , "debug"
     , "effect"
     , "express"
+    , "functions"
     , "maybe"
     , "node-child-process"
     , "node-fs"
