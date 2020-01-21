@@ -3,14 +3,16 @@ module Container.Component where
 import Prelude
 
 import CSS.Safer (cssSafer)
+import CompileEditor.Component (mkCompileEditor)
 import Container.Header (mkHeader)
 import Container.Landing (mkLandingPage)
 import Container.Sidebar (mkSidebar, mkSidebarLink)
+import Data.Nullable as Nullable
 import Effect (Effect)
 import Polyfill.SmoothScrolling (smoothScrollPolyfill)
 import React.Basic (JSX)
 import React.Basic.DOM as R
-import React.Basic.Hooks ((/\), ReactComponent, component, element, useState)
+import React.Basic.Hooks (ReactComponent, component, element, useRef, useState, (/\))
 import React.Basic.Hooks as React
 import SVG.Icon (appendIcon, applyflippedIcon, bindIcon, mapIcon)
 import Theme.Provider (mkThemeProvider)
@@ -63,9 +65,11 @@ mkContainerContent = do
   sidebar <- mkSidebar
   header <- mkHeader
   sidebarLink <- mkSidebarLink
+  editor <- mkCompileEditor
   component "ContainerContent" \{ children } -> React.do
     classes <- useStyles
     collapsed /\ modifyCollapsed <- useState true
+    editorRef <- useRef Nullable.null
     pure
       $ R.div
           { className: classes.container
@@ -82,6 +86,6 @@ mkContainerContent = do
                   ]
                 }
             , element header {}
-            , R.div { className: classes.content, children }
+            , R.div { className: classes.content, children: [element editor {}] <> children }
             ]
           }

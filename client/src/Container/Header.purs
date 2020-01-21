@@ -62,7 +62,7 @@ mkHeader = do
           { ref: nodeRef
           , className: classes.header <> " " <> guard shouldBeSticky classes.sticky
           , children:
-            [ element h { level: H2, text: "Kleislove", className: Just classes.title }
+            [ element h { level: H2, text: "Rowtype Yoga", className: Just classes.title }
             , R.div { children: [ element trianglelogoIcon {} ], className: classes.logo }
             ]
           }

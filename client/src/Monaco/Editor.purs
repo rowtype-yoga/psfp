@@ -117,6 +117,7 @@ mkEditor = do
                       , lineDecorationsWidth: 0
                       , lineNumbersMinChars: 0
                       , minimap: { enabled: false }
+                      , automaticLayout: true
                       }
                   , language: "purescript"
                   -- https://microsoft.github.io/monaco-editor/playground.html#extending-language-services-custom-languages
