@@ -31,7 +31,7 @@ import Node.Express.App as E
 import Node.Express.Handler (HandlerM(..), Handler)
 import Node.Express.Middleware.Static (static)
 import Node.Express.Request (getBody')
-import Node.Express.Response (setStatus)
+import Node.Express.Response (sendFile, setStatus)
 import Node.Express.Response as Response
 import Node.Express.Types (Request, Response)
 import Node.FS.Aff (readTextFile, writeTextFile)
