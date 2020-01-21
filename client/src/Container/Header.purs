@@ -42,7 +42,7 @@ mkHeader = do
           , width: "100%"
           , height: "80px"
           }
-      , sticky: cssSafer { position: "fixed", top: "0" }
+      , sticky: cssSafer { position: "fixed", top: "0", zIndex: 10 }
       , title: cssSafer { paddingRight: "30px"}
       , logo:
         cssSafer
