@@ -1,7 +1,6 @@
 module Main where
 
 import Prelude
-
 import Data.Array (fromFoldable, head, (..))
 import Data.Either (Either(..))
 import Data.Foldable (for_)
@@ -12,8 +11,7 @@ import Data.Posix.Signal (Signal(..))
 import Data.String.Utils (lines)
 import Data.Time.Duration (Seconds(..), fromDuration)
 import Effect (Effect)
-import Effect.AVar as AVar
-import Effect.Aff (Aff, Milliseconds(..), bracket, delay, effectCanceler, launchAff_, makeAff)
+import Effect.Aff (Aff, effectCanceler, launchAff_, makeAff)
 import Effect.Aff.Class (liftAff)
 import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Class.Console (info, log)
@@ -31,7 +29,7 @@ import Node.Express.App as E
 import Node.Express.Handler (HandlerM(..), Handler)
 import Node.Express.Middleware.Static (static)
 import Node.Express.Request (getBody')
-import Node.Express.Response (sendFile, setStatus)
+import Node.Express.Response (setStatus)
 import Node.Express.Response as Response
 import Node.Express.Types (Request, Response)
 import Node.FS.Aff (readTextFile, writeTextFile)
@@ -40,7 +38,7 @@ import Node.OS (numCpus)
 import Node.Process (lookupEnv)
 import Playground.Playground (Folder(..), copy)
 import Shared.Json (readAff)
-import Shared.Models.Body (RunResult, PursResult)
+import Shared.Models.Body (PursResult, RunResult, CompileRequest)
 import Shared.Models.Body as Body
 import Simple.JSON (read_, write)
 import Simple.JSON as JSON
@@ -91,54 +89,27 @@ execCommand folder command =
     childProcess <- exec command options (callback <<< Right)
     pure $ effectCanceler ((log $ "Killing " <> show (pid childProcess)) *> kill SIGKILL childProcess)
 
-compileHandler ∷ Queue Folder -> HandlerM Unit
-compileHandler queue = do
+compileAndRunJob ∷ CompileRequest -> (Handler -> Aff Unit) -> NewJob Folder
+compileAndRunJob json handle =
+  NewJob \folder -> do
+    compileResult <- compileCode folder (json ∷ Body.CompileRequest).code
+    if compileResult.errors /= [] then do
+      handle $ setStatus 422
+      handle $ Response.send $ write ({ result: compileResult } ∷ Body.CompileResult)
+    else do
+      runResult <- runCode folder
+      resultBody <- toBody runResult
+      handle $ Response.send $ write (resultBody ∷ Body.RunResult)
+
+compileAndRunHandler ∷ Queue Folder -> Handler
+compileAndRunHandler queue = do
   body <- getBody'
   json <- readAff body # liftAff
-  resultVar <- AVar.empty # liftEffect
-  let
-    cleanup ∷ Aff Unit
-    cleanup = AVar.tryPut Nothing resultVar # liftEffect # void
-
-    compileJob =
-      NewJob \folder ->
-        bracket (pure unit) (const cleanup) \_ -> do
-          result <- compileCode folder (json ∷ Body.CompileRequest).code
-          AVar.tryPut (Just result) resultVar # liftEffect # void
-  queueRes <- Q.enqueue compileJob queue # liftEffect
-  let
-    getResult ∷ Handler
-    getResult = do
-      maybeResult <- AVar.tryRead resultVar # liftEffect
-      case maybeResult of
-        Just (Just result) -> Response.send $ write ({ result } ∷ Body.CompileResult)
-        Just Nothing -> do
-          setStatus 500
-          Response.send $ write { error: "Timeout" }
-        Nothing -> do
-          delay (100.0 # Milliseconds) # liftAff
-          getResult
-  case queueRes of
-    Enqueued _ -> getResult
-    QueueFull -> do
-      setStatus 500
-      Response.send $ write { error: "Queue full" }
-
-unHandler ∷ ∀ t6. Request -> Response -> Effect Unit -> HandlerM t6 -> Aff t6
-unHandler req res next (HandlerM h) = h req res next
-
-runHandler ∷ Queue Folder -> HandlerM Unit
-runHandler queue =
   HandlerM \req res next -> do
     let
       handle = unHandler req res next
 
-      runJob =
-        NewJob \folder ->
-          bracket (pure unit) (const (pure unit)) \_ -> do
-            result <- runCode folder
-            resultBody <- toBody result
-            handle $ Response.send $ write (resultBody ∷ Body.RunResult)
+      runJob = compileAndRunJob json handle
     queueRes <- Q.enqueue runJob queue # liftEffect
     case queueRes of
       Enqueued _ -> pure unit
@@ -147,10 +118,13 @@ runHandler queue =
           setStatus 500
           Response.send $ write { error: "Queue full" }
 
-srcFolder :: String
+unHandler ∷ ∀ a. Request -> Response -> Effect Unit -> HandlerM a -> Aff a
+unHandler req res next (HandlerM h) = h req res next
+
+srcFolder ∷ String
 srcFolder = "../playground"
 
-destFolder :: String
+destFolder ∷ String
 destFolder = "../playgrounds/"
 
 main ∷ Effect Unit
@@ -163,6 +137,7 @@ main =
       mkFolder = Folder <<< (destFolder <> _) <<< show
 
       folders = mkFolder <$> (0 .. foldersToUse)
+
       folderPool = ResourcePool folders
     for_ folders \(Folder f) -> copy srcFolder f
     q <-
@@ -177,8 +152,7 @@ makeApp ∷ Queue Folder -> App
 makeApp q = do
   use $ static "assets"
   useExternal jsonBodyParser
-  E.post "/compile" (compileHandler q)
-  E.post "/run" (runHandler q)
+  E.post "/compileAndRun" (compileAndRunHandler q)
 
 data CertificatesToUse
   = UseLocalCertificates
