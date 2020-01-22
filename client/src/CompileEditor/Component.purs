@@ -1,14 +1,17 @@
 module CompileEditor.Component where
 
 import Prelude hiding (add)
+
 import Button.Component (ButtonType(..), mkButton)
 import Card.Component (mkCard)
+import Data.Array (intercalate)
+import Data.Either (Either(..))
 import Data.Foldable (for_)
 import Data.Nullable (null)
 import Data.Tuple.Nested ((/\))
 import Editor (getValue, mkEditor)
 import Effect (Effect)
-import Effect.Aff (Aff, launchAff_)
+import Effect.Aff (Aff, error, launchAff_, throwError)
 import Effect.Class (liftEffect)
 import Milkis as M
 import Milkis.Impl.Window (windowFetch)
@@ -36,7 +39,7 @@ mkCompileEditor = do
       $ fragment
           [ element button
               { buttonType: PlainButton
-              , children: [ R.text "Compile"]
+              , children: [ R.text "Compile" ]
               , buttonProps:
                 { onClick:
                   handler_ do
@@ -44,9 +47,10 @@ mkCompileEditor = do
                     for_ maybeEditor \ed -> do
                       code <- getValue ed
                       launchAff_ do
-                        res <- compile { code }
-                        res2 <- run
-                        setCompileResult res2.stdout # liftEffect
+                        res <- compileAndRun { code }
+                        liftEffect $ setCompileResult case res of 
+                          Left cr -> (cr.result.errors <#> _.message # intercalate "/n")
+                          Right r -> r.stdout
                 }
               }
           , element card { children: [ R.text compileResult ] }
@@ -56,19 +60,15 @@ mkCompileEditor = do
 fetch ∷ M.Fetch
 fetch = M.fetch windowFetch
 
-compile ∷ Body.CompileRequest -> Aff Body.CompileResult
-compile body = do
-  fetch (M.URL "/api/compile")
-    { method: M.postMethod
-    , body: writeJSON body
-    , headers: M.makeHeaders { "Content-Type": "application/json" }
-    }
-    >>= M.json
-    >>= readAff
-
-run ∷ Aff Body.RunResult
-run = do
-  fetch (M.URL "/api/run")
-    { method: M.postMethod }
-    >>= M.json
-    >>= readAff
+compileAndRun :: Body.CompileRequest -> Aff (Either Body.CompileResult Body.RunResult)
+compileAndRun body = do
+  response <-
+    fetch (M.URL "/api/compileAndRun")
+      { method: M.postMethod
+      , body: writeJSON body
+      , headers: M.makeHeaders { "Content-Type": "application/json" }
+      }
+  case M.statusCode response of
+    200 -> M.json response >>= readAff <#> Left
+    400 -> M.json response >>= readAff <#> Right 
+    code -> throwError (error $ "Unexpected response code " <> show code)

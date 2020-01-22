@@ -919,7 +919,7 @@ infixr 8 zip as <%>
 stars ∷ ∀ css. String -> { twinklingStar1 ∷ String, twinklingStar2 ∷ String, twinklingStar3 ∷ String | css } -> JSX
 stars className classes =
   let
-    n = 400
+    n = 30
 
     xs = randomRs 0.0 800.0 n $ mkSeed 84
 
