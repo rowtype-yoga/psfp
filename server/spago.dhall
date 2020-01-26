@@ -15,6 +15,7 @@ You can edit this file as you like.
     , "node-child-process"
     , "node-fs"
     , "node-fs-aff"
+    , "node-net"
     , "node-process"
     , "psci-support"
     , "simple-json"

@@ -1,0 +1,62 @@
+{
+  "name": "psfp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "directories": {
+    "test": "test"
+  },
+  "browser": {
+    "xhr2": false
+  },
+  "scripts": {
+    "test": "spago test",
+    "build": "spago build && webpack --config webpack.production.js",
+    "start:local": "webpack",
+    "webpack": "DEBUG=purs-loader* DEBUG_DEPTH=100 webpack --config webpack.dev.js --progress --bail",
+    "webpack:watch": "DEBUG=purs-loader* DEBUG_DEPTH=100 webpack --config webpack.dev.js --progress --display-error-details --display verbose --watch",
+    "webpack:server": "webpack-dev-server --config webpack.dev.js --progress --inline --hot",
+    "webpack:server:debug": "DEBUG=purs-loader* DEBUG_DEPTH=100 webpack-dev-server --config webpack.dev.js --mode development --progress --inline --hot",
+    "storybook": "start-storybook -s ./server/static -p 9001",
+    "replace-module": "sed -i '' -e 's/\"__module__\"/module/g' output/*Stories/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/i-am-the-slime/psfp.git"
+  },
+  "author": "mark.eibes@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/i-am-the-slime/psfp/issues"
+  },
+  "homepage": "https://github.com/i-am-the-slime/psfp#readme",
+  "dependencies": {
+    "@material-ui/styles": "^4.4.3",
+    "@monaco-editor/react": "^1.2.2",
+    "purty": "^4.5.1",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "react-hot-loader": "^4.12.15",
+    "smoothscroll-polyfill": "^0.4.4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.6.0",
+    "@storybook/react": "^5.2.0",
+    "@testing-library/react": "^9.1.4",
+    "babel-loader": "^8.0.6",
+    "css-loader": "^3.2.0",
+    "deep-equal": "^1.1.0",
+    "jsdom": "^15.1.1",
+    "jsdom-global": "^3.0.2",
+    "purescript": "^0.13.3",
+    "purescript-psa": "^0.7.3",
+    "purs-loader": "^3.6.0",
+    "react-svg-loader": "^3.0.3",
+    "spago": "^0.10.0",
+    "webpack": "^4.41.0",
+    "webpack-cli": "^3.3.6",
+    "webpack-dev-server": "^3.8.1",
+    "webpack-merge": "^4.2.2",
+    "wrappy": "^1.0.2"
+  }
+}

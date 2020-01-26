@@ -1,7 +1,6 @@
 module Container.Component where
 
 import Prelude
-
 import CSS.Safer (cssSafer)
 import CompileEditor.Component (mkCompileEditor)
 import Container.Header (mkHeader)
@@ -86,6 +85,6 @@ mkContainerContent = do
                   ]
                 }
             , element header {}
-            , R.div { className: classes.content, children: [element editor {}] <> children }
+            , R.div { className: classes.content, children: [ element editor {} ] <> children }
             ]
           }

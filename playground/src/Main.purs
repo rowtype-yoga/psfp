@@ -1,5 +1,5 @@
 module Main where
-import Prelude
-import Effect.Console
 
-main = log "Hi from Insomnia!"
+import Effect.Class.Console (log)
+
+main = log "Uh-oh"

@@ -22,14 +22,14 @@ params =
   }
 
 mkJob ∷ String -> Number -> NewJob Unit
-mkJob msg ms = NewJob \_ -> (delay (ms # Milliseconds) *> log msg)
+mkJob msg ms = NewJob \_ _ -> delay (ms # Milliseconds) *> log msg
 
 job1 ∷ NewJob Unit
 job1 = mkJob "Job 1" 10.0
 
 writeRefJob ∷ ∀ a d. Show a => Duration d => Ref a -> a -> d -> NewJob Unit
 writeRefJob ref a d =
-  NewJob \_ -> do
+  NewJob \_ _ -> do
     let
       millis ∷ Milliseconds
       millis = fromDuration d
@@ -121,7 +121,7 @@ spec = do
       resultRef <- Ref.new false # liftEffect
       let
         job =
-          NewJob \_ -> do
+          NewJob \_ _ -> do
             res <- execCommand (Folder ".") "sleep 2"
             Ref.write true resultRef # liftEffect
       r₁ <- Q.enqueue job q # liftEffect

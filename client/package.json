@@ -17,7 +17,7 @@
     "webpack:watch": "DEBUG=purs-loader* DEBUG_DEPTH=100 webpack --config webpack.dev.js --progress --display-error-details --display verbose --watch",
     "webpack:server": "webpack-dev-server --config webpack.dev.js --progress --inline --hot",
     "webpack:server:debug": "DEBUG=purs-loader* DEBUG_DEPTH=100 webpack-dev-server --config webpack.dev.js --mode development --progress --inline --hot",
-    "storybook": "start-storybook -s ./server/static -p 9001",
+    "storybook": "start-storybook -s ./server/assets -p 9001",
     "replace-module": "sed -i '' -e 's/\"__module__\"/module/g' output/*Stories/index.js"
   },
   "repository": {

@@ -2,12 +2,24 @@
 Welcome to a Spago project!
 You can edit this file as you like.
 -}
-{ name =
-    "my-project"
+{ name = "my-project"
 , dependencies =
-    [ "effect", "console", "psci-support" ]
-, packages =
-    ./packages.dhall
-, sources =
-    [ "src/**/*.purs", "test/**/*.purs" ]
+    [ "aff"
+    , "avar"
+    , "console"
+    , "debug"
+    , "effect"
+    , "foldable-traversable"
+    , "maybe"
+    , "newtype"
+    , "ordered-collections"
+    , "psci-support"
+    , "record-extra"
+    , "simple-json"
+    , "stringutils"
+    , "tuples"
+    , "validation"
+    ]
+, packages = ./packages.dhall
+, sources = [ "src/**/*.purs", "test/**/*.purs" ]
 }

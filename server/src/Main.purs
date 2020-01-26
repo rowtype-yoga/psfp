@@ -1,21 +1,20 @@
 module Main where
 
 import Prelude
-import Data.Array (fromFoldable, head, (..))
+
+import Data.Array ((..))
 import Data.Either (Either(..))
-import Data.Foldable (for_)
 import Data.Int (fromString)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (un)
 import Data.Posix.Signal (Signal(..))
-import Data.String.Utils (lines)
 import Data.Time.Duration (Seconds(..), fromDuration)
+import Data.Traversable (for)
 import Effect (Effect)
-import Effect.Aff (Aff, effectCanceler, launchAff_, makeAff)
+import Effect.Aff (Aff, effectCanceler, launchAff_, makeAff, parallel, sequential)
 import Effect.Aff.Class (liftAff)
 import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Class.Console (info, log)
-import Effect.Exception (throw)
 import Foreign (unsafeToForeign)
 import JobQueue (EnqueueResult(..), NewJob(..), Queue, ResourcePool(..))
 import JobQueue as Q
@@ -32,16 +31,16 @@ import Node.Express.Request (getBody')
 import Node.Express.Response (setStatus)
 import Node.Express.Response as Response
 import Node.Express.Types (Request, Response)
-import Node.FS.Aff (readTextFile, writeTextFile)
+import Node.FS.Aff (readTextFile)
 import Node.HTTP (Server)
 import Node.OS (numCpus)
 import Node.Process (lookupEnv)
 import Playground.Playground (Folder(..), copy)
+import PscIdeClient (PscIdeConnection, compileCode, getFolder, mkConnection)
 import Shared.Json (readAff)
-import Shared.Models.Body (PursResult, RunResult, CompileRequest)
+import Shared.Models.Body (CompileRequest, RunResult)
 import Shared.Models.Body as Body
 import Simple.JSON (read_, write)
-import Simple.JSON as JSON
 
 toBody ∷ ∀ r m. MonadEffect m => { stdout ∷ Buffer, stderr ∷ Buffer | r } -> m RunResult
 toBody result =
@@ -59,27 +58,45 @@ type ErrorWithCode
 asErrorWithCode ∷ ∀ a. a -> Maybe ErrorWithCode
 asErrorWithCode = read_ <<< unsafeToForeign
 
-compileCode ∷ Folder -> String -> Aff PursResult
-compileCode folder code = do
-  saveMainFile folder code
-  { stderr } <- execCommand folder "spago build --purs-args \"--json-errors\""
-  strResult <- liftEffect $ Buffer.toString UTF8 stderr
-  case checkOutput strResult of
-    Just r -> pure r
-    Nothing -> liftEffect $ throw $ "No result in " <> strResult
-  where
-  checkOutput output =
-    head do
-      line <- lines output
-      let
-        (parseable :: Maybe PursResult) = JSON.readJSON_ line
-      fromFoldable parseable
+-- compileCode ∷ JobId -> Folder -> Int -> String -> Aff PursResult
+-- compileCode jobId folder port code = do
+--   saveMainFile folder code
+--   { stderr } <- execCommand folder "node_modules/spago/spago build --purs-args \"--json-errors\""
+--   strResult <- liftEffect $ Buffer.toString UTF8 stderr
+  
+--   case checkOutput strResult of
+--     Just r -> do
+--       pure r
+--     Nothing -> do
+--       liftEffect $ throw $ "No result in " <> strResult
+--   where
+--   checkOutput output =
+--     head do
+--       line <- lines output
+--       let
+--         (parseable :: Maybe PursResult) = JSON.readJSON_ line
+--       fromFoldable parseable
+
+-- compileCodeOld ∷ JobId -> Folder -> String -> Aff PursResult
+-- compileCodeOld jobId folder code = do
+--   saveMainFile folder code
+--   { stderr } <- execCommand folder "node_modules/spago/spago build --purs-args \"--json-errors\""
+--   strResult <- liftEffect $ Buffer.toString UTF8 stderr
+--   case checkOutput strResult of
+--     Just r -> do
+--       pure r
+--     Nothing -> do
+--       liftEffect $ throw $ "No result in " <> strResult
+--   where
+--   checkOutput output =
+--     head do
+--       line <- lines output
+--       let
+--         (parseable :: Maybe PursResult) = JSON.readJSON_ line
+--       fromFoldable parseable
 
 runCode ∷ Folder -> Aff ExecResult
 runCode folder = execCommand folder "node run.js"
-
-saveMainFile ∷ Folder -> String -> Aff Unit
-saveMainFile folder code = writeTextFile UTF8 (un Folder folder <> "/src/Main.purs") code
 
 execCommand ∷ Folder -> String -> Aff ExecResult
 execCommand folder command =
@@ -89,19 +106,19 @@ execCommand folder command =
     childProcess <- exec command options (callback <<< Right)
     pure $ effectCanceler ((log $ "Killing " <> show (pid childProcess)) *> kill SIGKILL childProcess)
 
-compileAndRunJob ∷ CompileRequest -> (Handler -> Aff Unit) -> NewJob Folder
+compileAndRunJob ∷ CompileRequest -> (Handler -> Aff Unit) -> NewJob PscIdeConnection
 compileAndRunJob json handle =
-  NewJob \folder -> do
-    compileResult <- compileCode folder (json ∷ Body.CompileRequest).code
-    if compileResult.errors /= [] then do
+  NewJob \jobId conn -> do
+    compileResult <- compileCode json.code conn 
+    if compileResult.resultType == "error" then do
       handle $ setStatus 422
-      handle $ Response.send $ write ({ result: compileResult } ∷ Body.CompileResult)
+      handle $ Response.send $ write compileResult
     else do
-      runResult <- runCode folder
+      runResult <- runCode (getFolder conn)
       resultBody <- toBody runResult
       handle $ Response.send $ write (resultBody ∷ Body.RunResult)
 
-compileAndRunHandler ∷ Queue Folder -> Handler
+compileAndRunHandler ∷ Queue PscIdeConnection -> Handler
 compileAndRunHandler queue = do
   body <- getBody'
   json <- readAff body # liftAff
@@ -128,27 +145,30 @@ destFolder ∷ String
 destFolder = "../playgrounds/"
 
 main ∷ Effect Unit
-main =
+main = do
   launchAff_ do
     cpus <- numCpus # liftEffect
     let
-      foldersToUse = max 2 (cpus - 1) -- use at least 2
+      poolSize = max 2 (cpus - 1) -- use at least 2
 
       mkFolder = Folder <<< (destFolder <> _) <<< show
 
-      folders = mkFolder <$> (0 .. foldersToUse)
+    connections <- sequential $ for (0 .. poolSize) \n -> parallel do
+      let folder = mkFolder n
+          port = 14100 + n
+      copy srcFolder (un Folder folder)
+      mkConnection folder port
 
-      folderPool = ResourcePool folders
-    for_ folders \(Folder f) -> copy srcFolder f
+    let pool = ResourcePool connections
     q <-
       Q.mkQueue
         { maxSize: 50
         , timeout: 60.0 # Seconds # fromDuration
         }
-        folderPool
+        pool
     serverSetup (makeApp q)
 
-makeApp ∷ Queue Folder -> App
+makeApp ∷ Queue PscIdeConnection -> App
 makeApp q = do
   use $ static "assets"
   useExternal jsonBodyParser

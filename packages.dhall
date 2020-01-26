@@ -119,71 +119,59 @@ let additions =
 
 
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.13.3-20190920/packages.dhall sha256:53873cf2fc4a343a41f335ee47c1706ecf755ac7c5a336e8eb03ad23165dfd28
+      https://github.com/purescript/package-sets/releases/download/psc-0.13.6-20200123/packages.dhall sha256:687bb9a2d38f2026a89772c47390d02939340b01e31aaa22de9247eadd64af05
 
 let overrides =
-      { react-basic-hooks =
-          upstream.react-basic-hooks // { version = "v2.0.1" }
+      { react-basic-hooks = upstream.react-basic-hooks // { version = "v2.0.1" }
       , spec-discovery =
-          upstream.spec-discovery // { version = "1ca3416e6c0729eca8d5204f22cf0aa09c98df9d" }
+              upstream.spec-discovery
+          //  { version = "1ca3416e6c0729eca8d5204f22cf0aa09c98df9d" }
       , react-basic =
               upstream.react-basic
           //  { repo =
                   "https://github.com/i-am-the-slime/purescript-react-basic"
-              , version =
-                  "dda3f711d84cd5dc1817a71ff01f0426b04ed791"
+              , version = "dda3f711d84cd5dc1817a71ff01f0426b04ed791"
               }
       }
 
 let additions =
-     { react-testing-library =
-         { dependencies =
-             [ "aff-promise"
-             , "console"
-             , "debug"
-             , "effect"
-             , "foreign"
-             , "foreign-object"
-             , "psci-support"
-             , "react-basic-hooks"
-             , "remotedata"
-             , "run"
-             , "simple-json"
-             , "spec"
-             , "spec-discovery"
-             ]
-         , repo =
-             "https://github.com/i-am-the-slime/purescript-react-testing-library.git"
-         , version =
-             "b872928414a887ccefbe857038af4e57227dad16"
-         }
-     , pseudo-random =
-         { dependencies =
-             [ "prelude"
-             , "console"
-             , "effect"
-             , "lcg"
-             , "arrays"
-             , "st"
-             ]
-         , repo =
-             "https://github.com/opyapeus/purescript-pseudo-random.git"
-         , version =
-             "7715e8a2c096c480a093a5e0a6df1ece4df5ed2a"
-         }
-     , matryoshka =
-         { dependencies =
-             [ "prelude"
-             , "fixed-points"
-             , "free"
-             , "transformers"
-             , "profunctor"
-             ]
-         , repo =
-             "https://github.com/slamdata/purescript-matryoshka.git"
-         , version =
-             "caaca2d836d52159ba7963333996286a00428394"
-         }
-     }
+      { react-testing-library =
+          { dependencies =
+              [ "aff-promise"
+              , "console"
+              , "debug"
+              , "effect"
+              , "foreign"
+              , "foreign-object"
+              , "psci-support"
+              , "react-basic-hooks"
+              , "remotedata"
+              , "run"
+              , "simple-json"
+              , "spec"
+              , "spec-discovery"
+              ]
+          , repo =
+              "https://github.com/i-am-the-slime/purescript-react-testing-library.git"
+          , version = "b872928414a887ccefbe857038af4e57227dad16"
+          }
+      , pseudo-random =
+          { dependencies =
+              [ "prelude", "console", "effect", "lcg", "arrays", "st" ]
+          , repo = "https://github.com/opyapeus/purescript-pseudo-random.git"
+          , version = "7715e8a2c096c480a093a5e0a6df1ece4df5ed2a"
+          }
+      , matryoshka =
+          { dependencies =
+              [ "prelude"
+              , "fixed-points"
+              , "free"
+              , "transformers"
+              , "profunctor"
+              ]
+          , repo = "https://github.com/slamdata/purescript-matryoshka.git"
+          , version = "caaca2d836d52159ba7963333996286a00428394"
+          }
+      }
 
 in  upstream // overrides // additions

@@ -29,7 +29,7 @@ instance showJobId :: Show JobId where
 
 derive newtype instance jobIdEq :: Eq JobId
 newtype NewJob a
-  = NewJob (a -> Aff Unit)
+  = NewJob (JobId -> a -> Aff Unit)
 
 data PendingJob a
   = PendingJob
@@ -180,7 +180,7 @@ enqueue (NewJob newJob) q@(Queue { maxSize, timeout } _ jobsRef) = do
   else do
     addedAt <- JSDate.now
     let
-      new = Pending (PendingJob { id, addedAt, job: newJob })
+      new = Pending (PendingJob { id, addedAt, job: newJob id })
     jobsRef # Ref.modify_ (_ `snoc` new)
     startJobs q
     pure (Enqueued id)
