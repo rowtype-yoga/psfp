@@ -61,7 +61,7 @@ mkCompileEditor = do
                         res <- compileAndRun { code }
                         liftEffect
                           $ setCompileResult case res of
-                              Left cr -> (cr.result.errors <#> _.message # intercalate "/n")
+                              Left cr -> (cr.result <#> _.message # intercalate "/n")
                               Right r -> r.stdout
                 }
               }

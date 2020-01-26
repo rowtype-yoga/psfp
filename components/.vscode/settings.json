@@ -1,4 +1,4 @@
 {
   "editor.formatOnSave": true,
-  "purescript.buildCommand": "spago build --purs-args '--json-errors'"
+  "purescript.buildCommand": "npx spago build --purs-args '--json-errors'"
 }

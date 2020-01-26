@@ -85,6 +85,15 @@ mkContainerContent = do
                   ]
                 }
             , element header {}
-            , R.div { className: classes.content, children: [ element editor {} ] <> children }
+            , R.div { className: classes.content, children: [ element editor { initialCode } ] <> children }
             ]
           }
+
+initialCode :: String
+initialCode =
+  """module Main where
+
+import Batteries
+
+main :: Effect Unit
+main ="""

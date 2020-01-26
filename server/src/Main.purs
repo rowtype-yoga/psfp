@@ -38,9 +38,9 @@ import Node.Process (lookupEnv)
 import Playground.Playground (Folder(..), copy)
 import PscIdeClient (PscIdeConnection, compileCode, getFolder, mkConnection)
 import Shared.Json (readAff)
-import Shared.Models.Body (CompileRequest, RunResult)
+import Shared.Models.Body (CompileRequest, RunResult, CompileResult)
 import Shared.Models.Body as Body
-import Simple.JSON (read_, write)
+import Simple.JSON (readJSON, read_, write)
 
 toBody ∷ ∀ r m. MonadEffect m => { stdout ∷ Buffer, stderr ∷ Buffer | r } -> m RunResult
 toBody result =
@@ -58,43 +58,6 @@ type ErrorWithCode
 asErrorWithCode ∷ ∀ a. a -> Maybe ErrorWithCode
 asErrorWithCode = read_ <<< unsafeToForeign
 
--- compileCode ∷ JobId -> Folder -> Int -> String -> Aff PursResult
--- compileCode jobId folder port code = do
---   saveMainFile folder code
---   { stderr } <- execCommand folder "node_modules/spago/spago build --purs-args \"--json-errors\""
---   strResult <- liftEffect $ Buffer.toString UTF8 stderr
-  
---   case checkOutput strResult of
---     Just r -> do
---       pure r
---     Nothing -> do
---       liftEffect $ throw $ "No result in " <> strResult
---   where
---   checkOutput output =
---     head do
---       line <- lines output
---       let
---         (parseable :: Maybe PursResult) = JSON.readJSON_ line
---       fromFoldable parseable
-
--- compileCodeOld ∷ JobId -> Folder -> String -> Aff PursResult
--- compileCodeOld jobId folder code = do
---   saveMainFile folder code
---   { stderr } <- execCommand folder "node_modules/spago/spago build --purs-args \"--json-errors\""
---   strResult <- liftEffect $ Buffer.toString UTF8 stderr
---   case checkOutput strResult of
---     Just r -> do
---       pure r
---     Nothing -> do
---       liftEffect $ throw $ "No result in " <> strResult
---   where
---   checkOutput output =
---     head do
---       line <- lines output
---       let
---         (parseable :: Maybe PursResult) = JSON.readJSON_ line
---       fromFoldable parseable
-
 runCode ∷ Folder -> Aff ExecResult
 runCode folder = execCommand folder "node run.js"
 
@@ -109,14 +72,19 @@ execCommand folder command =
 compileAndRunJob ∷ CompileRequest -> (Handler -> Aff Unit) -> NewJob PscIdeConnection
 compileAndRunJob json handle =
   NewJob \jobId conn -> do
-    compileResult <- compileCode json.code conn 
-    if compileResult.resultType == "error" then do
-      handle $ setStatus 422
-      handle $ Response.send $ write compileResult
-    else do
-      runResult <- runCode (getFolder conn)
-      resultBody <- toBody runResult
-      handle $ Response.send $ write (resultBody ∷ Body.RunResult)
+    responseString <- compileCode json.code conn
+    case ((readJSON responseString) :: _ _ CompileResult) of 
+      Right res | res.resultType == "error" -> do
+        handle $ setStatus 422
+        handle $ Response.send $ write res
+      Right res -> do
+        runResult <- runCode (getFolder conn)
+        resultBody <- toBody runResult
+        handle $ Response.send $ write (resultBody ∷ Body.RunResult)
+      Left errs -> do
+        handle $ setStatus 500
+        log $ "Could not decode: " <> responseString <> "\nErrors: " <> show errs
+        handle $ Response.send $ write {}
 
 compileAndRunHandler ∷ Queue PscIdeConnection -> Handler
 compileAndRunHandler queue = do
@@ -153,7 +121,7 @@ main = do
 
       mkFolder = Folder <<< (destFolder <> _) <<< show
 
-    connections <- sequential $ for (0 .. poolSize) \n -> parallel do
+    connections <- for (0 .. poolSize) \n -> do
       let folder = mkFolder n
           port = 14100 + n
       copy srcFolder (un Folder folder)
@@ -163,7 +131,7 @@ main = do
     q <-
       Q.mkQueue
         { maxSize: 50
-        , timeout: 60.0 # Seconds # fromDuration
+        , timeout: 10.0 # Seconds # fromDuration
         }
         pool
     serverSetup (makeApp q)
