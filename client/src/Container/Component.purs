@@ -18,29 +18,29 @@ import Theme.Provider (mkThemeProvider)
 import Theme.Styles (makeStyles)
 import Theme.Types (CSSTheme)
 
-mkContainer ∷ Effect (ReactComponent { theme ∷ CSSTheme, children ∷ Array JSX })
+mkContainer ∷ Effect (ReactComponent { theme ∷ CSSTheme, kids ∷ Array JSX })
 mkContainer = do
   themeProvider <- mkThemeProvider
   containerContent <- mkContainerContent
-  component "Container" \{ theme, children } -> React.do
+  component "Container" \{ theme, kids } -> React.do
     pure
       $ element themeProvider
           { theme
           , children:
-            [ element containerContent { children }
+            [ element containerContent { kids }
             ]
           }
 
-mkContainerContent ∷ Effect (ReactComponent { children ∷ Array JSX })
+mkContainerContent ∷ Effect (ReactComponent { kids ∷ Array JSX })
 mkContainerContent = do
   smoothScrollPolyfill
   useStyles <-
     makeStyles \(theme ∷ CSSTheme) ->
       --  { "@global": cssSafer { "*": { outline: "1px solid red" } }
       { container:
+        --"@global": -- { "*": { outline: "1px solid red" } } 
         cssSafer
-          { backgroundColor: theme.backgroundColour
-          , fontFamily: theme.textFontFamily
+          { fontFamily: theme.textFontFamily
           , color: theme.textColour
           , display: "grid"
           , transition: "0.2s ease-in-out"
@@ -49,14 +49,14 @@ mkContainerContent = do
               <> "'header header header' "
               <> "'nav content content'"
           -- , "footer footer footer"
-          -- , gridTemplateColumns: "max-content auto"
-          , minWidth: "100%"
-          , maxWidth: "100%"
+          , gridTemplateColumns: "max-content auto"
+          , width: "100%"
+          , maxHeight: "100%"
           }
       , content:
         cssSafer
           { gridArea: "content"
-          , minHeight: "200vh"
+          , backgroundColor: theme.backgroundColour
           }
       , icon: cssSafer { fill: "theme.textColour" }
       }
@@ -65,7 +65,7 @@ mkContainerContent = do
   header <- mkHeader
   sidebarLink <- mkSidebarLink
   editor <- mkCompileEditor
-  component "ContainerContent" \{ children } -> React.do
+  component "ContainerContent" \{ kids } -> React.do
     classes <- useStyles
     collapsed /\ modifyCollapsed <- useState true
     editorRef <- useRef Nullable.null
@@ -85,7 +85,7 @@ mkContainerContent = do
                   ]
                 }
             , element header {}
-            , R.div { className: classes.content, children: [ element editor { initialCode } ] <> children }
+            , R.div { className: classes.content, children: [ element editor { initialCode } ] <> kids }
             ]
           }
 

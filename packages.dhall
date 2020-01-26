@@ -121,18 +121,7 @@ let additions =
 let upstream =
       https://github.com/purescript/package-sets/releases/download/psc-0.13.6-20200123/packages.dhall sha256:687bb9a2d38f2026a89772c47390d02939340b01e31aaa22de9247eadd64af05
 
-let overrides =
-      { react-basic-hooks = upstream.react-basic-hooks // { version = "v2.0.1" }
-      , spec-discovery =
-              upstream.spec-discovery
-          //  { version = "1ca3416e6c0729eca8d5204f22cf0aa09c98df9d" }
-      , react-basic =
-              upstream.react-basic
-          //  { repo =
-                  "https://github.com/i-am-the-slime/purescript-react-basic"
-              , version = "dda3f711d84cd5dc1817a71ff01f0426b04ed791"
-              }
-      }
+let overrides = {=}
 
 let additions =
       { react-testing-library =

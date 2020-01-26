@@ -33,7 +33,7 @@ mkButton ∷
   Lacks "key" attrs =>
   Effect
     ( ReactComponent
-        { children ∷ Array JSX
+        { kids ∷ Array JSX
         , buttonType ∷ ButtonType
         , buttonProps ∷ Record attrs
         }
@@ -135,7 +135,7 @@ mkButton = do
               pure $ increaseContrast bg tc # toHexString
           }
       }
-  component "Button" \{ children, buttonType, buttonProps } -> React.do
+  component "Button" \{ kids, buttonType, buttonProps } -> React.do
     rawClasses <- useStyles
     let
       classes = flip classNames rawClasses
@@ -147,7 +147,7 @@ mkButton = do
             , guard (buttonType == HighlightedButton) _.highlightedButton
             ]
         , disabled: buttonType == DisabledButton
-        , children
+        , children: kids
         }
           `union`
             buttonProps

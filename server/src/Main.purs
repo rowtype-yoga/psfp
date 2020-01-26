@@ -2,16 +2,16 @@ module Main where
 
 import Prelude
 
+import Control.Parallel (parTraverse)
 import Data.Array ((..))
 import Data.Either (Either(..))
 import Data.Int (fromString)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe, fromMaybe)
 import Data.Newtype (un)
-import Data.Posix.Signal (Signal(..))
 import Data.Time.Duration (Seconds(..), fromDuration)
 import Data.Traversable (for)
 import Effect (Effect)
-import Effect.Aff (Aff, effectCanceler, launchAff_, makeAff, parallel, sequential)
+import Effect.Aff (Aff, launchAff_)
 import Effect.Aff.Class (liftAff)
 import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Class.Console (info, log)
@@ -21,7 +21,7 @@ import JobQueue as Q
 import Middleware.JsonBodyParser (jsonBodyParser)
 import Node.Buffer (Buffer)
 import Node.Buffer as Buffer
-import Node.ChildProcess (ExecResult, defaultExecOptions, exec, kill, pid)
+import Node.ChildProcess (ExecResult)
 import Node.Encoding (Encoding(..))
 import Node.Express.App (App, listenHttp, listenHttps, use, useExternal)
 import Node.Express.App as E
@@ -36,7 +36,7 @@ import Node.HTTP (Server)
 import Node.OS (numCpus)
 import Node.Process (lookupEnv)
 import Playground.Playground (Folder(..), copy)
-import PscIdeClient (PscIdeConnection, compileCode, getFolder, mkConnection)
+import PscIdeClient (PscIdeConnection, compileCode, getFolder, mkConnection, execCommand)
 import Shared.Json (readAff)
 import Shared.Models.Body (CompileRequest, RunResult, CompileResult)
 import Shared.Models.Body as Body
@@ -60,14 +60,6 @@ asErrorWithCode = read_ <<< unsafeToForeign
 
 runCode ∷ Folder -> Aff ExecResult
 runCode folder = execCommand folder "node run.js"
-
-execCommand ∷ Folder -> String -> Aff ExecResult
-execCommand folder command =
-  makeAff \callback -> do
-    let
-      options = defaultExecOptions { cwd = Just (un Folder folder) }
-    childProcess <- exec command options (callback <<< Right)
-    pure $ effectCanceler ((log $ "Killing " <> show (pid childProcess)) *> kill SIGKILL childProcess)
 
 compileAndRunJob ∷ CompileRequest -> (Handler -> Aff Unit) -> NewJob PscIdeConnection
 compileAndRunJob json handle =
@@ -117,13 +109,14 @@ main = do
   launchAff_ do
     cpus <- numCpus # liftEffect
     let
-      poolSize = max 2 (cpus - 1) -- use at least 2
+      poolSize = max 2 (cpus / 2) -- use at least 2
 
       mkFolder = Folder <<< (destFolder <> _) <<< show
 
-    connections <- for (0 .. poolSize) \n -> do
+    connections <- (1 .. poolSize) # parTraverse \n -> do
       let folder = mkFolder n
           port = 14100 + n
+      log $ "Copying to folder " <> (un Folder folder) 
       copy srcFolder (un Folder folder)
       mkConnection folder port
 

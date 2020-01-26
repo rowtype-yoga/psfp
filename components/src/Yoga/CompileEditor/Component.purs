@@ -51,7 +51,7 @@ mkCompileEditor = do
       $ fragment
           [ element button
               { buttonType: PlainButton
-              , children: [ R.text "Compile" ]
+              , kids: [ R.text "Compile" ]
               , buttonProps:
                 { onClick:
                   handler_ do
@@ -65,7 +65,7 @@ mkCompileEditor = do
                               Right r -> r.stdout
                 }
               }
-          , element card { children: [ R.text compileResult ] }
+          , element card { kids: [ R.text compileResult ] }
           , R.div { children: [ element editor { onLoad } ], style: css { height: "100%" } }
           ]
 

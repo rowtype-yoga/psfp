@@ -1,7 +1,6 @@
 module Card.Component where
 
 import Prelude
-
 import CSS.Safer (cssSafer)
 import Effect (Effect)
 import React.Basic (JSX)
@@ -14,7 +13,7 @@ import Theme.Types (CSSTheme)
 mkCard ∷
   Effect
     ( ReactComponent
-        { children ∷ Array JSX
+        { kids ∷ Array JSX
         }
     )
 mkCard = do
@@ -26,26 +25,27 @@ mkCard = do
           , color: theme.textColour
           , margin: "20px"
           , boxShadow:
-            "1px 1px 20px rgba(0,0,0,0." <>
-              (if theme.isLight then "17" else "43") <> ")"
+            "1px 1px 20px rgba(0,0,0,0."
+              <> (if theme.isLight then "17" else "43")
+              <> ")"
           , borderRadius: "5px"
           , padding: "36px 40px 32px 40px"
           }
       }
-  component "Card" \{ children } -> React.do
+  component "Card" \{ kids } -> React.do
     rawClasses <- useStyles
     let
       classes = flip classNames rawClasses
     pure
       $ R.div
           { className: classes [ _.card ]
-          , children
+          , children: kids
           }
 
 mkCardTitle ∷
   Effect
     ( ReactComponent
-        { children ∷ Array JSX
+        { kids ∷ Array JSX
         }
     )
 mkCardTitle = do
@@ -60,20 +60,20 @@ mkCardTitle = do
           , padding: "4px 8px"
           }
       }
-  component "CardTitle" \{ children } -> React.do
+  component "CardTitle" \{ kids } -> React.do
     rawClasses <- useStyles
     let
       classes = flip classNames rawClasses
     pure
       $ R.div
           { className: classes [ _.cardtitle ]
-          , children
+          , children: kids
           }
 
 mkCardSubtitle ∷
   Effect
     ( ReactComponent
-        { children ∷ Array JSX
+        { kids ∷ Array JSX
         }
     )
 mkCardSubtitle = do
@@ -89,20 +89,20 @@ mkCardSubtitle = do
           , padding: "4px 8px 22px 8px"
           }
       }
-  component "CardSubtitle" \{ children } -> React.do
+  component "CardSubtitle" \{ kids } -> React.do
     rawClasses <- useStyles
     let
       classes = flip classNames rawClasses
     pure
       $ R.div
           { className: classes [ _.cardtitle ]
-          , children
+          , children: kids
           }
 
 mkCardContent ∷
   Effect
     ( ReactComponent
-        { children ∷ Array JSX
+        { kids ∷ Array JSX
         }
     )
 mkCardContent = do
@@ -120,12 +120,12 @@ mkCardContent = do
           , padding: "4px 8px 22px 8px"
           }
       }
-  component "CardContent" \{ children } -> React.do
+  component "CardContent" \{ kids } -> React.do
     rawClasses <- useStyles
     let
       classes = flip classNames rawClasses
     pure
       $ R.div
           { className: classes [ _.cardContent ]
-          , children
+          , children: kids
           }

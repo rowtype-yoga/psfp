@@ -1,6 +1,6 @@
 module Shared.Models.Body where
 
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe)
 
 type CompileRequest
   = { code ∷ String }
@@ -10,27 +10,7 @@ type CompileRequest
 --     , resultType :: String
 --     }
 type CompileResult
-  = { result ∷
-      Array
-        { allSpans ∷
-          Array
-            { end ∷ Array Int
-            , name ∷ String
-            , start ∷ Array Int
-            }
-        , errorCode ∷ String
-        , errorLink ∷ String
-        , filename ∷ String
-        , message ∷ String
-        , moduleName ∷ String
-        , position ∷
-          { endColumn ∷ Int
-          , endLine ∷ Int
-          , startColumn ∷ Int
-          , startLine ∷ Int
-          }
-        , suggestion ∷ Maybe Suggestion
-        }
+  = { result ∷ Array ErrorOrWarning
     , resultType ∷ String
     }
 

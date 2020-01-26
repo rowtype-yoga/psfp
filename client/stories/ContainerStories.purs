@@ -1,7 +1,6 @@
 module ContainerStories where
 
 import Prelude hiding (add)
-
 import Container.Component (mkContainer)
 import Decorator.FullScreen (fullScreenDecorator)
 import Effect (Effect)
@@ -23,5 +22,5 @@ stories = do
       pure
         $ element container
             { theme
-            , children: []
+            , kids: []
             }

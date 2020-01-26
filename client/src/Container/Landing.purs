@@ -1,7 +1,6 @@
 module Container.Landing where
 
 import Prelude
-
 import Button.Component (ButtonType(..), mkButton)
 import CSS.Safer (cssSafer)
 import Data.Foldable (for_)
@@ -84,7 +83,7 @@ mkLandingPage = do
   h <- mkH
   button <- mkButton
   backgroundImage <- mkLandingPageBackground
-  component "LandingPage" \{ } -> React.do
+  component "LandingPage" \{} -> React.do
     classes <- useStyles
     theme <- useTheme
     ref <- useRef null
@@ -109,16 +108,17 @@ mkLandingPage = do
                       , children:
                         [ element button
                             { buttonProps:
-                              { onClick: handler_ do
-                                maybeNode <- readRefMaybe ref
-                                for_ (maybeNode >>= HTMLElement.fromNode) \n -> do
-                                  height <- getBoundingClientRect n <#> _.height
-                                  win <- window
-                                  runEffectFn1 ((unsafeCoerce win).scrollTo)
-                                    { top: height, left: 0, behavior: "smooth"}
+                              { onClick:
+                                handler_ do
+                                  maybeNode <- readRefMaybe ref
+                                  for_ (maybeNode >>= HTMLElement.fromNode) \n -> do
+                                    height <- getBoundingClientRect n <#> _.height
+                                    win <- window
+                                    runEffectFn1 ((unsafeCoerce win).scrollTo)
+                                      { top: height, left: 0, behavior: "smooth" }
                               }
                             , buttonType: HighlightedButton
-                            , children: [ R.text buttonText ]
+                            , kids: [ R.text buttonText ]
                             }
                         ]
                       }

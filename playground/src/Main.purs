@@ -1,5 +1,6 @@
 module Main where
 
-import Effect.Class.Console (log)
+import Batteries
 
-main = log "Uh-oh"
+main :: Effect Unit
+main = log "Hello, World!"

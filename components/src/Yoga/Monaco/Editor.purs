@@ -11,10 +11,10 @@ import Effect.Uncurried (EffectFn2, mkEffectFn2)
 import Foreign (Foreign, unsafeToForeign)
 import Prim.Row (class Union)
 import React.Basic (JSX, ReactComponent, element, fragment)
+import React.Basic.DOM as R
 import React.Basic.Hooks (component)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Aff (useAff)
-import React.Helpers (wrapperDiv)
 import Theme.Styles (makeStyles, useTheme)
 import Theme.Types (CSSTheme)
 import Web.DOM (Node)
@@ -92,10 +92,9 @@ mkEditor = do
         cssSafer
           { margin: "0"
           , boxSizing: "border-box"
-          , padding: "35px 40px"
           , width: "100%"
-          , height: "100%"
-          , borderRadius: "32px"
+          , height: "200px"
+          , overflowY: "hidden"
           , backgroundColor: theme.backgroundColour
           }
       }
@@ -107,25 +106,28 @@ mkEditor = do
       themeName = if theme.isLight then lightThemeName else darkThemeName
     pure
       $ fragment
-          [ wrapperDiv { className: classes.wrapper }
-              $ element editor
-                  { theme: themeName
-                  , options:
-                    unsafeToForeign
-                      { fontFamily: "PragmataPro"
-                      , fontLigatures: true
-                      , fontSize: "16pt"
-                      , lineNumbers: "off"
-                      , glyphMargin: false
-                      , folding: false
-                      , lineDecorationsWidth: 0
-                      , lineNumbersMinChars: 0
-                      , minimap: { enabled: false }
-                      , automaticLayout: true
-                      }
-                  , language: "purescript"
-                  -- https://microsoft.github.io/monaco-editor/playground.html#extending-language-services-custom-languages
-                  , editorDidMount:
-                    mkEffectFn2 \_ -> onLoad
-                  }
+          [ R.div
+              { className: classes.wrapper
+              , children:
+                [ element editor
+                    { theme: themeName
+                    , options:
+                      unsafeToForeign
+                        { fontFamily: "PragmataPro"
+                        , fontLigatures: true
+                        , fontSize: "16pt"
+                        , lineNumbers: "off"
+                        , glyphMargin: false
+                        , folding: false
+                        , lineDecorationsWidth: 0
+                        , lineNumbersMinChars: 0
+                        , minimap: { enabled: false }
+                        }
+                    , language: "purescript"
+                    -- https://microsoft.github.io/monaco-editor/playground.html#extending-language-services-custom-languages
+                    , editorDidMount:
+                      mkEffectFn2 \_ -> onLoad
+                    }
+                ]
+              }
           ]
