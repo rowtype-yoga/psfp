@@ -2,6 +2,7 @@ module CompileEditor.Component where
 
 import Prelude hiding (add)
 import Button.Component (ButtonType(..), mkButton)
+import CSS.Safer (cssSafer)
 import Card.Component (mkCard)
 import Data.Array (intercalate)
 import Data.Either (Either(..))
@@ -15,7 +16,6 @@ import Effect.Class (liftEffect)
 import Milkis as M
 import Milkis.Impl.Window (windowFetch)
 import React.Basic (ReactComponent)
-import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
 import React.Basic.Hooks (component, element, fragment, useState)
@@ -23,50 +23,105 @@ import React.Basic.Hooks as React
 import Shared.Json (readAff)
 import Shared.Models.Body as Body
 import Simple.JSON (writeJSON)
+import Theme.Styles (makeStyles)
+import Theme.Types (CSSTheme)
 
 type Props
-  = { initialCode :: String }
+  = { initialCode :: String, height :: String }
 
 mkCompileEditor ∷ Effect (ReactComponent Props)
 mkCompileEditor = do
   editor <- mkEditor
   card <- mkCard
   button <- mkButton
-  component "StorybookEditor" \{ initialCode } -> React.do
+  useStyles <-
+    makeStyles \(theme :: CSSTheme) ->
+      { editor:
+        cssSafer
+          { background: theme.codeBackgroundColour
+          , height: "80%"
+          , padding: "20px"
+          , margin: "20px"
+          , marginLeft: "35px"
+          , marginRight: "35px"
+          , borderRadius: "12px"
+          }
+      , buttons: cssSafer { float: "right", marginRight: "40px", height: "30px" }
+      , compileButton: cssSafer {}
+      , resetButton: cssSafer {}
+      , card:
+        cssSafer
+          { marginTop: "70px"
+          , marginLeft: "35px"
+          , marginRight: "35px"
+          }
+      , cardHidden: cssSafer { opacity: 0 }
+      , compileError: cssSafer { color: theme.red, animation: "0.7s shake ease" }
+      , runOutput: cssSafer { color: theme.green, animation: "0.4s bounceIn ease" }
+      }
+  component "StorybookEditor" \{ initialCode, height } -> React.do
     maybeEditor /\ modifyEditor <- useState Nothing
+    classes <- useStyles
     let
       onLoad e = do
         setValue initialCode e
         modifyEditor (const $ Just e)
-    -- useEffect editorLoaded do
-    --   maybeEditor <- readRefMaybe editorRef # liftEffect
-    --   let
-    --     _ = spy "No fucks given" maybeEditor
-    --   liftEffect $ for_ maybeEditor (setValue initialCode)
-    --   pure (pure unit)
-    compileResult /\ modifyCompileResult <- useState ""
+    compileResult /\ modifyCompileResult <- useState Nothing
     let
+      reset = do
+        setCompileResult Nothing
+        for_ maybeEditor (setValue initialCode)
+
+      compileResultToString = case _ of
+        Nothing -> ""
+        Just (Left cr) -> cr.result <#> _.message # intercalate "/n"
+        Just (Right r) -> r.stdout
+
+      compileResultToClass = case _ of
+        Nothing -> classes.cardHidden
+        Just (Left cr) -> classes.compileError
+        Just (Right r) -> classes.runOutput
+
       setCompileResult = modifyCompileResult <<< const
+
+      compile = do
+        for_ maybeEditor \ed -> do
+          setCompileResult Nothing
+          code <- getValue ed
+          launchAff_ do
+            res <- compileAndRun { code }
+            setCompileResult (Just res) # liftEffect
     pure
       $ fragment
-          [ element button
-              { buttonType: PlainButton
-              , kids: [ R.text "Compile" ]
-              , buttonProps:
-                { onClick:
-                  handler_ do
-                    for_ maybeEditor \ed -> do
-                      code <- getValue ed
-                      launchAff_ do
-                        res <- compileAndRun { code }
-                        liftEffect
-                          $ setCompileResult case res of
-                              Left cr -> (cr.result <#> _.message # intercalate "/n")
-                              Right r -> r.stdout
-                }
+          [ R.div
+              { children: [ element editor { onLoad, height } ]
+              , className: classes.editor
               }
-          , element card { kids: [ R.text compileResult ] }
-          , R.div { children: [ element editor { onLoad } ], style: css { height: "100%" } }
+          , R.div
+              { className: classes.buttons
+              , children:
+                [ element button
+                    { buttonType: PlainButton
+                    , kids: [ R.text "Reset" ]
+                    , buttonProps:
+                      { onClick: handler_ reset
+                      }
+                    , className: classes.resetButton
+                    }
+                , element button
+                    { buttonType: HighlightedButton
+                    , kids: [ R.text "Compile" ]
+                    , buttonProps:
+                      { onClick: handler_ compile
+                      }
+                    , className: classes.compileButton
+                    }
+                ]
+              }
+          , element card
+              { kids: [ R.text (compileResultToString compileResult) ]
+              , className: classes.card <> " " <> compileResultToClass compileResult
+              }
           ]
 
 fetch ∷ M.Fetch

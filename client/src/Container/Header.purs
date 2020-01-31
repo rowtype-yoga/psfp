@@ -1,7 +1,6 @@
 module Container.Header where
 
 import Prelude
-
 import CSS.Safer (cssSafer)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..))
@@ -32,7 +31,7 @@ mkHeader = do
     makeStyles \(theme ∷ CSSTheme) ->
       { header:
         cssSafer
-          { backgroundColor: theme.backgroundColour
+          { backgroundColor: theme.interfaceColour
           , borderBottom: "0"
           , fontFamily: theme.headingFontFamily
           , gridArea: "header"
@@ -41,9 +40,11 @@ mkHeader = do
           , justifyContent: "flex-end"
           , width: "100%"
           , height: "80px"
+          , paddingTop: "10px"
+          , paddingBottom: "10px"
           }
       , sticky: cssSafer { position: "fixed", top: "0", zIndex: 10 }
-      , title: cssSafer { paddingRight: "30px"}
+      , title: cssSafer { paddingRight: "30px" }
       , logo:
         cssSafer
           { width: "70px"
@@ -77,7 +78,8 @@ useShouldBeSticky =
   coerceHook React.do
     nodeRef <- useRef null
     mustBeSticky /\ modifyMustBeSticky <- useState false
-    let setSticky = modifyMustBeSticky <<< const
+    let
+      setSticky = modifyMustBeSticky <<< const
     useLayoutEffect unit do
       maybeNode <- readRefMaybe nodeRef
       case maybeNode >>= HTMLElement.fromNode of
@@ -92,6 +94,7 @@ useShouldBeSticky =
 makeListener ∷ (Boolean -> Effect Unit) -> HTMLElement -> Effect EventListener
 makeListener setSticky element = do
   nodeStartPos <- offsetTop element
-  eventListener $ const do
-    yPos <- window >>= scrollY <#> toNumber
-    setSticky $ nodeStartPos < yPos
+  eventListener
+    $ const do
+        yPos <- window >>= scrollY <#> toNumber
+        setSticky $ nodeStartPos < yPos

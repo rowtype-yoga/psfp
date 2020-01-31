@@ -25,8 +25,8 @@ f = SProxy
 fromTheme ∷ Theme -> CSSTheme
 fromTheme theme =
   RB.build
-    ( -- background
-      RB.modify (f ∷ _ "backgroundColour") toHexString
+    ( {- background -} RB.modify (f ∷ _ "backgroundColour") toHexString
+        >>> RB.modify (f ∷ _ "codeBackgroundColour") toHexString
         >>> RB.insert (f ∷ _ "backgroundColourLighter")
             (theme.backgroundColour # lighter >>> toHexString)
         >>> RB.modify (f ∷ _ "interfaceColour") toHexString

@@ -82,7 +82,9 @@ initEditor = do
   setMonarchTokensProviderImpl monaco "purescript" purescriptSyntax # liftEffect
 
 type Props
-  = { onLoad ∷ Editor -> Effect Unit }
+  = { onLoad ∷ Editor -> Effect Unit
+    , height :: String
+    }
 
 mkEditor ∷ Effect (ReactComponent Props)
 mkEditor = do
@@ -93,12 +95,11 @@ mkEditor = do
           { margin: "0"
           , boxSizing: "border-box"
           , width: "100%"
-          , height: "200px"
           , overflowY: "hidden"
           , backgroundColor: theme.backgroundColour
           }
       }
-  component "Editor" \{ onLoad } -> React.do
+  component "Editor" \{ onLoad, height } -> React.do
     classes <- useStyles
     useAff unit initEditor
     theme <- useTheme
@@ -111,6 +112,7 @@ mkEditor = do
               , children:
                 [ element editor
                     { theme: themeName
+                    , height
                     , options:
                       unsafeToForeign
                         { fontFamily: "PragmataPro"
@@ -122,6 +124,7 @@ mkEditor = do
                         , lineDecorationsWidth: 0
                         , lineNumbersMinChars: 0
                         , minimap: { enabled: false }
+                        , scrollBeyondLastLine: false
                         }
                     , language: "purescript"
                     -- https://microsoft.github.io/monaco-editor/playground.html#extending-language-services-custom-languages

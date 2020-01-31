@@ -82,12 +82,12 @@ mkThemeSwitcher = do
       setTheme newTheme = do
         setItem "theme" (writeJSON newTheme) storage
         modTheme (const newTheme)
-    let
+
       handleClicked maybeValue =
         traverse_ setTheme do
           value <- maybeValue
           themes # find \x -> x.name == value
-    let
+
       themeSelect =
         R.select
           { onChange: handler targetValue handleClicked
@@ -107,7 +107,7 @@ mkThemeSwitcher = do
           { theme
           , children:
             [ R.div
-                { style: css { backgroundColor: theme.backgroundColour, width: "100%", height: "100%" }
+                { style: css { backgroundColor: theme.backgroundColour, width: "100%" }
                 , children:
                   [ themeSelect ] <> children
                 }

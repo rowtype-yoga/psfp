@@ -42,21 +42,17 @@ mkContainerContent = do
         cssSafer
           { fontFamily: theme.textFontFamily
           , color: theme.textColour
-          , display: "grid"
-          , transition: "0.2s ease-in-out"
-          , gridTemplateAreas:
-            "'landing landing landing'"
-              <> "'header header header' "
-              <> "'nav content content'"
-          -- , "footer footer footer"
-          , gridTemplateColumns: "max-content auto"
+          , display: "flex"
+          , flexDirection: "column"
           , width: "100%"
-          , maxHeight: "100%"
+          , minHeight: "200%"
           }
       , content:
         cssSafer
-          { gridArea: "content"
-          , backgroundColor: theme.backgroundColour
+          { backgroundColor: theme.backgroundColour
+          , padding: "20px"
+          , minHeight: "calc(100vh - 40px)"
+          , paddingLeft: "100px"
           }
       , icon: cssSafer { fill: "theme.textColour" }
       }
@@ -84,8 +80,10 @@ mkContainerContent = do
                   , element sidebarLink { name: "Jobs", icon: element mapIcon {}, collapsed }
                   ]
                 }
-            , element header {}
-            , R.div { className: classes.content, children: [ element editor { initialCode } ] <> kids }
+            , R.div
+                { className: classes.content
+                , children: [ element editor { initialCode, height: "50vh" } ] <> kids
+                }
             ]
           }
 

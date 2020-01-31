@@ -119,6 +119,7 @@ mkLandingPage = do
                               }
                             , buttonType: HighlightedButton
                             , kids: [ R.text buttonText ]
+                            , className: ""
                             }
                         ]
                       }

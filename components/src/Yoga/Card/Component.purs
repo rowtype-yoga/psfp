@@ -14,6 +14,7 @@ mkCard ∷
   Effect
     ( ReactComponent
         { kids ∷ Array JSX
+        , className :: String
         }
     )
 mkCard = do
@@ -21,7 +22,7 @@ mkCard = do
     makeStyles \(theme ∷ CSSTheme) ->
       { card:
         cssSafer
-          { background: theme.backgroundColourLighter
+          { background: theme.interfaceColourLighter
           , color: theme.textColour
           , margin: "20px"
           , boxShadow:
@@ -32,13 +33,13 @@ mkCard = do
           , padding: "36px 40px 32px 40px"
           }
       }
-  component "Card" \{ kids } -> React.do
+  component "Card" \{ kids, className } -> React.do
     rawClasses <- useStyles
     let
       classes = flip classNames rawClasses
     pure
       $ R.div
-          { className: classes [ _.card ]
+          { className: classes [ _.card ] <> " " <> className
           , children: kids
           }
 

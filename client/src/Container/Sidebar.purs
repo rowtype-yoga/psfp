@@ -1,7 +1,6 @@
 module Container.Sidebar where
 
 import Prelude
-
 import CSS.Safer (cssSafer)
 import Data.Monoid (guard)
 import Effect (Effect)
@@ -27,18 +26,26 @@ mkSidebar = do
     makeStyles \(theme ∷ CSSTheme) ->
       { sidebar:
         cssSafer
-          { background: theme.interfaceColour
+          { background: theme.interfaceColourLighter
           , fontFamily: theme.textFontFamily
+          , borderRadius: "0 12px 12px 0"
           , color: theme.textColour
-          , gridArea: "nav"
+          , position: "absolute"
+          , marginTop: "calc(100vh + 20px)"
+          , paddingBottom: "20px"
           , display: "flex"
           , flexDirection: "column"
-          , minHeight: "calc(100vh, -80px)"
-          , transition: "0.2s ease-in-out"
+          , transition: "0.4s"
+          , transitionTimingFunction: "cubic-bezier(.56,-0.32,.36,1)"
           , overflowX: "hidden"
+          , zIndex: 24
+          , boxShadow:
+            "0px 0px 60px rgba(0,0,0,0."
+              <> (if theme.isLight then "17" else "43")
+              <> ")"
           }
       , sidebarCollapsed: cssSafer { width: "70px" }
-      , sidebarExpanded: cssSafer { width: "250px" }
+      , sidebarExpanded: cssSafer { width: "220px" }
       , logo:
         cssSafer
           { width: "60px"
@@ -97,8 +104,8 @@ mkSidebarLink = do
           , borderRadius: "5px 0 0 5px"
           , cursor: "pointer"
           , "&:hover":
-              { background: theme.highlightColour
-              }
+            { background: theme.highlightColour
+            }
           -- , "&:hover": cssSafer{ opacity: "1.0"}
           }
       , label:

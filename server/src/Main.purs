@@ -4,6 +4,7 @@ import Prelude
 
 import Control.Parallel (parTraverse)
 import Data.Array ((..))
+import Data.Bifunctor (lmap)
 import Data.Either (Either(..))
 import Data.Int (fromString)
 import Data.Maybe (Maybe, fromMaybe)
@@ -11,7 +12,7 @@ import Data.Newtype (un)
 import Data.Time.Duration (Seconds(..), fromDuration)
 import Data.Traversable (for)
 import Effect (Effect)
-import Effect.Aff (Aff, launchAff_)
+import Effect.Aff (Aff, attempt, launchAff_, message)
 import Effect.Aff.Class (liftAff)
 import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Class.Console (info, log)
@@ -64,18 +65,22 @@ runCode folder = execCommand folder "node run.js"
 compileAndRunJob ∷ CompileRequest -> (Handler -> Aff Unit) -> NewJob PscIdeConnection
 compileAndRunJob json handle =
   NewJob \jobId conn -> do
-    responseString <- compileCode json.code conn
-    case ((readJSON responseString) :: _ _ CompileResult) of 
-      Right res | res.resultType == "error" -> do
+    stringOrErr <- attempt $ compileCode json.code conn
+    case ((readJSON <$> stringOrErr) :: _ _ (_ _ CompileResult)) of 
+      Left e -> do
+        handle $ setStatus 500
+        log $ "Aff failed with " <> message e
+        handle $ Response.send $ write {}
+      Right (Right res) | res.resultType == "error" -> do
         handle $ setStatus 422
         handle $ Response.send $ write res
-      Right res -> do
+      Right (Right res) -> do
         runResult <- runCode (getFolder conn)
         resultBody <- toBody runResult
         handle $ Response.send $ write (resultBody ∷ Body.RunResult)
-      Left errs -> do
+      Right (Left errs) -> do
         handle $ setStatus 500
-        log $ "Could not decode: " <> responseString <> "\nErrors: " <> show errs
+        log $ "Could not decode: " <> show (lmap (const "no way") stringOrErr) <> "\nErrors: " <> show errs
         handle $ Response.send $ write {}
 
 compileAndRunHandler ∷ Queue PscIdeConnection -> Handler

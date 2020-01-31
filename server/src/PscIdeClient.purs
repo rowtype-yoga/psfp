@@ -1,18 +1,22 @@
 module PscIdeClient where
 
 import Prelude
+
 import Data.Either (Either(..), either)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (class Newtype, un, unwrap)
 import Data.Posix.Signal (Signal(..))
 import Data.String.Utils (endsWith)
+import Debug.Trace (spy)
 import Effect.Aff (Aff, Canceler, effectCanceler, makeAff)
+import Effect.Aff as Error
 import Effect.Class (liftEffect)
 import Effect.Class.Console (log)
+import Effect.Exception (error)
 import Effect.Ref (Ref)
 import Effect.Ref as Ref
 import Node.Buffer as Buf
-import Node.ChildProcess (ChildProcess)
+import Node.ChildProcess (ChildProcess, StdIOBehaviour(..))
 import Node.ChildProcess as CP
 import Node.Encoding (Encoding(..))
 import Node.FS.Aff (writeTextFile)
@@ -46,7 +50,6 @@ closeSocketCanceller s =
   effectCanceler
     $ unlessM
         (Socket.destroyed s) do
-        -- Socket.end s (pure unit)
         log $ "Destroying socket..."
         Socket.destroy s Nothing
 
@@ -90,10 +93,12 @@ spawnProcess ∷ Folder -> String -> Array String -> Aff ChildProcess
 spawnProcess folder command args =
   makeAff \callback -> do
     let
-      options = CP.defaultSpawnOptions { cwd = Just (un Folder folder) }
+      options = CP.defaultSpawnOptions { cwd = Just (un Folder folder), stdio = Just <$> [Ignore, Ignore, Ignore] }
     childProcess <- CP.spawn command args options
     callback (Right childProcess)
-    pure $ effectCanceler ((log $ "Killing " <> show (CP.pid childProcess)) *> CP.kill SIGKILL childProcess)
+    pure $ effectCanceler
+      $ (log $ "Killing " <> show (CP.pid childProcess))
+      *> CP.kill SIGKILL childProcess
 
 newtype PscIdeConnection
   = PscIdeConnection
@@ -132,27 +137,26 @@ loadPscIde folder port = do
 
 compileCode ∷ String -> PscIdeConnection -> Aff String
 compileCode code (PscIdeConnection { port, folder, serverProcessRef }) = do
-  serverProcess :: ChildProcess <- Ref.read serverProcessRef # liftEffect
+  serverProcess <- Ref.read serverProcessRef # liftEffect
   saveMainFile folder code
   makeAff \affCb -> do
+    log $ "Compiling on " <> show port
     socket <- Socket.createConnectionTCP port "localhost" mempty
-    -- maybe timeout?
-    Socket.onError socket (affCb <<< Left)
+    -- Socket.onError socket (affCb <<< Left)
     resultRef <- Ref.new ""
     Socket.onData socket \dataFromServer -> do
+      log $ "Data on port " <> show port
       str <- dataFromServer # either (Buf.toString UTF8) pure
       newStr <- resultRef # Ref.modify (_ <> str)
       when (newStr # endsWith "\n") do
-        Socket.endString socket "" UTF8 mempty
-    liftEffect
-      $ Socket.onClose socket case _ of
-          true -> mempty -- should be covered in onError
-          false -> do
-            res <- Ref.read resultRef
-            affCb (Right res)
+        log $ "Enough data on " <> show port <> " ending socket\n"
+        void $ Socket.endString socket "" UTF8 mempty
+        affCb (Right newStr)
     let
-      command = writeJSON buildCommand <> "\n"
-    Socket.onReady socket (void $ Socket.writeString socket command UTF8 mempty)
+      command = writeJSON buildCommand
+    Socket.onReady socket do
+      log $ "Socket " <> show port <> " ready"
+      void $ Socket.writeString socket (command <> "\n") UTF8 mempty
     pure (closeSocketCanceller socket)
 
 mkConnection ∷ Folder -> Int -> Aff PscIdeConnection

@@ -36,6 +36,7 @@ mkButton ∷
         { kids ∷ Array JSX
         , buttonType ∷ ButtonType
         , buttonProps ∷ Record attrs
+        , className ∷ String
         }
     )
 mkButton = do
@@ -135,17 +136,20 @@ mkButton = do
               pure $ increaseContrast bg tc # toHexString
           }
       }
-  component "Button" \{ kids, buttonType, buttonProps } -> React.do
+  component "Button" \{ kids, buttonType, buttonProps, className } -> React.do
     rawClasses <- useStyles
     let
       classes = flip classNames rawClasses
     -- [TODO]: How do you do this in a typesafe manner?
     pure <<< (element $ unsafeCreateDOMComponent "button")
       $ { className:
-          classes
-            [ _.btn
-            , guard (buttonType == HighlightedButton) _.highlightedButton
-            ]
+          ( classes
+              [ _.btn
+              , guard (buttonType == HighlightedButton) _.highlightedButton
+              ]
+          )
+            <> " "
+            <> className
         , disabled: buttonType == DisabledButton
         , children: kids
         }

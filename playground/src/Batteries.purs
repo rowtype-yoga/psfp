@@ -81,6 +81,7 @@ module Batteries
   , module Data.String.Unsafe
   , module Data.Tuple
   , module Data.Tuple.Nested
+  , module Data.Traversable
   , module Debug.Trace
   , module Global
   , module Global.Unsafe
@@ -88,9 +89,14 @@ module Batteries
   , module Prelude
   , module Type.Proxy
   , module Unsafe.Coerce
+  , module Simple.JSON
   ) where
 
 import Effect.Console (log, logShow)
+import Simple.JSON (
+  writeJSON, readJSON, class ReadForeign, class WriteForeign,
+  readJSON_, readJSON'
+)
 import Control.Alt
   ( class Alt
   , alt
@@ -152,6 +158,15 @@ import Control.Monad.Cont.Trans
   , mapContT
   , runContT
   , withContT
+  )
+import Data.Traversable
+  ( class Traversable, traverse, sequence
+  , traverseDefault, sequenceDefault
+  , for
+  , scanl
+  , scanr
+  , mapAccumL
+  , mapAccumR
   )
 import Control.Monad.Error.Class
   ( class MonadError
