@@ -7,14 +7,16 @@ import Card.Component (mkCard)
 import Data.Array (intercalate)
 import Data.Either (Either(..))
 import Data.Foldable (for_)
+import Data.Interpolate (i)
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
+import Debug.Trace (spy)
 import Editor (getValue, mkEditor, setValue)
 import Effect (Effect)
-import Effect.Aff (Aff, error, launchAff_, throwError)
+import Effect.Aff (Aff, attempt, error, launchAff_, message, throwError)
 import Effect.Class (liftEffect)
 import Milkis as M
-import Milkis.Impl.Window (windowFetch)
+import Milkis.Impl (FetchImpl)
 import React.Basic (ReactComponent)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
@@ -29,8 +31,8 @@ import Theme.Types (CSSTheme)
 type Props
   = { initialCode :: String, height :: String }
 
-mkCompileEditor ∷ Effect (ReactComponent Props)
-mkCompileEditor = do
+mkCompileEditor ∷ FetchImpl -> Effect (ReactComponent Props)
+mkCompileEditor fetch = do
   editor <- mkEditor
   card <- mkCard
   button <- mkButton
@@ -38,28 +40,39 @@ mkCompileEditor = do
     makeStyles \(theme :: CSSTheme) ->
       { editor:
         cssSafer
-          { background: theme.codeBackgroundColour
+          { background: theme.backgroundColour
           , height: "80%"
           , padding: "20px"
-          , margin: "20px"
+          , marginTop: "0px"
           , marginLeft: "35px"
           , marginRight: "35px"
+          , marginBottom: "35px"
           , borderRadius: "12px"
+          , boxShadow: i "22px 22px 24px " theme.backgroundColourDarker ", -22px -22px 24px " theme.backgroundColourLighter :: String
+          , display: "flex"
+          , flexDirection: "column"
           }
-      , buttons: cssSafer { float: "right", marginRight: "40px", height: "30px" }
+      , buttons:
+        cssSafer
+          { marginBottom: "4px"
+          , display: "flex"
+          , alignSelf: "flex-end"
+          }
       , compileButton: cssSafer {}
       , resetButton: cssSafer {}
       , card:
         cssSafer
-          { marginTop: "70px"
+          { marginTop: "120px"
           , marginLeft: "35px"
           , marginRight: "35px"
+          , opacity: 0
+          , zIndex: 0
           }
       , cardHidden: cssSafer { opacity: 0 }
-      , compileError: cssSafer { color: theme.red, animation: "0.7s shake ease" }
-      , runOutput: cssSafer { color: theme.green, animation: "0.4s bounceIn ease" }
+      , compileError: cssSafer { color: theme.red, opacity: 1, transition: "opacity 2.0s ease" }
+      , runOutput: cssSafer { color: theme.green, opacity: 1, transition: "opacity 2.0s ease" }
       }
-  component "StorybookEditor" \{ initialCode, height } -> React.do
+  component "CompileEditor" \{ initialCode, height } -> React.do
     maybeEditor /\ modifyEditor <- useState Nothing
     classes <- useStyles
     let
@@ -89,34 +102,36 @@ mkCompileEditor = do
           setCompileResult Nothing
           code <- getValue ed
           launchAff_ do
-            res <- compileAndRun { code }
+            res <- compileAndRun (M.fetch fetch) { code }
             setCompileResult (Just res) # liftEffect
     pure
       $ fragment
           [ R.div
-              { children: [ element editor { onLoad, height } ]
-              , className: classes.editor
-              }
-          , R.div
-              { className: classes.buttons
-              , children:
-                [ element button
-                    { buttonType: PlainButton
-                    , kids: [ R.text "Reset" ]
-                    , buttonProps:
-                      { onClick: handler_ reset
-                      }
-                    , className: classes.resetButton
+              { children:
+                [ R.div
+                    { className: classes.buttons
+                    , children:
+                      [ element button
+                          { buttonType: PlainButton
+                          , kids: [ R.text "Reset" ]
+                          , buttonProps:
+                            { onClick: handler_ reset
+                            }
+                          , className: classes.resetButton
+                          }
+                      , element button
+                          { buttonType: HighlightedButton
+                          , kids: [ R.text "Compile" ]
+                          , buttonProps:
+                            { onClick: handler_ compile
+                            }
+                          , className: classes.compileButton
+                          }
+                      ]
                     }
-                , element button
-                    { buttonType: HighlightedButton
-                    , kids: [ R.text "Compile" ]
-                    , buttonProps:
-                      { onClick: handler_ compile
-                      }
-                    , className: classes.compileButton
-                    }
+                , element editor { onLoad, height }
                 ]
+              , className: classes.editor
               }
           , element card
               { kids: [ R.text (compileResultToString compileResult) ]
@@ -124,18 +139,39 @@ mkCompileEditor = do
               }
           ]
 
-fetch ∷ M.Fetch
-fetch = M.fetch windowFetch
-
-compileAndRun :: Body.CompileRequest -> Aff (Either Body.CompileResult Body.RunResult)
-compileAndRun body = do
+compileAndRun :: M.Fetch -> Body.CompileRequest -> Aff (Either Body.CompileResult Body.RunResult)
+compileAndRun fetch body = do
   response <-
-    fetch (M.URL "/api/compileAndRun")
-      { method: M.postMethod
-      , body: writeJSON body
-      , headers: M.makeHeaders { "Content-Type": "application/json" }
-      }
-  case M.statusCode response of
-    200 -> M.json response >>= readAff <#> Right
-    422 -> M.json response >>= readAff <#> Left
-    code -> throwError (error $ "Unexpected response code " <> show code)
+    attempt
+      $ fetch (M.URL "/api/compileAndRun")
+          { method: M.postMethod
+          , body: writeJSON body
+          , headers: M.makeHeaders { "Content-Type": "application/json" }
+          }
+  case spy "resp" response of
+    Left l ->
+      pure
+        ( Left
+            { resultType: ""
+            , result:
+              [ { allSpans: []
+                , errorCode: ""
+                , errorLink: ""
+                , filename: ""
+                , message: message l
+                , moduleName: Nothing
+                , position:
+                  { endColumn: 0
+                  , endLine: 0
+                  , startColumn: 0
+                  , startLine: 0
+                  }
+                , suggestion: Nothing
+                }
+              ]
+            }
+        )
+    Right r -> case M.statusCode r of
+      200 -> M.json r >>= readAff <#> Right
+      422 -> M.json r >>= readAff <#> Left
+      code -> throwError (error $ "Unexpected response code " <> show code)

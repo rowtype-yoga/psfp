@@ -126,41 +126,42 @@ let overrides = {=}
 let additions =
       { react-testing-library =
           { dependencies =
-              [ "aff-promise"
-              , "console"
-              , "debug"
-              , "effect"
-              , "foreign"
-              , "foreign-object"
-              , "psci-support"
-              , "react-basic-hooks"
-              , "remotedata"
-              , "run"
-              , "simple-json"
-              , "spec"
-              , "spec-discovery"
-              ]
+            [ "aff-promise"
+            , "console"
+            , "debug"
+            , "effect"
+            , "foreign"
+            , "foreign-object"
+            , "psci-support"
+            , "react-basic-hooks"
+            , "remotedata"
+            , "run"
+            , "simple-json"
+            , "spec"
+            , "spec-discovery"
+            ]
           , repo =
               "https://github.com/i-am-the-slime/purescript-react-testing-library.git"
           , version = "b872928414a887ccefbe857038af4e57227dad16"
           }
       , pseudo-random =
           { dependencies =
-              [ "prelude", "console", "effect", "lcg", "arrays", "st" ]
+            [ "prelude", "console", "effect", "lcg", "arrays", "st" ]
           , repo = "https://github.com/opyapeus/purescript-pseudo-random.git"
           , version = "7715e8a2c096c480a093a5e0a6df1ece4df5ed2a"
           }
       , matryoshka =
           { dependencies =
-              [ "prelude"
-              , "fixed-points"
-              , "free"
-              , "transformers"
-              , "profunctor"
-              ]
+            [ "prelude", "fixed-points", "free", "transformers", "profunctor" ]
           , repo = "https://github.com/slamdata/purescript-matryoshka.git"
           , version = "caaca2d836d52159ba7963333996286a00428394"
           }
+      , interpolate =
+          { dependencies = [ "prelude" ]
+          , repo =
+              "https://github.com/jordanmartinez/purescript-interpolate.git"
+          , version = "v2.0.1"
+          }
       }
 
-in  upstream // overrides // additions
+in  upstream ⫽ overrides ⫽ additions

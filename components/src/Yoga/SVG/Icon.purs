@@ -1,7 +1,6 @@
 module SVG.Icon where
 
 import Prelude
-
 import CSS.Safer (cssSafer)
 import Data.Monoid (guard)
 import Effect (Effect)
@@ -13,62 +12,81 @@ import Theme.Styles (makeStyles)
 import Theme.Types (CSSTheme)
 import Unsafe.Coerce (unsafeCoerce)
 
-type ImageProps = ( width ∷ Int, height ∷ Int, className ∷ String )
+type ImageProps
+  = ( width ∷ Int, height ∷ Int, className ∷ String )
 
-type Raw r = ReactComponent { | r }
+type Raw r
+  = ReactComponent { | r }
 
 foreign import alternativeIconRaw ∷ ∀ r. Raw r
+
 alternativeIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 alternativeIcon = unsafeCoerce alternativeIconRaw
 
 foreign import apIconRaw ∷ ∀ r. Raw r
+
 apIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 apIcon = unsafeCoerce apIconRaw
 
 foreign import appendIconRaw ∷ ∀ r. Raw r
+
 appendIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 appendIcon = unsafeCoerce appendIconRaw
 
 foreign import applyIconRaw ∷ ∀ r. Raw r
+
 applyIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 applyIcon = unsafeCoerce applyIconRaw
 
 foreign import applyflippedIconRaw ∷ ∀ r. Raw r
+
 applyflippedIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 applyflippedIcon = unsafeCoerce applyflippedIconRaw
 
 foreign import bindIconRaw ∷ ∀ r. Raw r
+
 bindIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 bindIcon = unsafeCoerce bindIconRaw
 
 foreign import composeIconRaw ∷ ∀ r. Raw r
+
 composeIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 composeIcon = unsafeCoerce composeIconRaw
 
 foreign import forallIconRaw ∷ ∀ r. Raw r
+
 forallIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 forallIcon = unsafeCoerce forallIconRaw
 
 foreign import kleisliIconRaw ∷ ∀ r. Raw r
+
 kleisliIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 kleisliIcon = unsafeCoerce kleisliIconRaw
 
 foreign import mapIconRaw ∷ ∀ r. Raw r
+
 mapIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 mapIcon = unsafeCoerce mapIconRaw
 
 foreign import mapflippedIconRaw ∷ ∀ r. Raw r
+
 mapflippedIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 mapflippedIcon = unsafeCoerce mapflippedIconRaw
 
 foreign import pslogoIconRaw ∷ ∀ r. Raw r
+
 pslogoIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 pslogoIcon = unsafeCoerce pslogoIconRaw
 
 foreign import trianglelogoIconRaw ∷ ∀ r. Raw r
+
 trianglelogoIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 trianglelogoIcon = unsafeCoerce trianglelogoIconRaw
 
+foreign import playIconRaw ∷ ∀ r. Raw r
+
+playIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
+playIcon = unsafeCoerce playIconRaw
 
 data ActiveArrowDirection
   = ArrowPointsRight
@@ -80,19 +98,22 @@ mkMenu ∷ Effect (ReactComponent { activeArrowDirection ∷ ActiveArrowDirectio
 mkMenu = do
   useStyles <-
     makeStyles \(theme ∷ CSSTheme) ->
-      { arrow: cssSafer
+      { arrow:
+        cssSafer
           { fill: theme.textColour
           , transition: "0.3s ease-out"
           }
-      , arrowInactive: cssSafer
+      , arrowInactive:
+        cssSafer
           { fillOpacity: ".1"
           }
-      , svg: cssSafer
+      , svg:
+        cssSafer
           { width: "100%"
           , height: "100%"
           , "&:hover":
-              { fill: theme.backgroundColour
-              }
+            { fill: theme.backgroundColour
+            }
           }
       }
   component "MenuIcon" \{ activeArrowDirection } -> React.do

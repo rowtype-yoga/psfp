@@ -8,6 +8,7 @@ import Container.Landing (mkLandingPage)
 import Container.Sidebar (mkSidebar, mkSidebarLink)
 import Data.Nullable as Nullable
 import Effect (Effect)
+import Milkis.Impl.Window (windowFetch)
 import Polyfill.SmoothScrolling (smoothScrollPolyfill)
 import React.Basic (JSX)
 import React.Basic.DOM as R
@@ -53,6 +54,7 @@ mkContainerContent = do
           , padding: "20px"
           , minHeight: "calc(100vh - 40px)"
           , paddingLeft: "100px"
+          , zIndex: 0
           }
       , icon: cssSafer { fill: "theme.textColour" }
       }
@@ -60,7 +62,7 @@ mkContainerContent = do
   sidebar <- mkSidebar
   header <- mkHeader
   sidebarLink <- mkSidebarLink
-  editor <- mkCompileEditor
+  editor <- mkCompileEditor windowFetch
   component "ContainerContent" \{ kids } -> React.do
     classes <- useStyles
     collapsed /\ modifyCollapsed <- useState true
@@ -73,7 +75,7 @@ mkContainerContent = do
             , element sidebar
                 { collapsed
                 , modifyCollapsed
-                , children:
+                , kids:
                   [ element sidebarLink { name: "Learn", icon: element appendIcon {}, collapsed }
                   , element sidebarLink { name: "Try", icon: element bindIcon {}, collapsed }
                   , element sidebarLink { name: "Share", icon: element applyflippedIcon {}, collapsed }
@@ -94,4 +96,4 @@ initialCode =
 import Batteries
 
 main :: Effect Unit
-main ="""
+main = log "Let's do this!""""

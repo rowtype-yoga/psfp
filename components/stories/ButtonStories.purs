@@ -1,7 +1,6 @@
 module ButtonStories where
 
 import Prelude hiding (add)
-
 import Button.Component (ButtonType(..), mkButton)
 import Decorator.FullScreen (fullScreenDecorator)
 import Effect (Effect)
@@ -16,7 +15,6 @@ stories ∷ Foreign -> Effect Storybook
 stories mod =
   storiesOf "Button" do
     addDecorator fullScreenDecorator
-
     add "Button" mkExample
       [ { text: "Cancel"
         , buttonType: PlainButton
@@ -39,39 +37,41 @@ stories mod =
         , buttonProps: { onClick: handler_ (log "clicked very long...") }
         }
       ]
-    -- add "Icon Button" mkIconButton
-    --   [ { icon: alternativeIcon, buttonType: PlainButton }
-    --   , { icon: apIcon, buttonType: HighlightedButton }
-    --   , { icon: appendIcon, buttonType: PlainButton }
-    --   , { icon: applyflippedIcon, buttonType: PlainButton }
-    --   , { icon: applyIcon, buttonType: PlainButton }
-    --   , { icon: bindIcon, buttonType: PlainButton }
-    --   , { icon: composeIcon, buttonType: PlainButton }
-    --   , { icon: forallIcon, buttonType: PlainButton }
-    --   , { icon: kleisliIcon, buttonType: DisabledButton }
-    --   , { icon: mapflippedIcon, buttonType: PlainButton }
-    --   , { icon: mapIcon, buttonType: PlainButton }
-    --   , { icon: pslogoIcon, buttonType: PlainButton }
-    --   ]
+  -- add "Icon Button" mkIconButton
+  --   [ { icon: alternativeIcon, buttonType: PlainButton }
+  --   , { icon: apIcon, buttonType: HighlightedButton }
+  --   , { icon: appendIcon, buttonType: PlainButton }
+  --   , { icon: applyflippedIcon, buttonType: PlainButton }
+  --   , { icon: applyIcon, buttonType: PlainButton }
+  --   , { icon: bindIcon, buttonType: PlainButton }
+  --   , { icon: composeIcon, buttonType: PlainButton }
+  --   , { icon: forallIcon, buttonType: PlainButton }
+  --   , { icon: kleisliIcon, buttonType: DisabledButton }
+  --   , { icon: mapflippedIcon, buttonType: PlainButton }
+  --   , { icon: mapIcon, buttonType: PlainButton }
+  --   , { icon: pslogoIcon, buttonType: PlainButton }
+  --   ]
   where
   mkExample = do
     button <- mkButton
     component "ExampleButton" \{ text, buttonType, buttonProps } -> React.do
       pure
         $ element button
-            { children: [ R.text text ], buttonProps, buttonType
+            { kids: [ R.text text ]
+            , buttonProps
+            , buttonType
+            , className: ""
             }
 
-  -- mkIconButton = do
-  --   button <- mkButton
-  --   component "ExampleIconButton" \{ icon, buttonType } -> React.do
-  --     pure
-  --       $ element button
-  --           { children: [ element icon { width: 30 } ]
-  --           , buttonProps: { }
-  --           , buttonType
-  --           }
-
+-- mkIconButton = do
+--   button <- mkButton
+--   component "ExampleIconButton" \{ icon, buttonType } -> React.do
+--     pure
+--       $ element button
+--           { children: [ element icon { width: 30 } ]
+--           , buttonProps: { }
+--           , buttonType
+--           }
 loremIpsum ∷ String
 loremIpsum =
   """PureScript is a strongly-typed, purely-functional programming language that compiles"""

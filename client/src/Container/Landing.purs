@@ -70,8 +70,13 @@ mkLandingPage = do
           }
       , actionButton:
         cssSafer
-          { fontSize: "40pt"
-          , marginLeft: "5vw"
+          { marginLeft: "5vw"
+          , display: "flex"
+          }
+      , actualActionButton:
+        cssSafer
+          { paddingLeft: "10px"
+          , paddingRight: "10px"
           }
       , landingImage:
         cssSafer
@@ -119,7 +124,7 @@ mkLandingPage = do
                               }
                             , buttonType: HighlightedButton
                             , kids: [ R.text buttonText ]
-                            , className: ""
+                            , className: classes.actualActionButton
                             }
                         ]
                       }

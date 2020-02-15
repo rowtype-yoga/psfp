@@ -2,13 +2,13 @@
 Welcome to a Spago project!
 You can edit this file as you like.
 -}
-{ name =
-    "my-project"
+{ name = "my-project"
 , dependencies =
     [ "console"
     , "css"
     , "debug"
     , "effect"
+    , "interpolate"
     , "matryoshka"
     , "milkis"
     , "psci-support"
@@ -21,8 +21,6 @@ You can edit this file as you like.
     , "string-parsers"
     , "web-html"
     ]
-, packages =
-    ./packages.dhall
-, sources =
-    [ "src/**/*.purs", "test/**/*.purs" ]
+, packages = ./packages.dhall
+, sources = [ "src/**/*.purs", "test/**/*.purs" ]
 }

@@ -3,16 +3,13 @@ module PscIdeClient where
 import Prelude
 
 import Data.Either (Either(..), either)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, un, unwrap)
 import Data.Posix.Signal (Signal(..))
 import Data.String.Utils (endsWith)
-import Debug.Trace (spy)
 import Effect.Aff (Aff, Canceler, effectCanceler, makeAff)
-import Effect.Aff as Error
 import Effect.Class (liftEffect)
 import Effect.Class.Console (log)
-import Effect.Exception (error)
 import Effect.Ref (Ref)
 import Effect.Ref as Ref
 import Node.Buffer as Buf

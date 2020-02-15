@@ -1,7 +1,6 @@
 module Typography.Header where
 
 import Prelude
-
 import CSS.Safer (cssSafer)
 import Data.Array as Array
 import Data.Foldable (intercalate)

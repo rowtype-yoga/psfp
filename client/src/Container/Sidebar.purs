@@ -16,7 +16,7 @@ import Theme.Types (CSSTheme)
 mkSidebar ∷
   Effect
     ( ReactComponent
-        { children ∷ Array JSX
+        { kids ∷ Array JSX
         , modifyCollapsed ∷ (Boolean -> Boolean) -> Effect Unit
         , collapsed ∷ Boolean
         }
@@ -60,7 +60,7 @@ mkSidebar = do
           {} -- transform: "rotate(180deg)"}
       }
   menu <- mkMenu
-  component "Sidebar" \{ children, collapsed, modifyCollapsed } -> React.do
+  component "Sidebar" \{ kids, collapsed, modifyCollapsed } -> React.do
     rawClasses <- useStyles
     let
       classes = flip classNames rawClasses
@@ -81,7 +81,7 @@ mkSidebar = do
                   ]
                 }
             ]
-              <> children
+              <> kids
           }
 
 mkSidebarLink ∷ Effect (ReactComponent { name ∷ String, icon ∷ JSX, collapsed ∷ Boolean })

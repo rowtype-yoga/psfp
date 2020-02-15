@@ -4,7 +4,6 @@ import Color (Color)
 
 type Theme
   = { backgroundColour ∷ Color
-    , codeBackgroundColour ∷ Color
     , textColour ∷ Color
     , interfaceColour ∷ Color
     , highlightColour ∷ Color
@@ -22,8 +21,10 @@ type Theme
 
 type CSSTheme
   = { backgroundColour ∷ String
-    , codeBackgroundColour ∷ String
     , backgroundColourLighter ∷ String
+    , backgroundColourLightest ∷ String
+    , backgroundColourDarker ∷ String
+    , backgroundColourDarkest ∷ String
     , interfaceColour ∷ String
     , interfaceColourDarker ∷ String
     , interfaceColourDarkest ∷ String

@@ -13,6 +13,7 @@ var map = require("../../../assets/icons/map.svg");
 var mapflipped = require("../../../assets/icons/mapflipped.svg");
 var pslogo = require("../../../assets/icons/pslogo.svg");
 var trianglelogo = require("../../../assets/icons/trianglelogo.svg");
+var play = require("../../../assets/icons/play.svg");
 
 exports.alternativeIconRaw = alternative.default;
 exports.apIconRaw = ap.default;
@@ -27,3 +28,4 @@ exports.mapIconRaw = map.default;
 exports.mapflippedIconRaw = mapflipped.default;
 exports.pslogoIconRaw = pslogo.default;
 exports.trianglelogoIconRaw = trianglelogo.default;
+exports.playIconRaw = play.default;

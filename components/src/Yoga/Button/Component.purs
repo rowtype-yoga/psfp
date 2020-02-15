@@ -1,16 +1,18 @@
 module Button.Component where
 
 import Prelude
-import CSS (ColorSpace(..), mix, toHexString)
+import CSS (ColorSpace(..), contentBox, mix, toHexString)
 import CSS.Safer (cssSafer)
 import Color (fromHexString)
 import Data.Foldable (intercalate)
+import Data.Interpolate (i)
 import Data.Maybe (fromMaybe)
 import Data.Monoid (guard)
 import Effect (Effect)
 import Prim.Row (class Lacks, class Union)
 import React.Basic (JSX)
 import React.Basic.DOM (Props_button, unsafeCreateDOMComponent)
+import React.Basic.DOM as R
 import React.Basic.Hooks (ReactComponent, component, element)
 import React.Basic.Hooks as React
 import Record (union)
@@ -42,7 +44,17 @@ mkButton ∷
 mkButton = do
   useStyles <-
     makeStyles \(theme ∷ CSSTheme) ->
-      { "@keyframes gradientBG":
+      { buttonContainer:
+        cssSafer
+          { padding: "2px"
+          , background: linearGradient [ "145deg", theme.highlightColour, theme.highlightColourDark ]
+          , borderRadius: "20px"
+          , height: "40px"
+          , minWidth: "100px"
+          , boxSizing: "border-box"
+          , margin: "2px"
+          }
+      , "@keyframes gradientBG":
         cssSafer
           { "0%": { backgroundPosition: "0% 50%" }
           , "50%": { backgroundPosition: "100% 50%" }
@@ -51,38 +63,25 @@ mkButton = do
       , btn:
         cssSafer
           { background:
-            if theme.isLight then
-              theme.interfaceColourLightest
-            else
-              linearGradient
-                [ theme.interfaceColourLightest
-                , theme.interfaceColourLighter
-                ]
-          , color: theme.textColour
-          , boxShadow:
-            if theme.isLight then
-              "none"
-            else
-              "1px 1px 10px rgba(0,0,0,0.66)"
-          , border:
-            if theme.isLight then
-              "1px solid " <> theme.interfaceColourLighter
-            else
-              "none"
+            linearGradient
+              [ "145deg"
+              , theme.interfaceColourLightest
+              , theme.interfaceColourDarkest
+              ]
+          , color: theme.highlightColour --theme.textColour
           , borderRadius: "20px"
-          , padding: "0px 18px 0px 18px"
-          , marginLeft: "2px"
-          , marginRight: "2px"
-          , minWidth: "100px"
-          , height: "40px"
+          , border: "0"
+          , width: "100%"
+          , height: "36px"
           , fontFamily: theme.textFontFamily
+          , padding: "1px 18px 0px 18px"
           , letterSpacing: "0.2em"
           , textTransform: "uppercase"
           , outline: "none"
           , "&:focus":
             { background:
               linearGradient
-                [ "-5deg"
+                [ "145deg"
                 , theme.interfaceColourDarker
                 , theme.highlightColourDark
                 , theme.highlightColour
@@ -99,13 +98,19 @@ mkButton = do
             , animation: "$gradientBG 3s ease infinite"
             }
           , "&:active":
-            { background:
+            { boxShadow:
+              ( i "inset 6px 6px 6px "
+                  theme.backgroundColourDarkest
+                  ", inset -6px -6px 6px "
+                  theme.backgroundColourLightest ::
+                  String
+              )
+            , background:
               linearGradient
-                [ "180deg"
-                , theme.interfaceColourLighter
-                , theme.interfaceColourLightest
+                [ "145deg"
+                , theme.backgroundColourDarker
+                , theme.backgroundColourLighter
                 ]
-            , boxShadow: "inset 0 0 2px black"
             }
           , "&:disabled":
             { boxShadow: "0 0 0 black"
@@ -124,7 +129,7 @@ mkButton = do
               linearGradient [ theme.highlightColour, theme.highlightColourDark ]
           , "&:active":
             { background:
-              linearGradient [ theme.highlightColourDark, theme.highlightColour ]
+              linearGradient [ "145deg", theme.highlightColourDark, theme.highlightColour ]
             }
           , color:
             fromMaybe theme.textColour do
@@ -141,20 +146,26 @@ mkButton = do
     let
       classes = flip classNames rawClasses
     -- [TODO]: How do you do this in a typesafe manner?
-    pure <<< (element $ unsafeCreateDOMComponent "button")
-      $ { className:
-          ( classes
-              [ _.btn
-              , guard (buttonType == HighlightedButton) _.highlightedButton
-              ]
-          )
-            <> " "
-            <> className
-        , disabled: buttonType == DisabledButton
-        , children: kids
-        }
-          `union`
-            buttonProps
+    pure
+      $ R.div
+          { className: rawClasses.buttonContainer
+          , children:
+            [ (element $ unsafeCreateDOMComponent "button")
+                $ { className:
+                    ( classes
+                        [ _.btn
+                        , guard (buttonType == HighlightedButton) _.highlightedButton
+                        ]
+                    )
+                      <> " "
+                      <> className
+                  , disabled: buttonType == DisabledButton
+                  , children: kids
+                  }
+                    `union`
+                      buttonProps
+            ]
+          }
 
 linearGradient ∷ Array String -> String
 linearGradient elems = "linear-gradient(" <> intercalate "," elems <> ")"

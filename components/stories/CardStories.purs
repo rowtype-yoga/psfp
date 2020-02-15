@@ -1,7 +1,6 @@
 module CardStories where
 
 import Prelude hiding (add)
-
 import Card.Component (mkCard, mkCardContent, mkCardSubtitle, mkCardTitle)
 import Decorator.FullScreen (fullScreenDecorator)
 import Effect (Effect)
@@ -32,13 +31,14 @@ stories = do
             { children:
               pure
                 $ element card
-                    { children:
-                      [ element cardTitle { children: [ R.text title ] }
-                      , element cardSubtitle { children: [ R.text subtitle ] }
-                      , element cardContent { children: [ content ] }
+                    { kids:
+                      [ element cardTitle { kids: [ R.text title ] }
+                      , element cardSubtitle { kids: [ R.text subtitle ] }
+                      , element cardContent { kids: [ content ] }
                       ]
+                    , className: ""
                     }
-            , style: css { width: "400px" }
+            , style: css { width: "400px", padding: "60px", overflow: "hidden" }
             }
 
 loremIpsum ∷ String

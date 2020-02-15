@@ -1,7 +1,7 @@
 module Theme where
 
 import Prelude
-import CSS (ColorSpace(..), blue, brightness, contrast, darken, desaturate, isLight, lighten, mix, rotateHue, toHexString)
+import CSS (contrast, darken, isLight, lighten, rotateHue, toHexString)
 import Color (Color)
 import Data.Foldable (intercalate)
 import Data.Symbol (SProxy(..))
@@ -26,9 +26,14 @@ fromTheme ∷ Theme -> CSSTheme
 fromTheme theme =
   RB.build
     ( {- background -} RB.modify (f ∷ _ "backgroundColour") toHexString
-        >>> RB.modify (f ∷ _ "codeBackgroundColour") toHexString
         >>> RB.insert (f ∷ _ "backgroundColourLighter")
             (theme.backgroundColour # lighter >>> toHexString)
+        >>> RB.insert (f ∷ _ "backgroundColourLightest")
+            (theme.backgroundColour # lighter # lighter >>> toHexString)
+        >>> RB.insert (f ∷ _ "backgroundColourDarker")
+            (theme.backgroundColour # darker >>> toHexString)
+        >>> RB.insert (f ∷ _ "backgroundColourDarkest")
+            (theme.backgroundColour # darker # darker >>> toHexString)
         >>> RB.modify (f ∷ _ "interfaceColour") toHexString
         >>> RB.insert (f ∷ _ "interfaceColourLighter")
             (theme.interfaceColour # lighter >>> toHexString)
@@ -78,22 +83,8 @@ fromTheme theme =
   where
   isLightTheme = isLight theme.backgroundColour
 
-  yellower ∷ Color -> Color
-  yellower col =
-    if brightness col > 0.8 then
-      lighten 0.02 col
-    else
-      col
-        # lighten 0.1
-        # desaturate 0.03
-
-  bluer col =
-    mix HSL col blue 0.05
-      # darken 0.1
-      # desaturate 0.03
-
   lighter ∷ Color -> Color
-  lighter = yellower
+  lighter = if isLightTheme then lighten 0.04 else lighten 0.02
 
   darker ∷ Color -> Color
-  darker = bluer
+  darker = if isLightTheme then darken 0.01 else darken 0.01

@@ -2,6 +2,7 @@ module Card.Component where
 
 import Prelude
 import CSS.Safer (cssSafer)
+import Data.Interpolate (i)
 import Effect (Effect)
 import React.Basic (JSX)
 import React.Basic.DOM as R
@@ -22,14 +23,13 @@ mkCard = do
     makeStyles \(theme ∷ CSSTheme) ->
       { card:
         cssSafer
-          { background: theme.interfaceColourLighter
+          { background: (i "linear-gradient(145deg," theme.backgroundColourDarker ", " theme.backgroundColourLighter ")") :: String
           , color: theme.textColour
+          , fontFamily: theme.textFontFamily
           , margin: "20px"
           , boxShadow:
-            "1px 1px 20px rgba(0,0,0,0."
-              <> (if theme.isLight then "17" else "43")
-              <> ")"
-          , borderRadius: "5px"
+            (i "30px 30px 60px " theme.backgroundColourDarker ", -30px -30px 60px " theme.backgroundColourLighter ";") :: String
+          , borderRadius: "15px"
           , padding: "36px 40px 32px 40px"
           }
       }
