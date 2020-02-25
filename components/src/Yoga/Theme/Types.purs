@@ -17,6 +17,7 @@ type Theme
     , turquoise ∷ Color
     , red ∷ Color
     , blue ∷ Color
+    , white ∷ Color
     }
 
 type CSSTheme
@@ -49,4 +50,6 @@ type CSSTheme
     , turquoise ∷ String
     , red ∷ String
     , blue ∷ String
+    , white ∷ String
+    , fontWeightBold ∷ String
     }

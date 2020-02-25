@@ -1,7 +1,5 @@
 "use strict";
 
-import MonacoEditor from "react-monaco-editor";
-
 exports.monacoEditorImpl = async () => {
   const x = await import("react-monaco-editor");
   return x.default;
@@ -823,7 +821,7 @@ exports.nightOwlTheme = {
 
 exports.purescriptSyntax = {
   displayName: "Purescript",
-  name: "purescrript",
+  name: "purescript",
   mimeTypes: ["text/purescript"],
   fileExtensions: ["purs"],
 

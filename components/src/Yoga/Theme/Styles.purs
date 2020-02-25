@@ -5,10 +5,10 @@ module Theme.Styles
   , UseStyles
   , UseTheme
   , classNames
+  , unsafeMakeStyles
   ) where
 
 import Prelude
-
 import Data.Foldable (intercalate)
 import Effect (Effect)
 import Effect.Uncurried (EffectFn1, runEffectFn1)
@@ -23,11 +23,15 @@ foreign import data UseStyles ∷ Type -> Type -> Type
 
 foreign import makeStylesImpl ∷
   ∀ css classNames.
-  EffectFn1 {|css} (Hook (UseStyles { | css}) { | classNames })
+  EffectFn1 { | css } (Hook (UseStyles { | css }) { | classNames })
 
 foreign import makeStylesThemedImpl ∷
   ∀ theme css classNames.
-  EffectFn1 ({|theme} -> {|css}) (Hook (UseStyles { | css}) { | classNames })
+  EffectFn1 ({ | theme } -> { | css }) (Hook (UseStyles { | css }) { | classNames })
+
+foreign import unsafeMakeStyles ∷
+  ∀ theme css classNames.
+  EffectFn1 (theme -> css) (Hook (UseStyles css) { | classNames })
 
 makeStyles ∷
   ∀ theme css cssList classNames.
@@ -46,8 +50,11 @@ makeStyles_ ∷
 makeStyles_ = runEffectFn1 makeStylesImpl
 
 foreign import data UseTheme ∷ Type -> Type
-foreign import useThemeImpl ∷ ∀ classNames.
-  Hook (UseTheme ) { | classNames }
+
+foreign import useThemeImpl ∷
+  ∀ classNames.
+  Hook (UseTheme) { | classNames }
+
 useTheme ∷ Hook (UseTheme) CSSTheme
 useTheme = useThemeImpl
 

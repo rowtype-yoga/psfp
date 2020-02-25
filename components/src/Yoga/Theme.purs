@@ -73,11 +73,13 @@ fromTheme theme =
         >>> RB.modify (f ∷ _ "turquoise") toHexString
         >>> RB.modify (f ∷ _ "red") toHexString
         >>> RB.modify (f ∷ _ "blue") toHexString
+        >>> RB.modify (f ∷ _ "white") toHexString
         -- fonts
         
         >>> RB.modify (f ∷ _ "textFontFamily") (intercalate ",")
         >>> RB.modify (f ∷ _ "headingFontFamily") (intercalate ",")
         >>> RB.insert (f ∷ _ "isLight") isLightTheme
+        >>> RB.insert (f ∷ _ "fontWeightBold") "300"
     )
     theme
   where

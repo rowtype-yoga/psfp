@@ -121,7 +121,14 @@ let additions =
 let upstream =
       https://github.com/purescript/package-sets/releases/download/psc-0.13.6-20200123/packages.dhall sha256:687bb9a2d38f2026a89772c47390d02939340b01e31aaa22de9247eadd64af05
 
-let overrides = {=}
+let overrides =
+      { react-basic-hooks =
+            upstream.react-basic-hooks
+          ⫽ { repo =
+                "https://github.com/i-am-the-slime/purescript-react-basic-hooks.git"
+            , version = "e04b106ab2dfda3f9a1407420c434a908ff72b90"
+            }
+      }
 
 let additions =
       { react-testing-library =
@@ -162,6 +169,7 @@ let additions =
               "https://github.com/jordanmartinez/purescript-interpolate.git"
           , version = "v2.0.1"
           }
+      , yoga-components = ../components/spago.dhall as Location
       }
 
 in  upstream ⫽ overrides ⫽ additions

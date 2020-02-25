@@ -23,5 +23,6 @@ stories = do
     add "The Editor" (mkCompileEditor windowFetch)
       [ { initialCode
         , height: "300px"
+        , language: "purescript"
         }
       ]

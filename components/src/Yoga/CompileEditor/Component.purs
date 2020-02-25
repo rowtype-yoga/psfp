@@ -10,7 +10,6 @@ import Data.Foldable (for_)
 import Data.Interpolate (i)
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
-import Debug.Trace (spy)
 import Editor (getValue, mkEditor, setValue)
 import Effect (Effect)
 import Effect.Aff (Aff, attempt, error, launchAff_, message, throwError)
@@ -29,7 +28,7 @@ import Theme.Styles (makeStyles)
 import Theme.Types (CSSTheme)
 
 type Props
-  = { initialCode :: String, height :: String }
+  = { initialCode :: String, height :: String, language :: String }
 
 mkCompileEditor ∷ FetchImpl -> Effect (ReactComponent Props)
 mkCompileEditor fetch = do
@@ -62,8 +61,7 @@ mkCompileEditor fetch = do
       , resetButton: cssSafer {}
       , card:
         cssSafer
-          { marginTop: "120px"
-          , marginLeft: "35px"
+          { marginLeft: "35px"
           , marginRight: "35px"
           , opacity: 0
           , zIndex: 0
@@ -72,7 +70,7 @@ mkCompileEditor fetch = do
       , compileError: cssSafer { color: theme.red, opacity: 1, transition: "opacity 2.0s ease" }
       , runOutput: cssSafer { color: theme.green, opacity: 1, transition: "opacity 2.0s ease" }
       }
-  component "CompileEditor" \{ initialCode, height } -> React.do
+  component "CompileEditor" \{ initialCode, height, language } -> React.do
     maybeEditor /\ modifyEditor <- useState Nothing
     classes <- useStyles
     let
@@ -129,7 +127,7 @@ mkCompileEditor fetch = do
                           }
                       ]
                     }
-                , element editor { onLoad, height }
+                , element editor { onLoad, height, language }
                 ]
               , className: classes.editor
               }
@@ -148,7 +146,7 @@ compileAndRun fetch body = do
           , body: writeJSON body
           , headers: M.makeHeaders { "Content-Type": "application/json" }
           }
-  case spy "resp" response of
+  case response of
     Left l ->
       pure
         ( Left

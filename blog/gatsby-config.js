@@ -1,24 +1,25 @@
 const path = require("path");
-var proxy = require("http-proxy-middleware")
+var proxy = require("http-proxy-middleware");
 
 module.exports = {
   siteMetadata: {
-    title: "Gatsby Starter MDX Basic",
-    description:
-      "Kick off your next, great Gatsby project with this default starter. This barebones starter ships with the main Gatsby configuration files you might need.",
-    author: "@chrisbiscardi"
+    title: "Rowtype Yoga",
+    description: "Rowtype Yoga",
+    author: "Mark Eibes"
   },
   developMiddleware: app => {
     app.use(
-      "/api", proxy({
+      "/api",
+      proxy({
         target: "http://127.0.0.1:14188",
         pathRewrite: {
-          "/api": "",
+          "/api": ""
         }
       })
-    )
+    );
   },
   plugins: [
+    "gatsby-plugin-purescript",
     {
       resolve: `gatsby-plugin-mdx`,
       options: {
@@ -30,9 +31,9 @@ module.exports = {
       options: {
         custom: {
           families: ["Rubik"],
-          urls: ["/fonts/fonts.css"],
-        },
-      },
+          urls: ["/fonts/fonts.css"]
+        }
+      }
     },
     {
       resolve: `gatsby-plugin-alias-imports`,
@@ -59,7 +60,6 @@ module.exports = {
         path: `${__dirname}/src/pages`
       }
     },
-    "gatsby-plugin-purescript",
     "gatsby-transformer-sharp",
     "gatsby-plugin-sharp",
     {
@@ -71,9 +71,9 @@ module.exports = {
         background_color: "#663399",
         theme_color: "#663399",
         display: "minimal-ui",
-        icon: "src/images/gatsby-icon.png" // This path is relative to the root of the site.
+        icon: "src/images/logo.png" // This path is relative to the root of the site.
       }
-    }
+    },
     // this (optional) plugin enables Progressive Web App + Offline functionality
     // To learn more, visit: https://gatsby.app/offline
     // 'gatsby-plugin-offline',

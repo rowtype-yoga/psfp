@@ -1,27 +1,25 @@
 import { Link } from 'gatsby'
 
 import Layout from '../components/layout'
-import Image from '../components/image'
 import SEO from '../components/seo'
 
 <SEO title="Home" keywords={['gatsby', 'application', 'react']} />
+
+# Welcome to baby's first tutorial!
+
+Try some PureScript here.
 
 ```purescript
 module Main where
 import Batteries
 
 main :: Effect Unit
-main = log "Hello!"
+main = log $ "Hello!" <> show heinz
+
+heinz = 7
 ```
 
-# Hi people
-
-Welcome to your new Gatsby site.
 
 Now go build something great.
-
-<div style={{ maxWidth: '300px', marginBottom: '1.45rem' }}>
-  <Image />
-</div>
 <Link to="/page-2/">Go to page 2</Link>
 

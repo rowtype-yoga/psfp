@@ -9,9 +9,9 @@ import Data.Nullable (Nullable)
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (Aff)
+import Effect.Aff.Compat (EffectFn1)
 import Effect.Class (liftEffect)
-import Effect.Uncurried (EffectFn2, mkEffectFn2)
-import Effect.Unsafe (unsafePerformEffect)
+import Effect.Uncurried (EffectFn2, mkEffectFn1, mkEffectFn2)
 import Foreign (Foreign, unsafeToForeign)
 import Prim.Row (class Union)
 import React.Basic (JSX, ReactComponent, Ref, element, fragment)
@@ -28,7 +28,7 @@ type EditorProps
   = ( value ∷ String
     , language ∷ String
     , editorDidMount ∷ EffectFn2 Editor Node Unit
-    , editorWillMount ∷ Monaco -> Unit
+    , editorWillMount ∷ EffectFn1 Monaco Unit
     , theme ∷ String
     , line ∷ Number
     , ref ∷ Ref (Nullable HTMLElement)
@@ -82,14 +82,15 @@ foreign import setMonarchTokensProviderImpl ∷ Monaco -> String -> MonarchLangu
 
 initEditor ∷ Monaco -> Effect Unit
 initEditor monaco = do
-  defineThemeImpl monaco darkThemeName nightOwlTheme # liftEffect
-  defineThemeImpl monaco lightThemeName vsCodeTheme # liftEffect
-  registerLanguageImpl monaco "purescript" # liftEffect
-  setMonarchTokensProviderImpl monaco "purescript" purescriptSyntax # liftEffect
+  defineThemeImpl monaco darkThemeName nightOwlTheme
+  defineThemeImpl monaco lightThemeName vsCodeTheme
+  registerLanguageImpl monaco "purescript"
+  setMonarchTokensProviderImpl monaco "purescript" purescriptSyntax
 
 type Props
   = { onLoad ∷ Editor -> Effect Unit
     , height ∷ String
+    , language ∷ String
     }
 
 mkEditor ∷ Effect (ReactComponent Props)
@@ -105,7 +106,7 @@ mkEditor = do
           , backgroundColor: theme.backgroundColour
           }
       }
-  component "Editor" \{ onLoad, height } -> React.do
+  component "Editor" \{ onLoad, height, language } -> React.do
     classes <- useStyles
     maybeEditor /\ modifyEditor <- useState Nothing
     useAff unit do
@@ -126,7 +127,7 @@ mkEditor = do
                           , height
                           , options:
                             unsafeToForeign
-                              { fontFamily: "PragmataPro"
+                              { fontFamily: "PragmataPro Liga"
                               , fontLigatures: true
                               , fontSize: "16pt"
                               , lineNumbers: "off"
@@ -137,11 +138,10 @@ mkEditor = do
                               , minimap: { enabled: false }
                               , scrollBeyondLastLine: false
                               }
-                          , language: "purescript"
+                          , language
                           -- https://microsoft.github.io/monaco-editor/playground.html#extending-language-services-custom-languages
-                          , editorDidMount:
-                            mkEffectFn2 \e _ -> onLoad e
-                          , editorWillMount: \x -> unsafePerformEffect (initEditor x)
+                          , editorDidMount: mkEffectFn2 \e _ -> onLoad e
+                          , editorWillMount: mkEffectFn1 initEditor
                           }
                 ]
               }

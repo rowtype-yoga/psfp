@@ -1,12 +1,12 @@
 {
-  "name": "gatsby-starter-mdx-basic",
-  "description": "Gatsby starter MDX basic",
+  "name": "rowtype-yoga-blog",
+  "description": "Rowtype Yoga Blog",
   "version": "1.0.0",
-  "author": "Chris Biscardi <chris@christopherbiscardi.com>",
+  "author": "Mark Eibes",
   "dependencies": {
+    "@material-ui/styles": "^4.9.0",
     "@mdx-js/mdx": "^1.1.5",
     "@mdx-js/react": "^1.1.5",
-    "@monaco-editor/react": "^3.1.0",
     "gatsby": "^2.13.50",
     "gatsby-image": "^2.2.8",
     "gatsby-plugin-alias-imports": "^1.0.5",
@@ -40,7 +40,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
-    "prettier": "^1.18.2"
+    "css-loader": "^3.4.2",
+    "prettier": "^1.18.2",
+    "style-loader": "^1.1.3"
   },
   "repository": {
     "type": "git",
