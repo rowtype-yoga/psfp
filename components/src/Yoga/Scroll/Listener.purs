@@ -1,9 +1,6 @@
-module Scroll.Listener
-  ( registerListener )
-  where
+module Yoga.Scroll.Listener (registerListener) where
 
 import Prelude
-
 import Effect (Effect)
 import Web.Event.Event (EventType(..))
 import Web.Event.EventTarget (EventListener, addEventListener, removeEventListener)

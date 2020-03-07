@@ -1,15 +1,15 @@
-module Card.Component where
+module Yoga.Card.Component where
 
 import Prelude
-import CSS.Safer (cssSafer)
+import Yoga.CSS.Safer (cssSafer)
 import Data.Interpolate (i)
 import Effect (Effect)
 import React.Basic (JSX)
 import React.Basic.DOM as R
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
-import Theme.Styles (classNames, makeStyles)
-import Theme.Types (CSSTheme)
+import Yoga.Theme.Styles (classNames, makeStyles)
+import Yoga.Theme.Types (CSSTheme)
 
 mkCard ∷
   Effect

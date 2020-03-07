@@ -1,7 +1,7 @@
-module Typography.Header where
+module Yoga.Typography.Header where
 
 import Prelude
-import CSS.Safer (cssSafer)
+import Yoga.CSS.Safer (cssSafer)
 import Data.Array as Array
 import Data.Foldable (intercalate)
 import Data.Maybe (Maybe)
@@ -9,8 +9,8 @@ import Effect (Effect)
 import React.Basic.DOM as R
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
-import Theme.Styles (makeStyles)
-import Theme.Types (CSSTheme)
+import Yoga.Theme.Styles (makeStyles)
+import Yoga.Theme.Types (CSSTheme)
 
 data HeadingLevel
   = H1

@@ -1,8 +1,8 @@
-module SVG.Image where
+module Yoga.SVG.Image where
 
 import Prelude
-import CSS.Safer (cssSafer)
-import DOM.Hook (useBoundingBox)
+import Yoga.CSS.Safer (cssSafer)
+import Yoga.DOM.Hook (useBoundingBox)
 import Data.Array (elem, foldl, head, intercalate, snoc, uncons, zip, (:))
 import Data.Int (round, toNumber)
 import Data.Maybe (Maybe(..), maybe)
@@ -17,10 +17,10 @@ import React.Basic.DOM as HTML
 import React.Basic.DOM.SVG as SVG
 import React.Basic.Hooks (ReactComponent)
 import React.Basic.Hooks as React
-import SVG.Icon (Raw)
-import Scroll.Hook (useScrollYPosition)
-import Theme.Styles (makeStyles, useTheme)
-import Theme.Types (CSSTheme)
+import Yoga.SVG.Icon (Raw)
+import Yoga.Scroll.Hook (useScrollYPosition)
+import Yoga.Theme.Styles (makeStyles, useTheme)
+import Yoga.Theme.Types (CSSTheme)
 
 foreign import landingPageDarkRaw ∷ ∀ r. Raw r
 

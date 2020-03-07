@@ -1,12 +1,11 @@
-import { configure, forceReRender } from '@storybook/react';
-import equal from 'deep-equal';
+import { configure, forceReRender } from "@storybook/react";
 
-const req = require.context('../stories/', true, /Stories\.purs$/);
+const localStories = require.context("../src/", true, /Stories\.purs$/);
 
 function loadStories() {
-  req.keys().forEach(filename => {
-    req(filename).stories();
-  })
+  localStories.keys().forEach(filename => {
+    localStories(filename).stories();
+  });
 }
 
 configure(loadStories, module);

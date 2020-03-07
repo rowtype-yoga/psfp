@@ -1,7 +1,7 @@
-module Editor where
+module Yoga.Editor where
 
 import Prelude
-import CSS.Safer (cssSafer)
+import Yoga.CSS.Safer (cssSafer)
 import Control.Promise (Promise)
 import Control.Promise as Promise
 import Data.Maybe (Maybe(..), maybe)
@@ -19,8 +19,8 @@ import React.Basic.DOM as R
 import React.Basic.Hooks (component, useState)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Aff (useAff)
-import Theme.Styles (makeStyles, useTheme)
-import Theme.Types (CSSTheme)
+import Yoga.Theme.Styles (makeStyles, useTheme)
+import Yoga.Theme.Types (CSSTheme)
 import Web.DOM (Node)
 import Web.HTML (HTMLElement)
 

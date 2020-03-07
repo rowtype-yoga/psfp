@@ -1,8 +1,8 @@
-module EditorStories where
+module Yoga.CompileEditor.Stories where
 
 import Prelude hiding (add)
-import CompileEditor.Component (mkCompileEditor)
-import Decorator.FullScreen (fullScreenDecorator)
+import Yoga.CompileEditor.Component (mkCompileEditor)
+import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Effect (Effect)
 import Milkis.Impl.Window (windowFetch)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)

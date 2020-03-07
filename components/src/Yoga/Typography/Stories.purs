@@ -1,12 +1,11 @@
-module TypographyStories where
+module Yoga.Typography.Stories where
 
 import Prelude hiding (add)
-
 import Data.Maybe (Maybe(..))
-import Decorator.FullScreen (fullScreenDecorator)
+import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Effect (Effect)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
-import Typography.Header (HeadingLevel(..), mkH)
+import Yoga.Typography.Header (HeadingLevel(..), mkH)
 
 stories ∷ Effect Storybook
 stories = do
@@ -32,8 +31,8 @@ stories = do
 
 loremIpsum ∷ String
 loremIpsum =
-  """PureScript is a strongly-typed, purely-functional programming language that compiles""" <>
-  """to JavaScript. It can be used to develop web applications, server side apps, and als""" <>
-  """o desktop applications with use of Electron. Its syntax is mostly comparable to that""" <>
-  """of Haskell. In addition, it introduces row polymorphism and extensible records.[2] A""" <>
-  """lso, contrary to Haskell, PureScript adheres to a strict evaluation strategy."""
+  """PureScript is a strongly-typed, purely-functional programming language that compiles"""
+    <> """to JavaScript. It can be used to develop web applications, server side apps, and als"""
+    <> """o desktop applications with use of Electron. Its syntax is mostly comparable to that"""
+    <> """of Haskell. In addition, it introduces row polymorphism and extensible records.[2] A"""
+    <> """lso, contrary to Haskell, PureScript adheres to a strict evaluation strategy."""

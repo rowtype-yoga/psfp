@@ -8,8 +8,8 @@ import Effect.Console (log)
 import Partial.Unsafe (unsafePartial)
 import React.Basic (JSX, element)
 import React.Basic.DOM as ReactDOM
-import Theme (fromTheme)
-import Theme.Default (darkTheme)
+import Yoga.Theme (fromTheme)
+import Yoga.Theme.Default (darkTheme)
 import Web.DOM.NonElementParentNode (getElementById) as DOM
 import Web.HTML (window) as DOM
 import Web.HTML.HTMLDocument (toNonElementParentNode) as DOM

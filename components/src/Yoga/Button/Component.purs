@@ -1,8 +1,8 @@
-module Button.Component where
+module Yoga.Button.Component where
 
 import Prelude
-import CSS (ColorSpace(..), contentBox, mix, toHexString)
-import CSS.Safer (cssSafer)
+import CSS (ColorSpace(..), mix, toHexString)
+import Yoga.CSS.Safer (cssSafer)
 import Color (fromHexString)
 import Data.Foldable (intercalate)
 import Data.Interpolate (i)
@@ -16,9 +16,9 @@ import React.Basic.DOM as R
 import React.Basic.Hooks (ReactComponent, component, element)
 import React.Basic.Hooks as React
 import Record (union)
-import Theme (increaseContrast)
-import Theme.Styles (classNames, makeStyles)
-import Theme.Types (CSSTheme)
+import Yoga.Theme (increaseContrast)
+import Yoga.Theme.Styles (classNames, makeStyles)
+import Yoga.Theme.Types (CSSTheme)
 
 data ButtonType
   = PlainButton

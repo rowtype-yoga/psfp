@@ -1,4 +1,4 @@
-module Polyfill.SmoothScrolling where
+module Yoga.Polyfill.SmoothScrolling where
 
 import Prelude
 import Effect (Effect)

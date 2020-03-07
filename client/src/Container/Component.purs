@@ -1,23 +1,23 @@
 module Container.Component where
 
 import Prelude
-import CSS.Safer (cssSafer)
-import CompileEditor.Component (mkCompileEditor)
+import Yoga.CSS.Safer (cssSafer)
+import Yoga.CompileEditor.Component (mkCompileEditor)
 import Container.Header (mkHeader)
 import Container.Landing (mkLandingPage)
 import Container.Sidebar (mkSidebar, mkSidebarLink)
 import Data.Nullable as Nullable
 import Effect (Effect)
 import Milkis.Impl.Window (windowFetch)
-import Polyfill.SmoothScrolling (smoothScrollPolyfill)
+import Yoga.Polyfill.SmoothScrolling (smoothScrollPolyfill)
 import React.Basic (JSX)
 import React.Basic.DOM as R
 import React.Basic.Hooks (ReactComponent, component, element, useRef, useState, (/\))
 import React.Basic.Hooks as React
-import SVG.Icon (appendIcon, applyflippedIcon, bindIcon, mapIcon)
-import Theme.Provider (mkThemeProvider)
-import Theme.Styles (makeStyles)
-import Theme.Types (CSSTheme)
+import Yoga.SVG.Icon (appendIcon, applyflippedIcon, bindIcon, mapIcon)
+import Yoga.Theme.Provider (mkThemeProvider)
+import Yoga.Theme.Styles (makeStyles)
+import Yoga.Theme.Types (CSSTheme)
 
 mkContainer ∷ Effect (ReactComponent { theme ∷ CSSTheme, kids ∷ Array JSX })
 mkContainer = do
@@ -84,7 +84,7 @@ mkContainerContent = do
                 }
             , R.div
                 { className: classes.content
-                , children: [ element editor { initialCode, height: "50vh" } ] <> kids
+                , children: [ element editor { initialCode, height: "50vh", language: "purescript" } ] <> kids
                 }
             ]
           }

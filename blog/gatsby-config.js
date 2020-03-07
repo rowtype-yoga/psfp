@@ -5,7 +5,8 @@ module.exports = {
   siteMetadata: {
     title: "Rowtype Yoga",
     description: "Rowtype Yoga",
-    author: "Mark Eibes"
+    author: "Mark Eibes",
+    menuLinks: [{ name: "home", link: "/" }]
   },
   developMiddleware: app => {
     app.use(
@@ -20,6 +21,7 @@ module.exports = {
   },
   plugins: [
     "gatsby-plugin-purescript",
+    { resolve: "gatsby-plugin-react-svg" },
     {
       resolve: `gatsby-plugin-mdx`,
       options: {
@@ -73,7 +75,7 @@ module.exports = {
         display: "minimal-ui",
         icon: "src/images/logo.png" // This path is relative to the root of the site.
       }
-    },
+    }
     // this (optional) plugin enables Progressive Web App + Offline functionality
     // To learn more, visit: https://gatsby.app/offline
     // 'gatsby-plugin-offline',

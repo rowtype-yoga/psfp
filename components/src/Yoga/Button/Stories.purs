@@ -1,18 +1,17 @@
-module ButtonStories where
+module Yoga.Button.Stories where
 
 import Prelude hiding (add)
-import Button.Component (ButtonType(..), mkButton)
-import Decorator.FullScreen (fullScreenDecorator)
+import Yoga.Button.Component (ButtonType(..), mkButton)
+import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Effect (Effect)
 import Effect.Console (log)
-import Foreign (Foreign)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
 import React.Basic.Hooks (component, element)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
 
-stories ∷ Foreign -> Effect Storybook
-stories mod =
+stories ∷ Effect Storybook
+stories =
   storiesOf "Button" do
     addDecorator fullScreenDecorator
     add "Button" mkExample

@@ -1,16 +1,16 @@
-module CompileEditor.Component where
+module Yoga.CompileEditor.Component where
 
 import Prelude hiding (add)
-import Button.Component (ButtonType(..), mkButton)
-import CSS.Safer (cssSafer)
-import Card.Component (mkCard)
+import Yoga.Button.Component (ButtonType(..), mkButton)
+import Yoga.CSS.Safer (cssSafer)
+import Yoga.Card.Component (mkCard)
 import Data.Array (intercalate)
 import Data.Either (Either(..))
 import Data.Foldable (for_)
 import Data.Interpolate (i)
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
-import Editor (getValue, mkEditor, setValue)
+import Yoga.Editor (getValue, mkEditor, setValue)
 import Effect (Effect)
 import Effect.Aff (Aff, attempt, error, launchAff_, message, throwError)
 import Effect.Class (liftEffect)
@@ -24,8 +24,8 @@ import React.Basic.Hooks as React
 import Shared.Json (readAff)
 import Shared.Models.Body as Body
 import Simple.JSON (writeJSON)
-import Theme.Styles (makeStyles)
-import Theme.Types (CSSTheme)
+import Yoga.Theme.Styles (makeStyles)
+import Yoga.Theme.Types (CSSTheme)
 
 type Props
   = { initialCode :: String, height :: String, language :: String }

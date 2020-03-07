@@ -1,4 +1,4 @@
-module Theme where
+module Yoga.Theme where
 
 import Prelude
 import CSS (contrast, darken, isLight, lighten, rotateHue, toHexString)
@@ -6,7 +6,7 @@ import Color (Color)
 import Data.Foldable (intercalate)
 import Data.Symbol (SProxy(..))
 import Record.Builder as RB
-import Theme.Types (Theme, CSSTheme)
+import Yoga.Theme.Types (Theme, CSSTheme)
 
 increaseContrast ∷ Color -> Color -> Color
 increaseContrast contrastWith = go 0

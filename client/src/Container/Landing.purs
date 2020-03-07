@@ -1,8 +1,8 @@
 module Container.Landing where
 
 import Prelude
-import Button.Component (ButtonType(..), mkButton)
-import CSS.Safer (cssSafer)
+import Yoga.Button.Component (ButtonType(..), mkButton)
+import Yoga.CSS.Safer (cssSafer)
 import Data.Foldable (for_)
 import Data.Nullable (null)
 import Effect (Effect)
@@ -11,12 +11,12 @@ import React.Basic.DOM as R
 import React.Basic.Events (handler_)
 import React.Basic.Hooks (ReactComponent, component, element, readRefMaybe, useRef)
 import React.Basic.Hooks as React
-import SVG.Icon (trianglelogoIcon)
-import SVG.Image (mkLandingPageBackground)
-import Scroll.Hook (useScrollYPosition)
-import Theme.Styles (makeStyles, useTheme)
-import Theme.Types (CSSTheme)
-import Typography.Header (mkH)
+import Yoga.SVG.Icon (trianglelogoIcon)
+import Yoga.SVG.Image (mkLandingPageBackground)
+import Yoga.Scroll.Hook (useScrollYPosition)
+import Yoga.Theme.Styles (makeStyles, useTheme)
+import Yoga.Theme.Types (CSSTheme)
+import Yoga.Typography.Header (mkH)
 import Unsafe.Coerce (unsafeCoerce)
 import Web.HTML (window)
 import Web.HTML.HTMLElement (getBoundingClientRect)

@@ -1,4 +1,4 @@
-module Theme.Types where
+module Yoga.Theme.Types where
 
 import Color (Color)
 

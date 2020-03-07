@@ -7,7 +7,7 @@ import Effect (Effect)
 import React.Basic.Hooks (component, element)
 import React.Basic.Hooks as React
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
-import Theme.Styles (useTheme)
+import Yoga.Theme.Styles (useTheme)
 
 stories ∷ Effect Storybook
 stories = do

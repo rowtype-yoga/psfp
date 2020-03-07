@@ -1,7 +1,7 @@
-module Decorator.FullScreen where
+module Storybook.Decorator.FullScreen where
 
 import Prelude
-import CSS.Safer (cssSafer)
+import Yoga.CSS.Safer (cssSafer)
 import Data.Array (find)
 import Data.Map (Map)
 import Data.Maybe (Maybe, fromMaybe)
@@ -15,11 +15,11 @@ import React.Basic.Events (handler)
 import React.Basic.Hooks (ReactComponent, component, element, useState, (/\))
 import React.Basic.Hooks as React
 import Simple.JSON (readJSON_, writeJSON)
-import Theme (fromTheme)
-import Theme.Default (darkTheme, lightTheme)
-import Theme.Provider (mkThemeProvider)
-import Theme.Styles (makeStyles_)
-import Theme.Types (CSSTheme)
+import Yoga.Theme (fromTheme)
+import Yoga.Theme.Default (darkTheme, lightTheme)
+import Yoga.Theme.Provider (mkThemeProvider)
+import Yoga.Theme.Styles (makeStyles_)
+import Yoga.Theme.Types (CSSTheme)
 import Web.HTML (window)
 import Web.HTML.Window (localStorage)
 import Web.Storage.Storage (getItem, setItem)

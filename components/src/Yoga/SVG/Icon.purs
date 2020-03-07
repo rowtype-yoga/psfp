@@ -1,15 +1,15 @@
-module SVG.Icon where
+module Yoga.SVG.Icon where
 
 import Prelude
-import CSS.Safer (cssSafer)
+import Yoga.CSS.Safer (cssSafer)
 import Data.Monoid (guard)
 import Effect (Effect)
 import Prim.Row (class Union)
 import React.Basic.DOM.SVG as SVG
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
-import Theme.Styles (makeStyles)
-import Theme.Types (CSSTheme)
+import Yoga.Theme.Styles (makeStyles)
+import Yoga.Theme.Types (CSSTheme)
 import Unsafe.Coerce (unsafeCoerce)
 
 type ImageProps

@@ -1,32 +1,39 @@
 module PSLayout where
 
 import Prelude
-import CSS.Safer (cssSafer)
-import CSSBaseline (mkCssBaseline)
-import CompileEditor.Component (mkCompileEditor)
+import Yoga.CSS.Safer (cssSafer)
+import Yoga.Theme.CSSBaseline (mkCssBaseline)
+import Yoga.CompileEditor.Component (mkCompileEditor)
 import Data.Array as Array
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
 import Data.String as String
 import Effect (Effect)
+import Yoga.Header.Component (mkHeader)
 import Milkis.Impl (FetchImpl)
+import Yoga.Panel.Component (makeComponent) as Panel
 import React.Basic (JSX, ReactComponent)
 import React.Basic.DOM (unsafeCreateDOMComponent)
 import React.Basic.DOM as R
-import React.Basic.Hooks (ReactChildren, componentWithChildren, element)
+import React.Basic.Hooks (ReactChildren, component, componentWithChildren, element, reactChildrenFromArray, reactChildrenToArray)
 import React.Basic.Hooks as React
-import Theme (fromTheme)
-import Theme.Default (darkTheme)
-import Theme.Provider (mkThemeProvider)
-import Theme.Styles (makeStyles)
-import Theme.Types (CSSTheme)
-import Typography.Header (HeadingLevel(..), mkH)
-import Typography.Paragraph (mkP)
-import Unsafe.Coerce (unsafeCoerce)
+import Yoga.Theme (fromTheme)
+import Yoga.Theme.Default (darkTheme)
+import Yoga.Theme.Provider (mkThemeProvider)
+import Yoga.Theme.Styles (makeStyles)
+import Yoga.Theme.Types (CSSTheme)
+import Yoga.Typography.Header (HeadingLevel(..), mkH)
+import Yoga.Typography.Paragraph (mkP)
 
 type SiteQueryResult
-  = { site ∷ { siteMetadata ∷ { title ∷ String } } }
+  = { site ∷
+      { siteMetadata ∷
+        { title ∷ String
+        , menuLinks ∷ Array { name ∷ String, link ∷ String }
+        }
+      }
+    }
 
 type PreProps
   = { children ∷
@@ -41,11 +48,10 @@ type PreProps
     }
 
 mkLayout ∷
-  ∀ children.
   FetchImpl ->
   Effect
     ( ReactComponent
-        { children ∷ ReactChildren children
+        { children ∷ ReactChildren JSX
         , siteInfo ∷ SiteQueryResult
         }
     )
@@ -64,18 +70,19 @@ mkLayout fetchImpl = do
             ]
           }
 
-mkMdxProviderComponent ::
-  ∀ children.
+mkMdxProviderComponent ∷
   FetchImpl ->
   Effect
     ( ReactComponent
-        { children ∷ ReactChildren children
+        { children ∷ ReactChildren JSX
         , siteInfo ∷ SiteQueryResult
         }
     )
 mkMdxProviderComponent fetchImpl = do
   cssBaseline <- mkCssBaseline
   editor <- mkCompileEditor fetchImpl
+  sidebar <- mkSidebar
+  header <- mkHeader
   h <- mkH
   p <- mkP
   useStyles <-
@@ -94,6 +101,11 @@ mkMdxProviderComponent fetchImpl = do
           { marginLeft: "35px"
           , marginRight: "35px"
           }
+      , flexer:
+        cssSafer
+          { display: "flex"
+          , flexDirection: "row"
+          }
       }
   componentWithChildren "MDXProviderComponent" \{ children, siteInfo } -> React.do
     classes <- useStyles
@@ -103,12 +115,9 @@ mkMdxProviderComponent fetchImpl = do
       siteInfoJSX =
         R.div
           { children:
-            [ element h
-                { level: H1
-                , text: siteInfo.site.siteMetadata.title
-                , className: Nothing
-                }
-            , R.div_ (unsafeCoerce children)
+            [ element header { kids: [ R.text siteInfo.site.siteMetadata.title ], className: "" }
+            , element sidebar { links: siteInfo.site.siteMetadata.menuLinks }
+            , R.div_ (reactChildrenToArray children)
             ]
           }
 
@@ -170,10 +179,32 @@ mkMdxProviderComponent fetchImpl = do
     pure
       $ baseline
           [ element mdxProvider
-              { children: [ siteInfoJSX ]
+              { children:
+                [ siteInfoJSX
+                ]
               , components: mdxComponents
               }
           ]
+
+mkSidebar = do
+  panel <- Panel.makeComponent
+  useStyles <-
+    makeStyles \(theme :: CSSTheme) ->
+      { flexer:
+        cssSafer
+          { display: "flex"
+          , flexDirection: "row"
+          , width: "300px"
+          , height: "300px"
+          }
+      }
+  component "Sidebar" \{ links } -> React.do
+    classes <- useStyles
+    pure
+      $ element panel
+          { kids: [ R.div_ [ R.text "hahahaha"] ]
+          , className: Just classes.flexer
+          }
 
 foreign import mdxProvider ∷
   ∀ r.

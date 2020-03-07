@@ -1,8 +1,8 @@
-module CardStories where
+module Yoga.Card.Stories where
 
 import Prelude hiding (add)
-import Card.Component (mkCard, mkCardContent, mkCardSubtitle, mkCardTitle)
-import Decorator.FullScreen (fullScreenDecorator)
+import Yoga.Card.Component (mkCard, mkCardContent, mkCardSubtitle, mkCardTitle)
+import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Effect (Effect)
 import React.Basic.DOM (css)
 import React.Basic.DOM as R

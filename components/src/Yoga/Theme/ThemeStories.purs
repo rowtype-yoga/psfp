@@ -1,14 +1,13 @@
-module ThemeStories where
+module Yoga.Theme.Stories where
 
 import Prelude hiding (add)
-
 import Effect (Effect)
 import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Hooks (component, element)
 import Storybook.React (Storybook, add, storiesOf)
-import Theme (fromTheme)
-import Theme.Default (darkTheme, lightTheme)
+import Yoga.Theme (fromTheme)
+import Yoga.Theme.Default (darkTheme, lightTheme)
 
 stories ∷ Effect Storybook
 stories = do
@@ -72,11 +71,11 @@ stories = do
     component "Swatch" \{ name, colour, fontFamily } -> React.do
       pure
         $ R.div
-            { style: css{ display: "flex", flexDirection: "column", alignItems: "center" }
+            { style: css { display: "flex", flexDirection: "column", alignItems: "center" }
             , children:
               [ R.div
                   { children: [ R.text name ]
-                  , style: css{ fontFamily, paddingBottom: "5px" }
+                  , style: css { fontFamily, paddingBottom: "5px" }
                   }
               , R.div
                   { style:

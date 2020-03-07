@@ -1,15 +1,15 @@
-module CSSBaseline where
+module Yoga.Theme.CSSBaseline where
 
 import Prelude hiding (add)
-import CSS.Safer (cssSafer)
+import Yoga.CSS.Safer (cssSafer)
 import Effect (Effect)
 import Effect.Uncurried (runEffectFn1)
 import React.Basic (ReactComponent)
 import React.Basic.DOM (CSS)
 import React.Basic.Hooks (JSX, component, fragment)
 import React.Basic.Hooks as React
-import Theme.Styles (unsafeMakeStyles)
-import Theme.Types (CSSTheme)
+import Yoga.Theme.Styles (unsafeMakeStyles)
+import Yoga.Theme.Types (CSSTheme)
 import Unsafe.Coerce (unsafeCoerce)
 
 mkCssBaseline ::
@@ -56,5 +56,8 @@ styles theme =
           { backgroundColor: theme.backgroundColour
           }
         }
+      }
+    , ".textColouredIcon":
+      { fill: theme.textColour
       }
     }

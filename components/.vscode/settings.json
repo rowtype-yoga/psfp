@@ -1,4 +1,5 @@
 {
   "editor.formatOnSave": true,
-  "purescript.buildCommand": "npx spago build --purs-args '--json-errors'"
+  "purescript.buildCommand": "npx spago build --purs-args '--json-errors'",
+  "search.exclude": { "**/.history": true }
 }

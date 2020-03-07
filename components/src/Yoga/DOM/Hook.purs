@@ -1,7 +1,6 @@
-module DOM.Hook where
+module Yoga.DOM.Hook where
 
 import Prelude
-
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Data.Nullable (Nullable)
@@ -37,13 +36,13 @@ useBoundingBox =
     bb /\ modifyBb <- useState Nothing
     useLayoutEffect unit do
       maybeRef <- readRefMaybe nullableRef
-      let toHTMLOrSVGElement = unsafeCoerce -- [TODO] Make a bit safer?
+      let
+        toHTMLOrSVGElement = unsafeCoerce -- [TODO] Make a bit safer?
       for_ (maybeRef <#> toHTMLOrSVGElement) \elem -> do
-          rect <- getBoundingClientRect elem
-          modifyBb (const $ Just rect)
+        rect <- getBoundingClientRect elem
+        modifyBb (const $ Just rect)
       pure (pure unit)
     pure (bb /\ nullableRef)
-
 
 newtype UseViewportHeight hooks
   = UseViewportHeight (UseLayoutEffect Unit (UseState (Maybe Number) hooks))
@@ -56,7 +55,8 @@ useViewportHeight =
     viewportHeight /\ modifyViewportHeight <- useState Nothing
     useLayoutEffect unit do
       doc <- window >>= document
-      let maybeElem = Document.toNode doc # HTMLElement.fromNode
+      let
+        maybeElem = Document.toNode doc # HTMLElement.fromNode
       case maybeElem of
         Nothing -> pure unit
         Just elem -> do

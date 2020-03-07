@@ -1,7 +1,7 @@
 module Container.Header where
 
 import Prelude
-import CSS.Safer (cssSafer)
+import Yoga.CSS.Safer (cssSafer)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
@@ -12,11 +12,11 @@ import Effect.Class.Console (log)
 import React.Basic.DOM as R
 import React.Basic.Hooks (type (/\), Hook, ReactComponent, Ref, UseLayoutEffect, UseRef, UseState, coerceHook, component, element, readRefMaybe, useLayoutEffect, useRef, useState, (/\))
 import React.Basic.Hooks as React
-import SVG.Icon (trianglelogoIcon)
-import Scroll.Listener as Scroll
-import Theme.Styles (makeStyles)
-import Theme.Types (CSSTheme)
-import Typography.Header (HeadingLevel(..), mkH)
+import Yoga.SVG.Icon (trianglelogoIcon)
+import Yoga.Scroll.Listener as Scroll
+import Yoga.Theme.Styles (makeStyles)
+import Yoga.Theme.Types (CSSTheme)
+import Yoga.Typography.Header (HeadingLevel(..), mkH)
 import Web.DOM (Node)
 import Web.Event.EventTarget (EventListener, eventListener)
 import Web.HTML (HTMLElement, window)

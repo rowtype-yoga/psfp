@@ -1,10 +1,10 @@
-module Theme.Provider
+module Yoga.Theme.Provider
   ( mkThemeProvider
   ) where
 
 import Effect (Effect)
 import React.Basic (JSX, ReactComponent)
-import Theme.Types (CSSTheme)
+import Yoga.Theme.Types (CSSTheme)
 
 foreign import mkThemeProviderImpl ∷
   ∀ theme.

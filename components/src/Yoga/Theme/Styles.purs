@@ -1,4 +1,4 @@
-module Theme.Styles
+module Yoga.Theme.Styles
   ( makeStyles_
   , makeStyles
   , useTheme
@@ -16,7 +16,7 @@ import Prim.RowList (class RowToList)
 import React.Basic.DOM (CSS)
 import React.Basic.Hooks (Hook)
 import Record.Extra (class MapRecord)
-import Theme.Types (CSSTheme)
+import Yoga.Theme.Types (CSSTheme)
 import Type.Row.Homogeneous (class Homogeneous)
 
 foreign import data UseStyles ∷ Type -> Type -> Type

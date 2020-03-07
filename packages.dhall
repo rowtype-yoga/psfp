@@ -119,47 +119,52 @@ let additions =
 
 
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.13.6-20200123/packages.dhall sha256:687bb9a2d38f2026a89772c47390d02939340b01e31aaa22de9247eadd64af05
+      https://github.com/purescript/package-sets/releases/download/psc-0.13.6-20200226/packages.dhall sha256:3a52562e05b31a7b51d12d5b228ccbe567c527781a88e9028ab42374ab55c0f1
 
 let overrides =
       { react-basic-hooks =
-            upstream.react-basic-hooks
-          ⫽ { repo =
-                "https://github.com/i-am-the-slime/purescript-react-basic-hooks.git"
-            , version = "e04b106ab2dfda3f9a1407420c434a908ff72b90"
-            }
+              upstream.react-basic-hooks
+          //  { repo =
+                  "https://github.com/i-am-the-slime/purescript-react-basic-hooks.git"
+              , version = "e04b106ab2dfda3f9a1407420c434a908ff72b90"
+              }
       }
 
 let additions =
       { react-testing-library =
           { dependencies =
-            [ "aff-promise"
-            , "console"
-            , "debug"
-            , "effect"
-            , "foreign"
-            , "foreign-object"
-            , "psci-support"
-            , "react-basic-hooks"
-            , "remotedata"
-            , "run"
-            , "simple-json"
-            , "spec"
-            , "spec-discovery"
-            ]
+              [ "aff-promise"
+              , "console"
+              , "debug"
+              , "effect"
+              , "foreign"
+              , "foreign-object"
+              , "psci-support"
+              , "react-basic-hooks"
+              , "remotedata"
+              , "run"
+              , "simple-json"
+              , "spec"
+              , "spec-discovery"
+              ]
           , repo =
               "https://github.com/i-am-the-slime/purescript-react-testing-library.git"
-          , version = "b872928414a887ccefbe857038af4e57227dad16"
+          , version = "5a10027deeeee12de3ccfeecfdb033d1e53f8d05"
           }
       , pseudo-random =
           { dependencies =
-            [ "prelude", "console", "effect", "lcg", "arrays", "st" ]
+              [ "prelude", "console", "effect", "lcg", "arrays", "st" ]
           , repo = "https://github.com/opyapeus/purescript-pseudo-random.git"
           , version = "7715e8a2c096c480a093a5e0a6df1ece4df5ed2a"
           }
       , matryoshka =
           { dependencies =
-            [ "prelude", "fixed-points", "free", "transformers", "profunctor" ]
+              [ "prelude"
+              , "fixed-points"
+              , "free"
+              , "transformers"
+              , "profunctor"
+              ]
           , repo = "https://github.com/slamdata/purescript-matryoshka.git"
           , version = "caaca2d836d52159ba7963333996286a00428394"
           }
@@ -172,4 +177,4 @@ let additions =
       , yoga-components = ../components/spago.dhall as Location
       }
 
-in  upstream ⫽ overrides ⫽ additions
+in  upstream // overrides // additions

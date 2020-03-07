@@ -1,7 +1,7 @@
 module Container.Sidebar where
 
 import Prelude
-import CSS.Safer (cssSafer)
+import Yoga.CSS.Safer (cssSafer)
 import Data.Monoid (guard)
 import Effect (Effect)
 import React.Basic (JSX)
@@ -9,9 +9,9 @@ import React.Basic.DOM as R
 import React.Basic.Events (handler_)
 import React.Basic.Hooks (ReactComponent, component, element)
 import React.Basic.Hooks as React
-import SVG.Icon (ActiveArrowDirection(..), mkMenu)
-import Theme.Styles (classNames, makeStyles)
-import Theme.Types (CSSTheme)
+import Yoga.SVG.Icon (ActiveArrowDirection(..), mkMenu)
+import Yoga.Theme.Styles (classNames, makeStyles)
+import Yoga.Theme.Types (CSSTheme)
 
 mkSidebar ∷
   Effect

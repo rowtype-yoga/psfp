@@ -1,10 +1,10 @@
-module Theme.Default where
+module Yoga.Theme.Default where
 
 import Prelude
 import Color as Color
 import Data.Maybe (fromMaybe')
 import Partial.Unsafe (unsafeCrashWith)
-import Theme.Types (Theme)
+import Yoga.Theme.Types (Theme)
 
 systemFontStack ∷ Array String
 systemFontStack = [ "-apple-system", "BlinkMacSystemFont", "Helvetica", "Arial", "sans-serif" ]
