@@ -119,52 +119,85 @@ let additions =
 
 
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.13.6-20200226/packages.dhall sha256:3a52562e05b31a7b51d12d5b228ccbe567c527781a88e9028ab42374ab55c0f1
+      https://github.com/purescript/package-sets/releases/download/psc-0.13.6-20200309/packages.dhall sha256:9221987b4e7ea99ccd0efbe056f7bebc872cd92e0058efe5baa181d73359e7b3
 
 let overrides =
       { react-basic-hooks =
-              upstream.react-basic-hooks
-          //  { repo =
-                  "https://github.com/i-am-the-slime/purescript-react-basic-hooks.git"
-              , version = "e04b106ab2dfda3f9a1407420c434a908ff72b90"
-              }
+            upstream.react-basic-hooks
+          ⫽ { repo =
+                "https://github.com/i-am-the-slime/purescript-react-basic-hooks.git"
+            , version = "e04b106ab2dfda3f9a1407420c434a908ff72b90"
+            }
       }
 
 let additions =
       { react-testing-library =
           { dependencies =
-              [ "aff-promise"
-              , "console"
-              , "debug"
-              , "effect"
-              , "foreign"
-              , "foreign-object"
-              , "psci-support"
-              , "react-basic-hooks"
-              , "remotedata"
-              , "run"
-              , "simple-json"
-              , "spec"
-              , "spec-discovery"
-              ]
+            [ "aff-promise"
+            , "console"
+            , "debug"
+            , "effect"
+            , "foreign"
+            , "foreign-object"
+            , "psci-support"
+            , "react-basic-hooks"
+            , "remotedata"
+            , "run"
+            , "simple-json"
+            , "spec"
+            , "spec-discovery"
+            ]
           , repo =
               "https://github.com/i-am-the-slime/purescript-react-testing-library.git"
           , version = "5a10027deeeee12de3ccfeecfdb033d1e53f8d05"
           }
       , pseudo-random =
           { dependencies =
-              [ "prelude", "console", "effect", "lcg", "arrays", "st" ]
+            [ "prelude", "console", "effect", "lcg", "arrays", "st" ]
           , repo = "https://github.com/opyapeus/purescript-pseudo-random.git"
           , version = "7715e8a2c096c480a093a5e0a6df1ece4df5ed2a"
           }
+      , oneof =
+          { dependencies =
+            [ "assert"
+            , "console"
+            , "effect"
+            , "foreign"
+            , "foreign-object"
+            , "literal"
+            , "maybe"
+            , "newtype"
+            , "proxy"
+            , "psci-support"
+            , "tuples"
+            , "unsafe-coerce"
+            ]
+          , repo = "https://github.com/jvliwanag/purescript-oneof.git"
+          , version = "0325fddf6ee8a181fac2128c9b542c2c01ddd361"
+          }
+      , literal =
+          { dependencies =
+            [ "assert"
+            , "effect"
+            , "console"
+            , "integers"
+            , "numbers"
+            , "partial"
+            , "psci-support"
+            , "unsafe-coerce"
+            , "typelevel-prelude"
+            ]
+          , repo = "https://github.com/jvliwanag/purescript-literal.git"
+          , version = "7b2ae20f77c67b7e419a92fdd0dc7a09b447b18e"
+          }
+      , justifill =
+          { dependencies = [ "record", "typelevel-prelude" ]
+          , repo = "https://github.com/i-am-the-slime/purescript-justifill.git"
+          , version = "9a2d8dd3bc232c4b376128f1c3a3e3dc66d63317"
+          }
       , matryoshka =
           { dependencies =
-              [ "prelude"
-              , "fixed-points"
-              , "free"
-              , "transformers"
-              , "profunctor"
-              ]
+            [ "prelude", "fixed-points", "free", "transformers", "profunctor" ]
           , repo = "https://github.com/slamdata/purescript-matryoshka.git"
           , version = "caaca2d836d52159ba7963333996286a00428394"
           }
@@ -177,4 +210,4 @@ let additions =
       , yoga-components = ../components/spago.dhall as Location
       }
 
-in  upstream // overrides // additions
+in  upstream ⫽ overrides ⫽ additions
