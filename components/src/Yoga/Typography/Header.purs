@@ -1,15 +1,15 @@
 module Yoga.Typography.Header where
 
 import Prelude
-import Yoga.CSS.Safer (cssSafer)
 import Data.Array as Array
 import Data.Foldable (intercalate)
 import Data.Maybe (Maybe)
 import Effect (Effect)
+import JSS (jss, jssClasses)
 import React.Basic.DOM as R
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
-import Yoga.Theme.Styles (makeStyles)
+import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.Theme.Types (CSSTheme)
 
 data HeadingLevel
@@ -23,50 +23,51 @@ mkH ∷
   Effect (ReactComponent { level ∷ HeadingLevel, text ∷ String, className ∷ Maybe String })
 mkH = do
   useStyles <-
-    makeStyles \(theme ∷ CSSTheme) ->
-      { common:
-        cssSafer
-          { color: theme.textColour
-          , fontFamily: theme.headingFontFamily
+    makeStylesJSS
+      $ jssClasses \(theme ∷ CSSTheme) ->
+          { common:
+            jss
+              { color: theme.textColour
+              , fontFamily: theme.headingFontFamily
+              }
+          , h1:
+            jss
+              { textTransform: "uppercase"
+              , fontSize: "3.6em"
+              , letterSpacing: "0.07em"
+              , margin: 0
+              , padding: 0
+              }
+          , h2:
+            jss
+              { textTransform: "uppercase"
+              , fontSize: "3em"
+              , letterSpacing: "0.05em"
+              , margin: 0
+              , padding: 0
+              }
+          , h3:
+            jss
+              { fontSize: "2.2em"
+              , margin: 0
+              , padding: 0
+              }
+          , h4:
+            jss
+              { fontSize: "1.5em"
+              , margin: 0
+              , padding: 0
+              }
+          , h5:
+            jss
+              { fontSize: "1.0em"
+              , margin: 0
+              , padding: 0
+              , color: theme.textColourLighter
+              }
           }
-      , h1:
-        cssSafer
-          { textTransform: "uppercase"
-          , fontSize: "3.6em"
-          , letterSpacing: "0.07em"
-          , margin: 0
-          , padding: 0
-          }
-      , h2:
-        cssSafer
-          { textTransform: "uppercase"
-          , fontSize: "3em"
-          , letterSpacing: "0.05em"
-          , margin: 0
-          , padding: 0
-          }
-      , h3:
-        cssSafer
-          { fontSize: "2.2em"
-          , margin: 0
-          , padding: 0
-          }
-      , h4:
-        cssSafer
-          { fontSize: "1.5em"
-          , margin: 0
-          , padding: 0
-          }
-      , h5:
-        cssSafer
-          { fontSize: "1.0em"
-          , margin: 0
-          , padding: 0
-          , color: theme.textColourLighter
-          }
-      }
   component "Heading" \{ level, text, className } -> React.do
-    classes <- useStyles
+    classes <- useStyles {}
     let
       elem = case level of
         H1 -> R.h1

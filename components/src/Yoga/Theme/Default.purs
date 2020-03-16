@@ -29,6 +29,8 @@ darkTheme =
   , red: Color.rgb 255 88 116
   , blue: Color.rgb 130 170 255
   , white: Color.rgb 250 250 250
+  , measure: "60ch"
+  , borderThin: "0.125rem"
   }
 
 lightTheme ∷ Theme

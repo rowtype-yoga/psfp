@@ -1,7 +1,6 @@
 module Yoga.Editor where
 
 import Prelude
-import Yoga.CSS.Safer (cssSafer)
 import Control.Promise (Promise)
 import Control.Promise as Promise
 import Data.Maybe (Maybe(..), maybe)
@@ -13,16 +12,17 @@ import Effect.Aff.Compat (EffectFn1)
 import Effect.Class (liftEffect)
 import Effect.Uncurried (EffectFn2, mkEffectFn1, mkEffectFn2)
 import Foreign (Foreign, unsafeToForeign)
+import JSS (jss, jssClasses)
 import Prim.Row (class Union)
 import React.Basic (JSX, ReactComponent, Ref, element, fragment)
 import React.Basic.DOM as R
 import React.Basic.Hooks (component, useState)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Aff (useAff)
-import Yoga.Theme.Styles (makeStyles, useTheme)
-import Yoga.Theme.Types (CSSTheme)
 import Web.DOM (Node)
 import Web.HTML (HTMLElement)
+import Yoga.Theme.Styles (makeStylesJSS, useTheme)
+import Yoga.Theme.Types (CSSTheme)
 
 type EditorProps
   = ( value ∷ String
@@ -96,18 +96,20 @@ type Props
 mkEditor ∷ Effect (ReactComponent Props)
 mkEditor = do
   useStyles <-
-    makeStyles \(theme ∷ CSSTheme) ->
-      { wrapper:
-        cssSafer
-          { margin: "0"
-          , boxSizing: "border-box"
-          , width: "100%"
-          , overflowY: "hidden"
-          , backgroundColor: theme.backgroundColour
-          }
-      }
+    makeStylesJSS
+      $ jssClasses \(theme ∷ CSSTheme) ->
+          ( { wrapper:
+              jss
+                { margin: "0"
+                , boxSizing: "border-box"
+                , width: "100%"
+                , overflowY: "hidden"
+                , backgroundColor: theme.backgroundColour
+                }
+            }
+          )
   component "Editor" \{ onLoad, height, language } -> React.do
-    classes <- useStyles
+    classes <- useStyles {}
     maybeEditor /\ modifyEditor <- useState Nothing
     useAff unit do
       eddy <- monacoEditor

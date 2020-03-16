@@ -29,16 +29,15 @@ stories = do
       pure
         $ R.div
             { children:
-              pure
-                $ element card
-                    { kids:
-                      [ element cardTitle { kids: [ R.text title ] }
-                      , element cardSubtitle { kids: [ R.text subtitle ] }
-                      , element cardContent { kids: [ content ] }
-                      ]
-                    , className: ""
-                    }
-            , style: css { width: "400px", padding: "60px", overflow: "hidden" }
+                pure
+                  $ element card
+                      { kids:
+                          [ element cardTitle { kids: [ R.text title ] }
+                          , element cardSubtitle { kids: [ R.text subtitle ] }
+                          , element cardContent { kids: [ content ] }
+                          ]
+                      , className: ""
+                      }
             }
 
 loremIpsum ∷ String

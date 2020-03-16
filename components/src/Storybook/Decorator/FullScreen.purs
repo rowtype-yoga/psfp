@@ -1,12 +1,12 @@
 module Storybook.Decorator.FullScreen where
 
 import Prelude
-import Yoga.CSS.Safer (cssSafer)
 import Data.Array (find)
 import Data.Map (Map)
 import Data.Maybe (Maybe, fromMaybe)
 import Data.Traversable (traverse_)
 import Effect (Effect)
+import JSS (jss, jssClasses)
 import React.Basic (JSX)
 import React.Basic.DOM (css)
 import React.Basic.DOM as R
@@ -15,17 +15,17 @@ import React.Basic.Events (handler)
 import React.Basic.Hooks (ReactComponent, component, element, useState, (/\))
 import React.Basic.Hooks as React
 import Simple.JSON (readJSON_, writeJSON)
-import Yoga.Theme (fromTheme)
-import Yoga.Theme.Default (darkTheme, lightTheme)
-import Yoga.Theme.Provider (mkThemeProvider)
-import Yoga.Theme.Styles (makeStyles_)
-import Yoga.Theme.Types (CSSTheme)
 import Web.HTML (window)
 import Web.HTML.Window (localStorage)
 import Web.Storage.Storage (getItem, setItem)
-import Yoga.Font as Font
 import Yoga.Font.PragmataPro as PragmataPro
 import Yoga.Font.Rubik as Rubik
+import Yoga.Theme (fromTheme)
+import Yoga.Theme.CSSBaseline (mkCssBaseline)
+import Yoga.Theme.Default (darkTheme, lightTheme)
+import Yoga.Theme.Provider (mkThemeProvider)
+import Yoga.Theme.Styles (makeStylesJSS)
+import Yoga.Theme.Types (CSSTheme)
 
 fullScreenDecorator ∷ Effect JSX -> Effect JSX
 fullScreenDecorator mkChild = do
@@ -66,21 +66,23 @@ mkThemeSwitcher ∷
     )
 mkThemeSwitcher = do
   themeProvider <- mkThemeProvider
+  baseline <- mkCssBaseline
   useStyles <-
-    makeStyles_
-      { selector:
-        cssSafer
-          { position: "absolute"
-          , zIndex: 20
-          , top: 10
-          , right: 10
+    makeStylesJSS
+      $ jssClasses \_ ->
+          { selector:
+            jss
+              { position: "absolute"
+              , zIndex: 20
+              , top: 10
+              , right: 10
+              }
+          , "@font-face": jss (Rubik.fontFamilies <> [ PragmataPro.fontFamily ])
           }
-      , "@font-face": Font.arrayToCss (Rubik.fontFamilies <> [ PragmataPro.fontFamily ])
-      }
   storage <- window >>= localStorage
   saved ∷ (Maybe DefaultTheme) <- getItem "theme" storage <#> (_ >>= readJSON_)
   component "ThemeSwitcher" \{ defaultTheme, themes, kids } -> React.do
-    classes <- useStyles
+    classes <- useStyles {}
     { theme, name } /\ modTheme <- useState $ fromMaybe defaultTheme saved
     let
       setTheme newTheme = do
@@ -110,10 +112,14 @@ mkThemeSwitcher = do
       $ element themeProvider
           { theme
           , children:
-            [ R.div
-                { style: css { backgroundColor: theme.backgroundColour, width: "100%", height: "100%" }
-                , children:
-                  [ themeSelect ] <> kids
-                }
-            ]
+            pure
+              $ element baseline
+                  { kids:
+                    [ R.div
+                        { style: css { backgroundColor: theme.backgroundColour, width: "100%", height: "100%" }
+                        , children:
+                          [ themeSelect ] <> kids
+                        }
+                    ]
+                  }
           }

@@ -1,8 +1,6 @@
 module Yoga.SVG.Image where
 
 import Prelude
-import Yoga.CSS.Safer (cssSafer)
-import Yoga.DOM.Hook (useBoundingBox)
 import Data.Array (elem, foldl, head, intercalate, snoc, uncons, zip, (:))
 import Data.Int (round, toNumber)
 import Data.Maybe (Maybe(..), maybe)
@@ -10,6 +8,7 @@ import Data.String (codePointFromChar)
 import Data.String as String
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
+import JSS (jss, jssClasses)
 import Random.PseudoRandom (mkSeed, randomRs)
 import React.Basic (JSX, element)
 import React.Basic.DOM (unsafeCreateDOMComponent)
@@ -17,9 +16,10 @@ import React.Basic.DOM as HTML
 import React.Basic.DOM.SVG as SVG
 import React.Basic.Hooks (ReactComponent)
 import React.Basic.Hooks as React
+import Yoga.DOM.Hook (useBoundingBox)
 import Yoga.SVG.Icon (Raw)
 import Yoga.Scroll.Hook (useScrollYPosition)
-import Yoga.Theme.Styles (makeStyles, useTheme)
+import Yoga.Theme.Styles (makeStylesJSS, useTheme)
 import Yoga.Theme.Types (CSSTheme)
 
 foreign import landingPageDarkRaw ∷ ∀ r. Raw r
@@ -29,110 +29,111 @@ foreign import landingPageLightRaw ∷ ∀ r. Raw r
 mkLandingPageBackground ∷ Effect (ReactComponent { className ∷ String })
 mkLandingPageBackground = do
   useStyles <-
-    makeStyles \(theme ∷ CSSTheme) ->
-      { laptopBackground:
-        cssSafer
-          { fill: theme.backgroundColour
+    makeStylesJSS
+      $ jssClasses \(theme ∷ CSSTheme) ->
+          { laptopBackground:
+            jss
+              { fill: theme.backgroundColour
+              }
+          , lightEllipsis:
+            jss
+              { cx: if theme.isLight then "721" else "175"
+              , cy: if theme.isLight then "355" else "310"
+              , rx: if theme.isLight then "647" else "330"
+              , ry: if theme.isLight then "310" else "252"
+              }
+          , laptopBody:
+            jss
+              { fill: if theme.isLight then "url(#_Linear9)" else "url(#_Linear12)"
+              }
+          , screenText:
+            jss
+              { fontFamily: "PragmataPro"
+              , fontSize: "0.85em"
+              , fill: theme.textColour
+              }
+          , keyword: jss { fill: theme.green }
+          , typeName: jss { fill: theme.pink }
+          , "@keyframes animatedCursor":
+            jss
+              { "0%": { opacity: "0.0" }
+              , "50%": { opacity: "1.0" }
+              }
+          , cursor:
+            jss
+              { animation: "$animatedCursor 0.5s linear infinite"
+              , animationDirection: "alternate"
+              }
+          , "@keyframes movingCloud1":
+            jss
+              { "0%": { transform: "translate3d(-140%, 4%, 0)" }
+              , "100%": { transform: "translate3d(70%, -4%, 0)" }
+              }
+          , movingCloud1:
+            jss
+              { animation: "$movingCloud1 200s linear infinite"
+              , animationDelay: "-150s"
+              }
+          , "@keyframes movingCloud2":
+            jss
+              { "0%": { transform: "translate3d(-10%, 0%, 0)" }
+              , "100%": { transform: "translate3d(10%, 0%, 0)" }
+              }
+          , movingCloud2:
+            jss
+              { animation: "$movingCloud2 120s linear infinite"
+              , animationDirection: "alternate"
+              }
+          , movingCloud3:
+            jss
+              { animation: "$movingCloud2 120s linear infinite"
+              , animationDelay: "-120s"
+              , animationDirection: "alternate"
+              }
+          , "@keyframes twinkle":
+            jss
+              { "0%": { fill: "rgba(250, 250, 250, 0.2)" }
+              , "50%": { fill: "rgba(250, 250, 250, 0.7)" }
+              , "70%": { fill: "rgba(250, 250, 250, 0.4)" }
+              , "100%": { fill: "rgba(250, 250, 250, 1.0)" }
+              }
+          , "@keyframes twinkleFast":
+            jss
+              { "0%": { fill: "rgba(250, 250, 250, 0.7)" }
+              , "100%": { fill: "rgba(250, 250, 250, 0.78)" }
+              }
+          , twinklingStar1:
+            jss
+              { animation: "$twinkleFast 0.2s ease-in-out infinite"
+              , animationDirection: "alternate"
+              }
+          , twinklingStar2:
+            jss
+              { animation: "$twinkle 8s ease-in-out infinite"
+              , animationDelay: "4s"
+              , animationDirection: "alternate"
+              }
+          , twinklingStar3:
+            jss
+              { animation: "$twinkle 4s ease-in-out infinite"
+              , animationDelay: "3s"
+              , animationDirection: "alternate"
+              }
+          , "@keyframes rotateStars":
+            jss
+              { "0%": { transform: "rotate(0deg) scale(1,1)" }
+              , "100%": { transform: "rotate(1deg) scale(1.01, 1.01)" }
+              }
+          , stars:
+            jss
+              { animation: "$rotateStars 30s linear infinite"
+              , transformOrigin: "top center"
+              , animationDirection: "alternate"
+              }
           }
-      , lightEllipsis:
-        cssSafer
-          { cx: if theme.isLight then "721" else "175"
-          , cy: if theme.isLight then "355" else "310"
-          , rx: if theme.isLight then "647" else "330"
-          , ry: if theme.isLight then "310" else "252"
-          }
-      , laptopBody:
-        cssSafer
-          { fill: if theme.isLight then "url(#_Linear9)" else "url(#_Linear12)"
-          }
-      , screenText:
-        cssSafer
-          { fontFamily: "PragmataPro"
-          , fontSize: "0.85em"
-          , fill: theme.textColour
-          }
-      , keyword: cssSafer { fill: theme.green }
-      , typeName: cssSafer { fill: theme.pink }
-      , "@keyframes animatedCursor":
-        cssSafer
-          { "0%": { opacity: "0.0" }
-          , "50%": { opacity: "1.0" }
-          }
-      , cursor:
-        cssSafer
-          { animation: "$animatedCursor 0.5s linear infinite"
-          , animationDirection: "alternate"
-          }
-      , "@keyframes movingCloud1":
-        cssSafer
-          { "0%": { transform: "translate3d(-140%, 4%, 0)" }
-          , "100%": { transform: "translate3d(70%, -4%, 0)" }
-          }
-      , movingCloud1:
-        cssSafer
-          { animation: "$movingCloud1 200s linear infinite"
-          , animationDelay: "-150s"
-          }
-      , "@keyframes movingCloud2":
-        cssSafer
-          { "0%": { transform: "translate3d(-10%, 0%, 0)" }
-          , "100%": { transform: "translate3d(10%, 0%, 0)" }
-          }
-      , movingCloud2:
-        cssSafer
-          { animation: "$movingCloud2 120s linear infinite"
-          , animationDirection: "alternate"
-          }
-      , movingCloud3:
-        cssSafer
-          { animation: "$movingCloud2 120s linear infinite"
-          , animationDelay: "-120s"
-          , animationDirection: "alternate"
-          }
-      , "@keyframes twinkle":
-        cssSafer
-          { "0%": { fill: "rgba(250, 250, 250, 0.2)" }
-          , "50%": { fill: "rgba(250, 250, 250, 0.7)" }
-          , "70%": { fill: "rgba(250, 250, 250, 0.4)" }
-          , "100%": { fill: "rgba(250, 250, 250, 1.0)" }
-          }
-      , "@keyframes twinkleFast":
-        cssSafer
-          { "0%": { fill: "rgba(250, 250, 250, 0.7)" }
-          , "100%": { fill: "rgba(250, 250, 250, 0.78)" }
-          }
-      , twinklingStar1:
-        cssSafer
-          { animation: "$twinkleFast 0.2s ease-in-out infinite"
-          , animationDirection: "alternate"
-          }
-      , twinklingStar2:
-        cssSafer
-          { animation: "$twinkle 8s ease-in-out infinite"
-          , animationDelay: "4s"
-          , animationDirection: "alternate"
-          }
-      , twinklingStar3:
-        cssSafer
-          { animation: "$twinkle 4s ease-in-out infinite"
-          , animationDelay: "3s"
-          , animationDirection: "alternate"
-          }
-      , "@keyframes rotateStars":
-        cssSafer
-          { "0%": { transform: "rotate(0deg) scale(1,1)" }
-          , "100%": { transform: "rotate(1deg) scale(1.01, 1.01)" }
-          }
-      , stars:
-        cssSafer
-          { animation: "$rotateStars 30s linear infinite"
-          , transformOrigin: "top center"
-          , animationDirection: "alternate"
-          }
-      }
   React.component "LandingPageBackground" \{ className } -> React.do
     theme <- useTheme
-    classes <- useStyles
+    classes <- useStyles {}
     scrollY <- useScrollYPosition
     bb /\ ref <- useBoundingBox
     let
@@ -426,14 +427,12 @@ textToTspans classes scrolled x str = (foldl toTspan { distance: 0.0, acc: [] } 
         pimped ∷ Array JSX
         pimped = first : newElems
       { distance: 1.2, acc: acc <> pimped }
-
   classNameForWord = case _ of
     keyword
       | elem keyword keywords -> classes.keyword
     typeName
       | isTypeName typeName -> classes.typeName
     other -> ""
-
   isTypeName s =
     let
       firstLetter = String.take 1 s
@@ -446,7 +445,6 @@ textToTspans classes scrolled x str = (foldl toTspan { distance: 0.0, acc: [] } 
           >>> maybe false (inRange 'a' 'z' || inRange 'A' 'Z')
     in
       String.toUpper firstLetter == firstLetter && isLetter firstLetter
-
   keywords =
     [ "module"
     , "∷"
@@ -470,21 +468,15 @@ textToTspans classes scrolled x str = (foldl toTspan { distance: 0.0, acc: [] } 
     , "else"
     , "import"
     ]
-
   words line = split
     where
     split = String.split (String.Pattern " ") line
-
   lines = String.split (String.Pattern "\n") scrolledString
-
   scrolledString = String.take charactersToTake str
     where
     doneAfterXPercent = 0.5 -- [WARN] Don't set to 0
-
     charactersToTake = round $ scrolled * (1.0 / doneAfterXPercent) * len
-
     len = toNumber $ String.length str
-
   cursor =
     SVG.tspan
       { dx: "0"

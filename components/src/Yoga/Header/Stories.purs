@@ -7,6 +7,7 @@ import Yoga.Header.Component (mkHeader)
 import React.Basic.DOM as R
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
 
+-- What's about
 stories ∷ Effect Storybook
 stories = do
   storiesOf "Header" do

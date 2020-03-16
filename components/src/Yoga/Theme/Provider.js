@@ -1,7 +1,7 @@
 "use strict";
 
-var styles = require("@material-ui/styles");
+var reactJss = require("react-jss");
 
 exports.mkThemeProviderImpl = function() {
-  return styles.ThemeProvider;
+  return reactJss.ThemeProvider;
 };

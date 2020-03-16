@@ -3,11 +3,9 @@ module Storybook.React
   , Storybook
   , add
   , addDecorator
-  )
-  where
+  ) where
 
 import Prelude hiding (add)
-
 import Control.Monad.Reader (ReaderT, ask, lift, local, runReaderT)
 import Effect (Effect)
 import React.Basic (JSX, ReactComponent, element, fragment)

@@ -18,10 +18,12 @@ type Theme
     , red ∷ Color
     , blue ∷ Color
     , white ∷ Color
+    , measure ∷ String
+    , borderThin ∷ String
     }
 
-type CSSTheme
-  = { backgroundColour ∷ String
+type YogaTheme
+  = ( backgroundColour ∷ String
     , backgroundColourLighter ∷ String
     , backgroundColourLightest ∷ String
     , backgroundColourDarker ∷ String
@@ -52,4 +54,9 @@ type CSSTheme
     , blue ∷ String
     , white ∷ String
     , fontWeightBold ∷ String
-    }
+    , measure ∷ String
+    , borderThin ∷ String
+    )
+
+type CSSTheme
+  = Record YogaTheme

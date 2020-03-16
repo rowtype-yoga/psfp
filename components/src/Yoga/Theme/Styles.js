@@ -1,8 +1,7 @@
 "use strict";
 
-var styles = require("@material-ui/styles");
+var reactJss = require("react-jss");
 
-exports.makeStylesImpl = styles.makeStyles;
-exports.makeStylesThemedImpl = styles.makeStyles;
-exports.unsafeMakeStyles = styles.makeStyles;
-exports.useThemeImpl = styles.useTheme;
+exports.makeStylesWithPropsImpl = styles => () => props => () =>
+  reactJss.createUseStyles(styles)(props);
+exports.useThemeImpl = reactJss.useTheme;

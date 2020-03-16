@@ -1,16 +1,16 @@
 module Yoga.SVG.Icon where
 
 import Prelude
-import Yoga.CSS.Safer (cssSafer)
 import Data.Monoid (guard)
 import Effect (Effect)
+import JSS (jss, jssClasses)
 import Prim.Row (class Union)
 import React.Basic.DOM.SVG as SVG
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
-import Yoga.Theme.Styles (makeStyles)
-import Yoga.Theme.Types (CSSTheme)
 import Unsafe.Coerce (unsafeCoerce)
+import Yoga.Theme.Styles (makeStylesJSS)
+import Yoga.Theme.Types (CSSTheme)
 
 type ImageProps
   = ( width ∷ Int, height ∷ Int, className ∷ String )
@@ -93,31 +93,31 @@ data ActiveArrowDirection
   | ArrowPointsLeft
 
 derive instance eqActiveArrowDirection ∷ Eq ActiveArrowDirection
-
 mkMenu ∷ Effect (ReactComponent { activeArrowDirection ∷ ActiveArrowDirection })
 mkMenu = do
   useStyles <-
-    makeStyles \(theme ∷ CSSTheme) ->
-      { arrow:
-        cssSafer
-          { fill: theme.textColour
-          , transition: "0.3s ease-out"
+    makeStylesJSS
+      $ jssClasses \(theme ∷ CSSTheme) ->
+          { arrow:
+            jss
+              { fill: theme.textColour
+              , transition: "0.3s ease-out"
+              }
+          , arrowInactive:
+            jss
+              { fillOpacity: ".1"
+              }
+          , svg:
+            jss
+              { width: "100%"
+              , height: "100%"
+              , "&:hover":
+                { fill: theme.backgroundColour
+                }
+              }
           }
-      , arrowInactive:
-        cssSafer
-          { fillOpacity: ".1"
-          }
-      , svg:
-        cssSafer
-          { width: "100%"
-          , height: "100%"
-          , "&:hover":
-            { fill: theme.backgroundColour
-            }
-          }
-      }
   component "MenuIcon" \{ activeArrowDirection } -> React.do
-    classes <- useStyles
+    classes <- useStyles {}
     pure
       $ SVG.svg
           { xmlns: "http://www.w3.org/2000/svg"

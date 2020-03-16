@@ -1,19 +1,16 @@
 module Yoga.CompileEditor.Component where
 
 import Prelude hiding (add)
-import Yoga.Button.Component (ButtonType(..), mkButton)
-import Yoga.CSS.Safer (cssSafer)
-import Yoga.Card.Component (mkCard)
 import Data.Array (intercalate)
 import Data.Either (Either(..))
 import Data.Foldable (for_)
 import Data.Interpolate (i)
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
-import Yoga.Editor (getValue, mkEditor, setValue)
 import Effect (Effect)
 import Effect.Aff (Aff, attempt, error, launchAff_, message, throwError)
 import Effect.Class (liftEffect)
+import JSS (jss, jssClasses)
 import Milkis as M
 import Milkis.Impl (FetchImpl)
 import React.Basic (ReactComponent)
@@ -24,11 +21,14 @@ import React.Basic.Hooks as React
 import Shared.Json (readAff)
 import Shared.Models.Body as Body
 import Simple.JSON (writeJSON)
-import Yoga.Theme.Styles (makeStyles)
+import Yoga.Button.Component (ButtonType(..), mkButton)
+import Yoga.Card.Component (mkCard)
+import Yoga.Editor (getValue, mkEditor, setValue)
+import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.Theme.Types (CSSTheme)
 
 type Props
-  = { initialCode :: String, height :: String, language :: String }
+  = { initialCode ∷ String, height ∷ String, language ∷ String }
 
 mkCompileEditor ∷ FetchImpl -> Effect (ReactComponent Props)
 mkCompileEditor fetch = do
@@ -36,43 +36,42 @@ mkCompileEditor fetch = do
   card <- mkCard
   button <- mkButton
   useStyles <-
-    makeStyles \(theme :: CSSTheme) ->
-      { editor:
-        cssSafer
-          { background: theme.backgroundColour
-          , height: "80%"
-          , padding: "20px"
-          , marginTop: "0px"
-          , marginLeft: "35px"
-          , marginRight: "35px"
-          , marginBottom: "35px"
-          , borderRadius: "12px"
-          , boxShadow: i "22px 22px 24px " theme.backgroundColourDarker ", -22px -22px 24px " theme.backgroundColourLighter :: String
-          , display: "flex"
-          , flexDirection: "column"
+    makeStylesJSS
+      $ jssClasses \(theme ∷ CSSTheme) ->
+          { editor:
+            jss
+              { background: theme.backgroundColour
+              , boxSizing: "content-box"
+              , height: "80%"
+              , padding: "20px"
+              , marginTop: "0px"
+              , borderRadius: "12px"
+              , boxShadow: i "22px 22px 24px " theme.backgroundColourDarker ", -22px -22px 24px " theme.backgroundColourLighter ∷ String
+              , display: "flex"
+              , flexDirection: "column"
+              }
+          , buttons:
+            jss
+              { marginBottom: "4px"
+              , display: "flex"
+              , alignSelf: "flex-end"
+              }
+          , compileButton: jss {}
+          , resetButton: jss {}
+          , card:
+            jss
+              { marginLeft: "35px"
+              , marginRight: "35px"
+              , opacity: 0
+              , zIndex: 0
+              }
+          , cardHidden: jss { opacity: 0 }
+          , compileError: jss { color: theme.red, opacity: 1, transition: "opacity 2.0s ease" }
+          , runOutput: jss { color: theme.green, opacity: 1, transition: "opacity 2.0s ease" }
           }
-      , buttons:
-        cssSafer
-          { marginBottom: "4px"
-          , display: "flex"
-          , alignSelf: "flex-end"
-          }
-      , compileButton: cssSafer {}
-      , resetButton: cssSafer {}
-      , card:
-        cssSafer
-          { marginLeft: "35px"
-          , marginRight: "35px"
-          , opacity: 0
-          , zIndex: 0
-          }
-      , cardHidden: cssSafer { opacity: 0 }
-      , compileError: cssSafer { color: theme.red, opacity: 1, transition: "opacity 2.0s ease" }
-      , runOutput: cssSafer { color: theme.green, opacity: 1, transition: "opacity 2.0s ease" }
-      }
   component "CompileEditor" \{ initialCode, height, language } -> React.do
     maybeEditor /\ modifyEditor <- useState Nothing
-    classes <- useStyles
+    classes <- useStyles {}
     let
       onLoad e = do
         setValue initialCode e
@@ -137,7 +136,7 @@ mkCompileEditor fetch = do
               }
           ]
 
-compileAndRun :: M.Fetch -> Body.CompileRequest -> Aff (Either Body.CompileResult Body.RunResult)
+compileAndRun ∷ M.Fetch -> Body.CompileRequest -> Aff (Either Body.CompileResult Body.RunResult)
 compileAndRun fetch body = do
   response <-
     attempt

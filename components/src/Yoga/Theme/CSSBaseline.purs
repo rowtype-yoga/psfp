@@ -1,63 +1,73 @@
 module Yoga.Theme.CSSBaseline where
 
 import Prelude hiding (add)
-import Yoga.CSS.Safer (cssSafer)
 import Effect (Effect)
-import Effect.Uncurried (runEffectFn1)
+import JSS (JSSClasses, JSSElem, jss, jssClasses)
 import React.Basic (ReactComponent)
-import React.Basic.DOM (CSS)
 import React.Basic.Hooks (JSX, component, fragment)
 import React.Basic.Hooks as React
-import Yoga.Theme.Styles (unsafeMakeStyles)
-import Yoga.Theme.Types (CSSTheme)
-import Unsafe.Coerce (unsafeCoerce)
+import Yoga.Theme.Styles (makeStylesJSS)
+import Yoga.Theme.Types (YogaTheme)
 
-mkCssBaseline ::
-  Effect (ReactComponent { kids :: Array JSX })
+mkCssBaseline ∷
+  Effect (ReactComponent { kids ∷ Array JSX })
 mkCssBaseline = do
-  useStyles <- runEffectFn1 unsafeMakeStyles styles
+  useStyles <- makeStylesJSS styles
   component "CSSBaseline" \{ kids } -> React.do
-    classes <- useStyles
+    classes <- useStyles {}
     pure
       $ fragment kids
 
-html :: CSS
+html ∷ JSSElem {}
 html =
-  cssSafer
+  jss
     { "WebkitFontSmoothing": "antialiased" -- Antialiasing. 
     , "MozOsxFontSmoothing": "grayscale" -- Antialiasing. 
     , boxSizing: "border-box"
     }
 
-body :: CSSTheme -> CSS
-body theme =
-  cssSafer
-    { color: theme.textColour
-    , backgroundColor: theme.backgroundColour
-    , "@media print":
-      { backgroundColor: theme.white
-      }
+root ∷ JSSElem {}
+root =
+  jss
+    { "--ratio": "1.5"
+    , "--s-5": "calc(var(--s-4) / var(--ratio))"
+    , "--s-4": "calc(var(--s-3) / var(--ratio))"
+    , "--s-3": "calc(var(--s-2) / var(--ratio))"
+    , "--s-2": "calc(var(--s-1) / var(--ratio))"
+    , "--s-1": "calc(var(--s0) / var(--ratio))"
+    , "--s0": "1rem"
+    , "--s1": "calc(var(--s0) * var(--ratio))"
+    , "--s2": "calc(var(--s1) * var(--ratio))"
+    , "--s3": "calc(var(--s2) * var(--ratio))"
+    , "--s4": "calc(var(--s3) * var(--ratio))"
+    , "--s5": "calc(var(--s4) * var(--ratio))"
     }
 
-styles :: CSSTheme -> CSS
-styles theme =
-  unsafeCoerce
+styles ∷ JSSClasses YogaTheme {} ( "@global" ∷ JSSElem {} )
+styles =
+  jssClasses \theme ->
     { "@global":
-      { html
-      , "*, *::before, *::after":
-        { boxSizing: "inherit"
-        }
-      , "strong, b": { fontWeight: theme.fontWeightBold }
-      , body:
-        { margin: 0
-        , backgroundColor: theme.backgroundColour
-        , color: theme.textColour
-        , "&::backdrop":
-          { backgroundColor: theme.backgroundColour
+      jss
+        { html
+        , ":root": root
+        , "*":
+          { maxWidth: theme.measure
+          }
+        , "*, *::before, *::after":
+          { boxSizing: "inherit"
+          }
+        , "strong, b": { fontWeight: theme.fontWeightBold }
+        , "html, body, div, header, nav, main, footer":
+          { maxWidth: "none"
+          }
+        , body:
+          { margin: 0
+          , backgroundColor: theme.backgroundColour
+          , color: theme.textColour
+          , fontFamily: theme.textFontFamily
+          , "&::backdrop":
+            { backgroundColor: theme.backgroundColour
+            }
           }
         }
-      }
-    , ".textColouredIcon":
-      { fill: theme.textColour
-      }
     }

@@ -1,14 +1,14 @@
-module Panel.Spec where
+module Yoga.Cover.Spec where
 
 import Prelude
-import Yoga.Panel.Component as Panel
+import Yoga.Cover.Component as Cover
 import React.TestingLibrary (describeComponent, renderComponent)
 import Test.Spec (Spec, it)
 
 spec :: Spec Unit
 spec =
-  describeComponent Panel.makeComponent
-    "The Panel Component" do
+  describeComponent Cover.makeComponent
+    "The Cover Component" do
     it "renders without problems" \panel -> do
-      _ <- renderComponent panel (Panel.withDefaults {})
+      _ <- renderComponent panel (Cover.withDefaults {})
       pure unit
