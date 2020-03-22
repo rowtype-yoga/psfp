@@ -1,30 +1,32 @@
 module PSLayout where
 
 import Prelude
-import Yoga.CSS.Safer (cssSafer)
-import Yoga.Theme.CSSBaseline (mkCssBaseline)
-import Yoga.CompileEditor.Component (mkCompileEditor)
+
 import Data.Array as Array
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (fromMaybe)
 import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
 import Data.String as String
 import Effect (Effect)
-import Yoga.Header.Component (mkHeader)
+import JSS (jss, jssClasses)
 import Milkis.Impl (FetchImpl)
-import Yoga.Panel.Component (makeComponent) as Panel
 import React.Basic (JSX, ReactComponent)
 import React.Basic.DOM (unsafeCreateDOMComponent)
 import React.Basic.DOM as R
-import React.Basic.Hooks (ReactChildren, component, componentWithChildren, element, reactChildrenFromArray, reactChildrenToArray)
+import React.Basic.Helpers (element_)
+import React.Basic.Hooks (ReactChildren, component, componentWithChildren, element, reactChildrenToArray)
 import React.Basic.Hooks as React
+import Yoga.CompileEditor.Component (mkCompileEditor)
+import Yoga.Header.Component (mkHeader)
 import Yoga.Theme (fromTheme)
+import Yoga.Theme.CSSBaseline (mkCssBaseline)
 import Yoga.Theme.Default (darkTheme)
 import Yoga.Theme.Provider (mkThemeProvider)
-import Yoga.Theme.Styles (makeStyles)
+import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.Theme.Types (CSSTheme)
 import Yoga.Typography.Header (HeadingLevel(..), mkH)
 import Yoga.Typography.Paragraph (mkP)
+import Yoga.WithSidebar.Component (makeComponent) as WithSidebar
 
 type SiteQueryResult
   = { site ∷
@@ -60,10 +62,10 @@ mkLayout fetchImpl = do
   mdxProviderComponent <- mkMdxProviderComponent fetchImpl
   componentWithChildren "MDXLayout" \{ children, siteInfo } -> React.do
     pure
-      $ element themeProvider
+      $ element_ themeProvider
           { theme: fromTheme darkTheme
           , children:
-            [ element mdxProviderComponent
+            [ element_ mdxProviderComponent
                 { children
                 , siteInfo
                 }
@@ -86,36 +88,31 @@ mkMdxProviderComponent fetchImpl = do
   h <- mkH
   p <- mkP
   useStyles <-
-    makeStyles \(theme :: CSSTheme) ->
+    makeStylesJSS $ jssClasses \(theme :: CSSTheme) ->
       { code:
-        cssSafer
-          { fontFamily: "PragmataPro Liga"
+        jss
+          { fontFamily: theme.codeFontFamily
           , backgroundColor: theme.interfaceColour
           , fontSize: "10pt"
           , border: "1px solid #383c39"
           , padding: "3px"
           , borderRadius: "3px"
           }
-      , margins:
-        cssSafer
-          { marginLeft: "35px"
-          , marginRight: "35px"
-          }
       , flexer:
-        cssSafer
+        jss
           { display: "flex"
           , flexDirection: "row"
           }
       }
   componentWithChildren "MDXProviderComponent" \{ children, siteInfo } -> React.do
-    classes <- useStyles
+    classes <- useStyles {}
     let
-      baseline child = element cssBaseline { kids: child }
+      baseline child = element_ cssBaseline { kids: child }
 
       siteInfoJSX =
         R.div
           { children:
-            [ element header { kids: [ R.text siteInfo.site.siteMetadata.title ], className: "" }
+            [ element_ header { kids: [ R.text siteInfo.site.siteMetadata.title ], className: "" }
             , element sidebar { links: siteInfo.site.siteMetadata.menuLinks }
             , R.div_ (reactChildrenToArray children)
             ]
@@ -124,18 +121,17 @@ mkMdxProviderComponent fetchImpl = do
       mdxComponents =
         { h1:
           \props ->
-            element h { level: H2, text: props.children, className: Just classes.margins }
+            element_ h { level: H2, text: props.children }
         , h2:
           \props ->
-            element h { level: H3, text: props.children, className: Just classes.margins }
+            element_ h { level: H3, text: props.children }
         , h3:
           \props ->
-            element h { level: H4, text: props.children, className: Just classes.margins }
+            element_ h { level: H4, text: props.children }
         , p:
           \props ->
             R.div
-              { children: [ element p { text: props.children } ]
-              , className: classes.margins
+              { children: [ element_ p { text: props.children } ]
               }
         , inlineCode:
           \props -> do
@@ -168,7 +164,7 @@ mkMdxProviderComponent fetchImpl = do
 
               language = fromMaybe "" (classNameQ >>= String.stripPrefix (String.Pattern "language-"))
             if isCode then
-              element editor
+              element_ editor
                 { initialCode: fromMaybe "" codeQ
                 , height
                 , language
@@ -187,11 +183,11 @@ mkMdxProviderComponent fetchImpl = do
           ]
 
 mkSidebar = do
-  panel <- Panel.makeComponent
+  withSidebar <- WithSidebar.makeComponent
   useStyles <-
-    makeStyles \(theme :: CSSTheme) ->
+    makeStylesJSS $ jssClasses \(theme :: CSSTheme) ->
       { flexer:
-        cssSafer
+        jss
           { display: "flex"
           , flexDirection: "row"
           , width: "300px"
@@ -199,11 +195,11 @@ mkSidebar = do
           }
       }
   component "Sidebar" \{ links } -> React.do
-    classes <- useStyles
+    classes <- useStyles {}
     pure
-      $ element panel
-          { kids: [ R.div_ [ R.text "hahahaha"] ]
-          , className: Just classes.flexer
+      $ element_ withSidebar 
+          { sidebarChildren: [ R.div_ [ R.text "hahahaha"] ]
+          , notSidebarChildren: []
           }
 
 foreign import mdxProvider ∷

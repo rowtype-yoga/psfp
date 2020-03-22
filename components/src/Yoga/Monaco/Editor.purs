@@ -40,7 +40,6 @@ type EditorProps
 
 foreign import monacoEditorImpl ∷ ∀ attrs. Effect (Promise (ReactComponent { | attrs }))
 
--- foreign import initMonacoImpl ∷ Effect (Promise Monaco)
 foreign import defineThemeImpl ∷ Monaco -> String -> MonacoTheme -> Effect Unit
 
 foreign import setThemeImpl ∷ Monaco -> String -> Effect Unit
@@ -64,8 +63,6 @@ monacoEditor = do
   prom <- monacoEditorImpl # liftEffect
   Promise.toAff prom
 
--- initMonaco ∷ Aff Monaco
--- initMonaco = liftEffect initMonacoImpl >>= Promise.toAff
 darkThemeName ∷ String
 darkThemeName = "NightOwl"
 
@@ -129,9 +126,9 @@ mkEditor = do
                           , height
                           , options:
                             unsafeToForeign
-                              { fontFamily: "PragmataPro Liga"
+                              { fontFamily: theme.codeFontFamily
                               , fontLigatures: true
-                              , fontSize: "16pt"
+                              , fontSize: "12pt"
                               , lineNumbers: "off"
                               , glyphMargin: false
                               , folding: false

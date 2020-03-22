@@ -7,7 +7,7 @@ import React.TestingLibrary (describeComponent, renderComponent)
 import Test.Spec (Spec, it)
 import Yoga.Stack.Component as Stack
 
-spec :: Spec Unit
+spec ∷ Spec Unit
 spec =
   describeComponent Stack.makeComponent
     "The Stack Component" do
@@ -16,8 +16,8 @@ spec =
         renderComponent stack
           ( justifill
               { kids:
-                  [ R.h1_ [ R.text "We are stacked" ]
-                  ]
+                [ R.h1_ [ R.text "We are stacked" ]
+                ]
               , space: "4rem"
               , splitAfter: 7
               }

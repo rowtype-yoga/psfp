@@ -1,6 +1,7 @@
 module Yoga.CompileEditor.Component where
 
 import Prelude hiding (add)
+import CSS (JustifyContentValue(..), flexEnd)
 import Data.Array (intercalate)
 import Data.Either (Either(..))
 import Data.Foldable (for_)
@@ -10,12 +11,13 @@ import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (Aff, attempt, error, launchAff_, message, throwError)
 import Effect.Class (liftEffect)
-import JSS (jss, jssClasses)
+import JSS (jssClasses)
 import Milkis as M
 import Milkis.Impl (FetchImpl)
 import React.Basic (ReactComponent)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
+import React.Basic.Helpers (jsx)
 import React.Basic.Hooks (component, element, fragment, useState)
 import React.Basic.Hooks as React
 import Shared.Json (readAff)
@@ -23,7 +25,9 @@ import Shared.Models.Body as Body
 import Simple.JSON (writeJSON)
 import Yoga.Button.Component (ButtonType(..), mkButton)
 import Yoga.Card.Component (mkCard)
+import Yoga.Cluster.Component as Cluster
 import Yoga.Editor (getValue, mkEditor, setValue)
+import Yoga.Stack.Component as Stack
 import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.Theme.Types (CSSTheme)
 
@@ -34,40 +38,33 @@ mkCompileEditor ∷ FetchImpl -> Effect (ReactComponent Props)
 mkCompileEditor fetch = do
   editor <- mkEditor
   card <- mkCard
+  cluster <- Cluster.makeComponent
+  stack <- Stack.makeComponent
   button <- mkButton
   useStyles <-
     makeStylesJSS
       $ jssClasses \(theme ∷ CSSTheme) ->
           { editor:
-            jss
-              { background: theme.backgroundColour
-              , boxSizing: "content-box"
-              , height: "80%"
-              , padding: "20px"
-              , marginTop: "0px"
-              , borderRadius: "12px"
-              , boxShadow: i "22px 22px 24px " theme.backgroundColourDarker ", -22px -22px 24px " theme.backgroundColourLighter ∷ String
-              , display: "flex"
-              , flexDirection: "column"
-              }
-          , buttons:
-            jss
-              { marginBottom: "4px"
-              , display: "flex"
-              , alignSelf: "flex-end"
-              }
-          , compileButton: jss {}
-          , resetButton: jss {}
+            { background: theme.backgroundColour
+            , boxSizing: "content-box"
+            , height: "80%"
+            , padding: "20px"
+            , marginTop: "0px"
+            , borderRadius: "12px"
+            , boxShadow: i "22px 22px 24px " theme.backgroundColourDarker ", -22px -22px 24px " theme.backgroundColourLighter ∷ String
+            , display: "flex"
+            , flexDirection: "column"
+            , minWidth: theme.measure
+            }
           , card:
-            jss
-              { marginLeft: "35px"
-              , marginRight: "35px"
-              , opacity: 0
-              , zIndex: 0
-              }
-          , cardHidden: jss { opacity: 0 }
-          , compileError: jss { color: theme.red, opacity: 1, transition: "opacity 2.0s ease" }
-          , runOutput: jss { color: theme.green, opacity: 1, transition: "opacity 2.0s ease" }
+            { marginLeft: "35px"
+            , marginRight: "35px"
+            , opacity: 0
+            , zIndex: 0
+            }
+          , cardHidden: { opacity: 0 }
+          , compileError: { color: theme.red, opacity: 1, transition: "opacity 2.0s ease" }
+          , runOutput: { color: theme.green, opacity: 1, transition: "opacity 2.0s ease" }
           }
   component "CompileEditor" \{ initialCode, height, language } -> React.do
     maybeEditor /\ modifyEditor <- useState Nothing
@@ -105,29 +102,23 @@ mkCompileEditor fetch = do
       $ fragment
           [ R.div
               { children:
-                [ R.div
-                    { className: classes.buttons
-                    , children:
-                      [ element button
-                          { buttonType: PlainButton
-                          , kids: [ R.text "Reset" ]
-                          , buttonProps:
-                            { onClick: handler_ reset
-                            }
-                          , className: classes.resetButton
-                          }
-                      , element button
-                          { buttonType: HighlightedButton
-                          , kids: [ R.text "Compile" ]
-                          , buttonProps:
-                            { onClick: handler_ compile
-                            }
-                          , className: classes.compileButton
-                          }
+                pure
+                  $ jsx stack { space: "--s0" }
+                      [ element editor { onLoad, height, language }
+                      , jsx cluster { justify: JustifyContentValue flexEnd }
+                          [ R.div_
+                              [ jsx button
+                                  { onClick: handler_ reset
+                                  }
+                                  [ R.text "Reset" ]
+                              , jsx button
+                                  { buttonType: HighlightedButton
+                                  , onClick: handler_ compile
+                                  }
+                                  [ R.text "Compile" ]
+                              ]
+                          ]
                       ]
-                    }
-                , element editor { onLoad, height, language }
-                ]
               , className: classes.editor
               }
           , element card

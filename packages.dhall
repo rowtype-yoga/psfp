@@ -128,6 +128,11 @@ let overrides =
                 "https://github.com/i-am-the-slime/purescript-react-basic-hooks.git"
             , version = "e04b106ab2dfda3f9a1407420c434a908ff72b90"
             }
+      , css =
+            upstream.css
+          ⫽ { repo = "https://github.com/i-am-the-slime/purescript-css.git"
+            , version = "8ea0bab17c268d9c62a09892d7ba231dcbe6308b"
+            }
       }
 
 let additions =
@@ -193,7 +198,7 @@ let additions =
       , justifill =
           { dependencies = [ "record", "typelevel-prelude" ]
           , repo = "https://github.com/i-am-the-slime/purescript-justifill.git"
-          , version = "9a2d8dd3bc232c4b376128f1c3a3e3dc66d63317"
+          , version = "2de06260ae8e37355678198180bbdd06c91457e3"
           }
       , matryoshka =
           { dependencies =

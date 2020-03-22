@@ -2,8 +2,10 @@ module Yoga.Theme where
 
 import Prelude
 import CSS (contrast, darken, isLight, lighten, rotateHue, toHexString)
+import CSS as Color
 import Color (Color)
 import Data.Foldable (intercalate)
+import Data.Maybe (fromMaybe)
 import Data.Symbol (SProxy(..))
 import Record.Builder as RB
 import Yoga.Theme.Types (Theme, CSSTheme)
@@ -12,12 +14,17 @@ increaseContrast ∷ Color -> Color -> Color
 increaseContrast contrastWith = go 0
   where
   modify = if isLight contrastWith then darken else lighten
-
   go i col =
     if contrast contrastWith col >= 7.5 || i >= 20 then
       col
     else
       go (i + 1) (modify 0.1 col)
+
+unsafeAlaColor ∷ (Color -> Color) -> String -> String
+unsafeAlaColor fn s1 =
+  fromMaybe "hotpink" do
+    c1 <- Color.fromHexString s1
+    pure $ Color.toHexString (fn c1)
 
 f ∷ ∀ fieldName. SProxy fieldName
 f = SProxy
@@ -59,6 +66,10 @@ fromTheme theme =
         >>> RB.modify (f ∷ _ "highlightColour") toHexString
         >>> RB.insert (f ∷ _ "highlightColourDark")
             (theme.highlightColour # darken 0.2 # rotateHue (-10.0) # toHexString)
+        >>> RB.insert (f ∷ _ "highlightColourRotatedForwards")
+            (theme.highlightColour # rotateHue (20.0) # toHexString)
+        >>> RB.insert (f ∷ _ "highlightColourRotatedBackwards")
+            (theme.highlightColour # rotateHue (-20.0) # toHexString)
         -- altHighlight
         
         >>> RB.modify (f ∷ _ "altHighlightColour") toHexString
@@ -78,15 +89,14 @@ fromTheme theme =
         
         >>> RB.modify (f ∷ _ "textFontFamily") (intercalate ",")
         >>> RB.modify (f ∷ _ "headingFontFamily") (intercalate ",")
+        >>> RB.modify (f ∷ _ "codeFontFamily") (intercalate ",")
         >>> RB.insert (f ∷ _ "isLight") isLightTheme
         >>> RB.insert (f ∷ _ "fontWeightBold") "300"
     )
     theme
   where
   isLightTheme = isLight theme.backgroundColour
-
   lighter ∷ Color -> Color
   lighter = if isLightTheme then lighten 0.04 else lighten 0.02
-
   darker ∷ Color -> Color
   darker = if isLightTheme then darken 0.01 else darken 0.01

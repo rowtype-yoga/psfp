@@ -6,6 +6,8 @@ import JSS (JSSClasses, JSSElem, jss, jssClasses)
 import React.Basic (ReactComponent)
 import React.Basic.Hooks (JSX, component, fragment)
 import React.Basic.Hooks as React
+import Yoga.Font.Rubik as Rubik
+import Yoga.Font.VictorMono as VictorMono
 import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.Theme.Types (YogaTheme)
 
@@ -49,15 +51,21 @@ styles =
     { "@global":
       jss
         { html
+        , "@font-face": jss (Rubik.fontFamilies <> VictorMono.fontFamilies)
         , ":root": root
         , "*":
           { maxWidth: theme.measure
           }
         , "*, *::before, *::after":
           { boxSizing: "inherit"
+          , fontFamily: "inherit"
+          , color: "inherit"
+          , overflowWrap: "break-word"
+          , margin: 0
+          , padding: 0
           }
         , "strong, b": { fontWeight: theme.fontWeightBold }
-        , "html, body, div, header, nav, main, footer":
+        , "html, body, button, div, header, nav, main, footer":
           { maxWidth: "none"
           }
         , body:
@@ -68,6 +76,23 @@ styles =
           , "&::backdrop":
             { backgroundColor: theme.backgroundColour
             }
+          }
+        , "h1, h2, h3, h4":
+          { "line-height": "calc(0.8 * var(--ratio))" -- [TODO]: Move to variable
+          , "font-weight": 700
+          , "hyphens": "auto"
+          }
+        , "h1, .h1":
+          { "font-size": "var(--s4)"
+          }
+        , "h2, .h2":
+          { "font-size": "var(--s3)"
+          }
+        , "h3, .h3":
+          { "font-size": "var(--s2)"
+          }
+        , "h4, .h4":
+          { "font-size": "var(--s1)"
           }
         }
     }

@@ -18,18 +18,20 @@ import Simple.JSON as Foreign
 import Type.Row.Homogeneous (class Homogeneous)
 import Yoga.Theme.Types (CSSTheme)
 
-foreign import data UseStyles ∷ Type -> Type -> Type -> Type
+foreign import data UseStyles ∷ Type -> Type -> Type
 
 foreign import makeStylesWithPropsImpl ∷
   ∀ css classNames theme props.
   ({ | theme } -> { | css }) ->
-  Effect (props -> (Hook (UseStyles props { | css }) { | classNames }))
+  Effect (props -> (Hook (UseStyles props) { | classNames }))
 
 makeStylesJSS ∷
   ∀ theme jss jssRL jssForeign classes props.
   RowToList jss jssRL =>
   MapRecord jssRL jss (JSSElem props) Foreign () jssForeign =>
-  JSSClasses theme props jss -> Effect (props -> Hook (UseStyles props { | jssForeign }) { | classes })
+  MapRecord jssRL jss (JSSElem props) String () classes =>
+  JSSClasses theme props jss ->
+  Effect (props -> Hook (UseStyles props) { | classes })
 makeStylesJSS (JSSClasses themeToJssClasses) =
   makeStylesWithPropsImpl
     ( themeToJssClasses <#> mapRecord Foreign.write

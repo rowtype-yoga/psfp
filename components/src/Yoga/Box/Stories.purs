@@ -15,11 +15,18 @@ stories = do
     add "The Box" Box.makeComponent
       [ justifill
           { kids:
-              [ R.text "Rowtype Yoga"
-              , R.p_ [ R.text "This is a little bit longer my friend, I am telling you there was a lot to say in this case so it This is a little bit longer my friend, I am telling you there was a lot to say in this case so it wraps around" ]
-              , R.h2_ [ R.text "I said Rowtype Yoga" ]
-              , R.h3_ [ R.text "I said Rowtype Yoga" ]
-              , R.p_ [ R.text "This is a little bit longer my friend, I am telling you there was a lot to say in this case so it This is a little bit longer my friend, I am telling you there was a lot to say in this case so it wraps around" ]
-              ]
+            [ R.text "Rowtype Yoga"
+            , R.p_ [ R.text "This is a little bit longer my friend, I am telling you there was a lot to say in this case so it This is a little bit longer my friend, I am telling you there was a lot to say in this case so it wraps around" ]
+            , R.h2_ [ R.text "I said Rowtype Yoga" ]
+            , R.h3_ [ R.text "I said Rowtype Yoga" ]
+            , R.p_ [ R.text "This is a little bit longer my friend, I am telling you there was a lot to say in this case so it This is a little bit longer my friend, I am telling you there was a lot to say in this case so it wraps around" ]
+            ]
+          }
+      , justifill
+          { kids:
+            [ R.text "An Inverted box"
+            , R.p_ [ R.text "This is a little bit longer my friend, I am telling you there was a lot to say in this case so it This is a little bit longer my friend, I am telling you there was a lot to say in this case so it wraps around" ]
+            ]
+          , invert: true
           }
       ]

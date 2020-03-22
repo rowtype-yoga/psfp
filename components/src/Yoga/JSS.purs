@@ -1,10 +1,14 @@
 module JSS where
 
 import Prelude
+import CSS (Key(..), Rule(..), StyleM, Value(..), plain, runS)
+import Data.Foldable (foldMap)
 import Data.Symbol (class IsSymbol, SProxy(..), reflectSymbol)
+import Debug.Trace (spy)
 import Foreign (unsafeToForeign)
 import Foreign.Object (Object)
 import Foreign.Object as Object
+import Partial.Unsafe (unsafeCrashWith)
 import Prim.RowList (class RowToList, Nil, kind RowList)
 import Record as Record
 import Record.Builder (Builder)
@@ -21,10 +25,23 @@ newtype JSSClasses theme props r
   = JSSClasses ({ | theme } -> { | r })
 
 jssClasses ∷
-  ∀ theme props r.
-  (Homogeneous r (JSSElem props)) =>
-  ({ | theme } -> { | r }) -> JSSClasses theme props r
-jssClasses = JSSClasses
+  ∀ theme props row rowRL to.
+  JSSAbleFields props rowRL row () to =>
+  RowToList row rowRL =>
+  Homogeneous to (JSSElem props) =>
+  JSSAble props (Record row) =>
+  ({ | theme } -> { | row }) -> JSSClasses theme props to
+jssClasses f = JSSClasses f'
+  where
+  f' theme = built
+    where
+    rec = f theme
+    built ∷ Record to
+    built = Builder.build builder {}
+    rlp = RL.RLProxy ∷ RL.RLProxy rowRL
+    propsy = Proxy ∷ Proxy props
+    builder ∷ Builder.Builder (Record ()) (Record to)
+    builder = jssifyFields propsy rlp rec
 
 data JSSElem props
   = PrimitiveJss (String |+| Int |+| Number)
@@ -35,7 +52,30 @@ data JSSElem props
 instance semigroupJssElem ∷ Semigroup (JSSElem props) where
   append = case _, _ of
     NestedJss n1, NestedJss n2 -> NestedJss (n1 <> n2)
-    _, second -> second
+    ArrayJss a1, ArrayJss a2 -> ArrayJss (a1 <> a2)
+    NestedJss n1, PropsJss fn ->
+      PropsJss \props -> case fn props of
+        NestedJss n2 -> NestedJss (n1 <> n2)
+        other -> do
+          let
+            _ = spy "other" other
+          unsafeCrashWith "Untreated branch, fix me"
+    PropsJss fn1, PropsJss fn2 ->
+      PropsJss \props -> do
+        case fn1 props, fn2 props of
+          n1@(NestedJss _), n2@(NestedJss _) -> n1 <> n2
+          x, y -> do
+            let
+              _ = spy "x" x
+
+              _ = spy "y" y
+            unsafeCrashWith "Untreated branch second, fix me"
+    x, y -> do
+      let
+        _ = spy "x" x
+
+        _ = spy "y" y
+      unsafeCrashWith "Untreated branch second, fix me"
 
 instance wfJSSElem ∷ WriteForeign (JSSElem props) where
   writeImpl = case _ of
@@ -67,6 +107,18 @@ instance jssAbleWithProps ∷ JSSAble p jss => JSSAble p (p -> jss) where
 
 instance jssAbleNested ∷ JSSAble p jss => JSSAble p (Object jss) where
   jss = map jss >>> NestedJss
+
+instance jssAbleCss ∷ JSSAble p (StyleM Unit) where
+  jss someCss = NestedJss (foldMap ruleToObject rules)
+    where
+    rules = runS someCss
+    ruleToObject = case _ of
+      Property (Key k) (Value v) -> Object.singleton (plain k) (jss (plain v))
+      x ->
+        unsafeCrashWith do
+          let
+            _ = spy "Unsupported CSS" x
+          "tried to create CSS that I couldn't understand"
 
 instance jssAbleRecord ∷
   ( JSSAbleFields props rowRL row () to

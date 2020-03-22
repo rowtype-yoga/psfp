@@ -1,5 +1,7 @@
 "use strict";
 
+const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
+
 const path = require("path");
 
 const isWebpackDevServer = process.argv.some(
@@ -22,7 +24,12 @@ module.exports = {
           {
             loader: "purs-loader",
             options: {
-              src: ["src/**/*.purs", "test/**/*.purs", "stories/**/*.purs"],
+              src: [
+                "src/**/*.purs",
+                "test/**/*.purs",
+                "stories/**/*.purs",
+                "dce-output/**/*.purs"
+              ],
               spago: true,
               watch: isWebpackDevServer || isWatch,
               pscIde: true
@@ -59,5 +66,7 @@ module.exports = {
   resolve: {
     modules: ["node_modules"],
     extensions: [".purs", ".js"]
-  }
+  },
+
+  plugins: [new MonacoWebpackPlugin()]
 };

@@ -6,6 +6,7 @@ import Effect (Effect)
 import JSS (jss, jssClasses)
 import Prim.Row (class Union)
 import React.Basic.DOM.SVG as SVG
+import React.Basic.Events (EventHandler)
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
 import Unsafe.Coerce (unsafeCoerce)
@@ -13,7 +14,7 @@ import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.Theme.Types (CSSTheme)
 
 type ImageProps
-  = ( width ∷ Int, height ∷ Int, className ∷ String )
+  = ( width ∷ String, height ∷ String, className ∷ String, onClick ∷ EventHandler )
 
 type Raw r
   = ReactComponent { | r }
@@ -87,6 +88,11 @@ foreign import playIconRaw ∷ ∀ r. Raw r
 
 playIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
 playIcon = unsafeCoerce playIconRaw
+
+foreign import xMarkIconRaw ∷ ∀ r. Raw r
+
+xMarkIcon ∷ ∀ attrs attrs_. Union attrs attrs_ ImageProps => ReactComponent { | attrs }
+xMarkIcon = unsafeCoerce xMarkIconRaw
 
 data ActiveArrowDirection
   = ArrowPointsRight

@@ -45,7 +45,7 @@ stories = do
                   { style:
                     css
                       { display: "grid"
-                      , gridTemplateColumns: "120px 120px 120px 120px 120px 120px"
+                      , gridTemplateColumns: "120px 120px 120px 120px 120px 120px 120px 120px"
                       , gridRowGap: "20px"
                       , paddingBottom: "20px"
                       }
@@ -56,17 +56,19 @@ stories = do
                     , sw "IF Lighter" cssTheme.interfaceColourLighter
                     , sw "IF Lightest" cssTheme.interfaceColourLightest
                     , sw "Highlight" cssTheme.highlightColour
+                    , sw "Highlight++" cssTheme.highlightColourRotatedForwards
+                    , sw "HighlightGradient" $ "linear-gradient(45deg," <> cssTheme.highlightColourRotatedForwards <> "," <> cssTheme.highlightColourRotatedBackwards <> ")"
                     , sw "TXT Darkest" cssTheme.textColourDarkest
                     , sw "TXT Darker" cssTheme.textColourDarker
                     , sw "TXT" cssTheme.textColour
                     , sw "TXT Lighter" cssTheme.textColourLighter
                     , sw "TXT Lightest" cssTheme.textColourLightest
                     , sw "HighlightDK" cssTheme.highlightColourDark
+                    , sw "Highlight--" cssTheme.highlightColourRotatedBackwards
                     ]
                   }
               ]
             }
-
   mkSwatch = do
     component "Swatch" \{ name, colour, fontFamily } -> React.do
       pure

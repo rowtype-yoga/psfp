@@ -1,14 +1,19 @@
 module Yoga.Button.Stories where
 
 import Prelude hiding (add)
-import Yoga.Button.Component (ButtonType(..), mkButton)
-import Storybook.Decorator.FullScreen (fullScreenDecorator)
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Console (log)
+import Justifill (justifill)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
-import React.Basic.Hooks (component, element)
+import React.Basic.Helpers (jsx)
+import React.Basic.Hooks (component)
+import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
+import Yoga.Box.Component as Box
+import Yoga.Button.Component (ButtonType(..))
+import Yoga.Button.Component as Button
 
 stories ∷ Effect Storybook
 stories =
@@ -16,61 +21,34 @@ stories =
     addDecorator fullScreenDecorator
     add "Button" mkExample
       [ { text: "Cancel"
-        , buttonType: PlainButton
-        , buttonProps: { onClick: handler_ (log "clicked cancel") }
+        , onClick: handler_ (log "clicked cancel")
+        , buttonType: Nothing
         }
       , { text: "Okay"
-        , buttonType: HighlightedButton
-        , buttonProps:
-          { onClick: handler_ (log "clicked OK")
-          }
+        , buttonType: Just $ HighlightedButton
+        , onClick: handler_ (log "clicked OK")
         }
       , { text: "Disabled"
-        , buttonType: DisabledButton
-        , buttonProps:
-          { onClick: handler_ (log "clicked Disabled")
+        , buttonType: Just DisabledButton
+        , onClick: handler_ (log "clicked Disabled")
+        }
+      , justifill
+          { text: "Very long button text"
+          , onClick: handler_ (log "clicked very long...")
           }
-        }
-      , { text: "Very long button text"
-        , buttonType: PlainButton
-        , buttonProps: { onClick: handler_ (log "clicked very long...") }
-        }
       ]
-  -- add "Icon Button" mkIconButton
-  --   [ { icon: alternativeIcon, buttonType: PlainButton }
-  --   , { icon: apIcon, buttonType: HighlightedButton }
-  --   , { icon: appendIcon, buttonType: PlainButton }
-  --   , { icon: applyflippedIcon, buttonType: PlainButton }
-  --   , { icon: applyIcon, buttonType: PlainButton }
-  --   , { icon: bindIcon, buttonType: PlainButton }
-  --   , { icon: composeIcon, buttonType: PlainButton }
-  --   , { icon: forallIcon, buttonType: PlainButton }
-  --   , { icon: kleisliIcon, buttonType: DisabledButton }
-  --   , { icon: mapflippedIcon, buttonType: PlainButton }
-  --   , { icon: mapIcon, buttonType: PlainButton }
-  --   , { icon: pslogoIcon, buttonType: PlainButton }
-  --   ]
   where
   mkExample = do
-    button <- mkButton
-    component "ExampleButton" \{ text, buttonType, buttonProps } -> React.do
+    box <- Box.makeComponent
+    button <- Button.mkButton
+    component "ExampleButton" \{ text, buttonType, onClick } -> React.do
       pure
-        $ element button
-            { kids: [ R.text text ]
-            , buttonProps
+        $ jsx (button ∷ _ Button.Props)
+            { onClick
             , buttonType
-            , className: ""
             }
+            [ R.text text ]
 
--- mkIconButton = do
---   button <- mkButton
---   component "ExampleIconButton" \{ icon, buttonType } -> React.do
---     pure
---       $ element button
---           { children: [ element icon { width: 30 } ]
---           , buttonProps: { }
---           , buttonType
---           }
 loremIpsum ∷ String
 loremIpsum =
   """PureScript is a strongly-typed, purely-functional programming language that compiles"""

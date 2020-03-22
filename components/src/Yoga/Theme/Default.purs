@@ -2,6 +2,7 @@ module Yoga.Theme.Default where
 
 import Prelude
 import Color as Color
+import Data.Array.NonEmpty (cons')
 import Data.Maybe (fromMaybe')
 import Partial.Unsafe (unsafeCrashWith)
 import Yoga.Theme.Types (Theme)
@@ -9,7 +10,7 @@ import Yoga.Theme.Types (Theme)
 systemFontStack ∷ Array String
 systemFontStack = [ "-apple-system", "BlinkMacSystemFont", "Helvetica", "Arial", "sans-serif" ]
 
-hex :: String -> Color.Color
+hex ∷ String -> Color.Color
 hex c = c # Color.fromHexString # fromMaybe' \_ -> unsafeCrashWith $ "Invalid hex string " <> c
 
 darkTheme ∷ Theme
@@ -19,8 +20,9 @@ darkTheme =
   , interfaceColour: Color.hsl 225.0 0.48 0.12
   , highlightColour: Color.rgb 209 51 225
   , altHighlightColour: Color.hsl 84.0 0.617 0.631
-  , textFontFamily: [ """Rubik""" ] <> systemFontStack
-  , headingFontFamily: [ """Rubik""" ] <> systemFontStack
+  , textFontFamily: cons' "Rubik" systemFontStack
+  , headingFontFamily: cons' "Rubik" systemFontStack
+  , codeFontFamily: cons' "'VictorMono'" [ "monospace" ]
   , yellow: Color.rgb 255 235 149
   , green: Color.hsl 84.0 0.617 0.631
   , pink: Color.hsl 276.0 0.677 0.745
@@ -37,9 +39,9 @@ lightTheme ∷ Theme
 lightTheme =
   darkTheme
     { textColour = Color.hsl 225.0 0.18 0.25
-    , backgroundColour = Color.hsl 230.0 0.35 0.90
-    , interfaceColour = Color.hsl 210.0 0.30 0.80
-    , highlightColour = Color.hsl 260.0 0.85 0.58
+    , backgroundColour = Color.hsl 230.0 0.15 0.90
+    , interfaceColour = Color.hsl 210.0 0.10 0.89
+    , highlightColour = Color.hsl 209.0 0.95 0.69
     , altHighlightColour = Color.hsl 84.0 0.617 0.631
     , green = Color.hsl 84.0 0.617 0.431
     , pink = Color.hsl 276.0 0.677 0.545

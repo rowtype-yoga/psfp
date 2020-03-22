@@ -48,7 +48,7 @@ mkLandingPageBackground = do
               }
           , screenText:
             jss
-              { fontFamily: "PragmataPro"
+              { fontFamily: theme.codeFontFamily
               , fontSize: "0.85em"
               , fill: theme.textColour
               }

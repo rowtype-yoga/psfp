@@ -4,7 +4,6 @@ import Prelude hiding (add)
 import Yoga.Card.Component (mkCard, mkCardContent, mkCardSubtitle, mkCardTitle)
 import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Effect (Effect)
-import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Hooks (component, element)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
@@ -29,15 +28,15 @@ stories = do
       pure
         $ R.div
             { children:
-                pure
-                  $ element card
-                      { kids:
-                          [ element cardTitle { kids: [ R.text title ] }
-                          , element cardSubtitle { kids: [ R.text subtitle ] }
-                          , element cardContent { kids: [ content ] }
-                          ]
-                      , className: ""
-                      }
+              pure
+                $ element card
+                    { kids:
+                      [ element cardTitle { kids: [ R.text title ] }
+                      , element cardSubtitle { kids: [ R.text subtitle ] }
+                      , element cardContent { kids: [ content ] }
+                      ]
+                    , className: ""
+                    }
             }
 
 loremIpsum ∷ String

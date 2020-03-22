@@ -1,6 +1,7 @@
 module Yoga.Theme.Types where
 
 import Color (Color)
+import Data.Array.NonEmpty (NonEmptyArray)
 
 type Theme
   = { backgroundColour ∷ Color
@@ -8,8 +9,9 @@ type Theme
     , interfaceColour ∷ Color
     , highlightColour ∷ Color
     , altHighlightColour ∷ Color
-    , textFontFamily ∷ Array String
-    , headingFontFamily ∷ Array String
+    , textFontFamily ∷ NonEmptyArray String
+    , headingFontFamily ∷ NonEmptyArray String
+    , codeFontFamily ∷ NonEmptyArray String
     , yellow ∷ Color
     , green ∷ Color
     , pink ∷ Color
@@ -38,6 +40,8 @@ type YogaTheme
     , textColour ∷ String
     , textColourDarker ∷ String
     , textColourDarkest ∷ String
+    , highlightColourRotatedForwards ∷ String
+    , highlightColourRotatedBackwards ∷ String
     , highlightColour ∷ String
     , highlightColourDark ∷ String
     , altHighlightColour ∷ String
@@ -45,6 +49,7 @@ type YogaTheme
     , isLight ∷ Boolean
     , textFontFamily ∷ String
     , headingFontFamily ∷ String
+    , codeFontFamily ∷ String
     , yellow ∷ String
     , green ∷ String
     , pink ∷ String

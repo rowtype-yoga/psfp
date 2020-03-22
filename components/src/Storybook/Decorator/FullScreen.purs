@@ -3,8 +3,7 @@ module Storybook.Decorator.FullScreen where
 import Prelude
 import Data.Array (find)
 import Data.Map (Map)
-import Data.Maybe (Maybe, fromMaybe)
-import Data.Traversable (traverse_)
+import Data.Traversable (for_, traverse_)
 import Effect (Effect)
 import JSS (jss, jssClasses)
 import React.Basic (JSX)
@@ -12,14 +11,12 @@ import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.DOM.Events (targetValue)
 import React.Basic.Events (handler)
-import React.Basic.Hooks (ReactComponent, component, element, useState, (/\))
+import React.Basic.Hooks (ReactComponent, component, element, useEffect, useState, (/\))
 import React.Basic.Hooks as React
 import Simple.JSON (readJSON_, writeJSON)
 import Web.HTML (window)
 import Web.HTML.Window (localStorage)
 import Web.Storage.Storage (getItem, setItem)
-import Yoga.Font.PragmataPro as PragmataPro
-import Yoga.Font.Rubik as Rubik
 import Yoga.Theme (fromTheme)
 import Yoga.Theme.CSSBaseline (mkCssBaseline)
 import Yoga.Theme.Default (darkTheme, lightTheme)
@@ -40,11 +37,12 @@ fullScreenDecorator mkChild = do
         { style:
           css
             { minWidth: "100vw"
-            , height: "100vh"
+            , minHeight: "100vh"
+            , display: "flex"
             }
         , children:
           [ element themeSwitcher
-              { kids: [ child ]
+              { child
               , defaultTheme: { name: "Dark", theme: dark }
               , themes:
                 [ { name: "Dark", theme: dark }
@@ -62,7 +60,7 @@ type DefaultTheme
 
 mkThemeSwitcher ∷
   Effect
-    ( ReactComponent { defaultTheme ∷ DefaultTheme, themes ∷ Array DefaultTheme, kids ∷ Array JSX }
+    ( ReactComponent { defaultTheme ∷ DefaultTheme, themes ∷ Array DefaultTheme, child ∷ JSX }
     )
 mkThemeSwitcher = do
   themeProvider <- mkThemeProvider
@@ -77,13 +75,15 @@ mkThemeSwitcher = do
               , top: 10
               , right: 10
               }
-          , "@font-face": jss (Rubik.fontFamilies <> [ PragmataPro.fontFamily ])
           }
   storage <- window >>= localStorage
-  saved ∷ (Maybe DefaultTheme) <- getItem "theme" storage <#> (_ >>= readJSON_)
-  component "ThemeSwitcher" \{ defaultTheme, themes, kids } -> React.do
+  component "ThemeSwitcher" \{ defaultTheme, themes, child } -> React.do
+    { theme, name } /\ modTheme <- useState defaultTheme
+    useEffect unit do
+      maybeSaved <- getItem "theme" storage <#> (_ >>= readJSON_)
+      for_ maybeSaved (modTheme <<< const)
+      pure mempty
     classes <- useStyles {}
-    { theme, name } /\ modTheme <- useState $ fromMaybe defaultTheme saved
     let
       setTheme newTheme = do
         setItem "theme" (writeJSON newTheme) storage
@@ -111,15 +111,5 @@ mkThemeSwitcher = do
     pure
       $ element themeProvider
           { theme
-          , children:
-            pure
-              $ element baseline
-                  { kids:
-                    [ R.div
-                        { style: css { backgroundColor: theme.backgroundColour, width: "100%", height: "100%" }
-                        , children:
-                          [ themeSelect ] <> kids
-                        }
-                    ]
-                  }
+          , children: [ element baseline { kids: [ R.div_ [ themeSelect, child ] ] } ]
           }

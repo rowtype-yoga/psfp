@@ -1,6 +1,7 @@
 module Yoga.Stack.Styles where
 
 import Prelude
+import Control.Apply (lift2)
 import Data.Foldable (foldMap)
 import Data.Maybe (Maybe, fromMaybe)
 import Foreign.Object as Object
@@ -20,28 +21,28 @@ styles ∷
     ( stack ∷ JSSElem Props
     )
 styles =
-  jssClasses \theme ->
-    { stack:
-      jss
-        $ \(props ∷ Props) ->
-            jss
-              { "--space": props.space # fromMaybe "1.5rem"
-              , display: "flex"
-              , flexDirection: "column"
-              , justifyContent: "flex-start"
-              , "& > *":
-                { marginTop: 0
-                , marginBottom: 0
-                }
-              , "& > * + *":
-                { marginTop: "var(--space)"
-                }
-              }
-              <> splitAfter props
+  jssClasses
+    $ pure
+        { stack: jss $ lift2 (<>) baseStyles splitAfterStyles
+        }
+
+baseStyles ∷ Props -> JSSElem Props
+baseStyles props =
+  jss
+    { display: "flex"
+    , flexDirection: "column"
+    , justifyContent: "flex-start"
+    , "& > *":
+      { marginTop: 0
+      , marginBottom: 0
+      }
+    , "&& > * + *":
+      { marginTop: props.space # fromMaybe "1.5rem"
+      }
     }
 
-splitAfter ∷ Props -> JSSElem Props
-splitAfter props =
+splitAfterStyles ∷ Props -> JSSElem Props
+splitAfterStyles props =
   jss
     $ props.splitAfter
     # foldMap (\n -> nthChild n <> onlyChild)

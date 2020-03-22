@@ -51,6 +51,6 @@ mkHeader = do
       $ R.div
           { className: classNames.card <> " " <> className
           , children:
-            [ element trianglelogoIcon { width: 36, className: classNames.logo } ]
+            [ element trianglelogoIcon { width: "36", className: classNames.logo } ]
               <> kids
           }

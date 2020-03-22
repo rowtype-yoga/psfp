@@ -29,9 +29,9 @@ makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do
   useStyles <- makeStylesJSS styles
   component "Stack" \props@{ kids, className } -> React.do
-    classes <- useStyles (pick props)
+    { stack } <- useStyles (pick props)
     pure
       $ R.div
-          { className: classes.stack <> foldMap (" " <> _) className
+          { className: stack <> foldMap (" " <> _) className
           , children: kids
           }

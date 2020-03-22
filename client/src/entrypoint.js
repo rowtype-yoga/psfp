@@ -1,9 +1,8 @@
-'use strict';
+"use strict";
 
-require('./Example.purs').main();
+require("./PSFP.purs").main();
+// require("./../dce-output/PSFP").main();
 
 if (module.hot) {
   module.hot.accept();
 }
-
-console.log('image from entrypoint.js', require('./logo.png'))
