@@ -1,6 +1,7 @@
 module Yoga.Box.Styles where
 
 import Prelude
+import Color (toHexString)
 import Data.Maybe (Maybe)
 import JSS (JSSClasses, JSSElem, jssClasses)
 import Yoga.Helpers ((?||))
@@ -25,8 +26,8 @@ styles =
     { box:
       \props ->
         { padding: props.padding ?|| "var(--s1)"
-        , "--colour-light": theme.backgroundColour
-        , "--colour-dark": theme.textColour
+        , "--colour-light": theme.backgroundColour # toHexString
+        , "--colour-dark": theme.textColour # toHexString
         , color: "var(--colour-dark)"
         , backgroundColor: "var(--colour-light)"
         , border: props.border ?|| "0 solid"

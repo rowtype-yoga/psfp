@@ -1,9 +1,10 @@
 module Yoga.SVG.Icon where
 
 import Prelude
+import Color (toHexString)
 import Data.Monoid (guard)
 import Effect (Effect)
-import JSS (jss, jssClasses)
+import JSS (jssClasses)
 import Prim.Row (class Union)
 import React.Basic.DOM.SVG as SVG
 import React.Basic.Events (EventHandler)
@@ -105,22 +106,19 @@ mkMenu = do
     makeStylesJSS
       $ jssClasses \(theme ∷ CSSTheme) ->
           { arrow:
-            jss
-              { fill: theme.textColour
-              , transition: "0.3s ease-out"
-              }
+            { fill: theme.textColour # toHexString
+            , transition: "0.3s ease-out"
+            }
           , arrowInactive:
-            jss
-              { fillOpacity: ".1"
-              }
+            { fillOpacity: ".1"
+            }
           , svg:
-            jss
-              { width: "100%"
-              , height: "100%"
-              , "&:hover":
-                { fill: theme.backgroundColour
-                }
+            { width: "100%"
+            , height: "100%"
+            , "&:hover":
+              { fill: theme.backgroundColour # toHexString
               }
+            }
           }
   component "MenuIcon" \{ activeArrowDirection } -> React.do
     classes <- useStyles {}

@@ -1,8 +1,9 @@
 module Yoga.Typography.Paragraph where
 
 import Prelude
+import Color (toHexString)
 import Effect (Effect)
-import JSS (jss, jssClasses)
+import JSS (jssClasses)
 import React.Basic.DOM as R
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
@@ -15,13 +16,12 @@ mkP = do
     makeStylesJSS
       $ jssClasses \(theme ∷ CSSTheme) ->
           { p:
-            jss
-              { color: theme.textColour
-              , fontFamily: theme.textFontFamily
-              , fontSize: "1em"
-              , margin: "0.67em 0 0.33em 0"
-              , padding: "0.67em 0 0.33em 0"
-              }
+            { color: theme.textColour # toHexString
+            , fontFamily: theme.textFontFamily
+            , fontSize: "1em"
+            , margin: "0.67em 0 0.33em 0"
+            , padding: "0.67em 0 0.33em 0"
+            }
           }
   component "paragraph" \{ text } -> React.do
     classes <- useStyles {}

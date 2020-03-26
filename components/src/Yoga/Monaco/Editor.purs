@@ -1,6 +1,8 @@
 module Yoga.Editor where
 
 import Prelude
+import CSS (backgroundColor, borderBox, boxSizing, margin, pct, unitless, width)
+import CSS.Overflow (hidden, overflowY)
 import Control.Promise (Promise)
 import Control.Promise as Promise
 import Data.Maybe (Maybe(..), maybe)
@@ -12,7 +14,7 @@ import Effect.Aff.Compat (EffectFn1)
 import Effect.Class (liftEffect)
 import Effect.Uncurried (EffectFn2, mkEffectFn1, mkEffectFn2)
 import Foreign (Foreign, unsafeToForeign)
-import JSS (jss, jssClasses)
+import JSS (jssClasses)
 import Prim.Row (class Union)
 import React.Basic (JSX, ReactComponent, Ref, element, fragment)
 import React.Basic.DOM as R
@@ -95,16 +97,14 @@ mkEditor = do
   useStyles <-
     makeStylesJSS
       $ jssClasses \(theme ∷ CSSTheme) ->
-          ( { wrapper:
-              jss
-                { margin: "0"
-                , boxSizing: "border-box"
-                , width: "100%"
-                , overflowY: "hidden"
-                , backgroundColor: theme.backgroundColour
-                }
-            }
-          )
+          { wrapper:
+            do
+              margin (0.0 # unitless) (0.0 # unitless) (0.0 # unitless) (0.0 # unitless)
+              boxSizing borderBox
+              width (100.0 # pct)
+              overflowY hidden
+              backgroundColor theme.backgroundColour
+          }
   component "Editor" \{ onLoad, height, language } -> React.do
     classes <- useStyles {}
     maybeEditor /\ modifyEditor <- useState Nothing

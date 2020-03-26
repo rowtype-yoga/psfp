@@ -1,9 +1,10 @@
 module Yoga.Header.Component where
 
 import Prelude
+import Color (toHexString)
 import Data.Interpolate (i)
 import Effect (Effect)
-import JSS (jss, jssClasses)
+import JSS (jssClasses)
 import React.Basic (JSX)
 import React.Basic.DOM as R
 import React.Basic.Hooks (ReactComponent, component, element)
@@ -24,26 +25,24 @@ mkHeader = do
     makeStylesJSS
       $ jssClasses \(theme ∷ CSSTheme) ->
           { card:
-            jss
-              { background: theme.backgroundColour
-              , borderBottom: "1px solid " <> theme.backgroundColourLightest
-              , borderRight: "1px solid " <> theme.backgroundColourLightest
-              , borderLeft: "1px solid " <> theme.backgroundColourLightest
-              , color: theme.textColour
-              , fontFamily: theme.textFontFamily
-              , fontSize: "2em"
-              , padding: "20px"
-              , display: "flex"
-              , flex: "0 0 100%"
-              , boxShadow:
-                (i "30px 30px 60px " theme.backgroundColourDarker ", -30px -30px 60px " theme.backgroundColourLighter ";") ∷ String
-              }
+            { background: theme.backgroundColour # toHexString
+            , borderBottom: "1px solid " <> (theme.backgroundColourLightest # toHexString)
+            , borderRight: "1px solid " <> (theme.backgroundColourLightest # toHexString)
+            , borderLeft: "1px solid " <> (theme.backgroundColourLightest # toHexString)
+            , color: theme.textColour # toHexString
+            , fontFamily: theme.textFontFamily
+            , fontSize: "2em"
+            , padding: "20px"
+            , display: "flex"
+            , flex: "0 0 100%"
+            , boxShadow:
+              (i "30px 30px 60px " (toHexString theme.backgroundColourDarker) ", -30px -30px 60px " (toHexString theme.backgroundColourLighter) ";") ∷ String
+            }
           , logo:
-            jss
-              { fill: theme.textColour
-              , marginRight: "10px"
-              , marginBottom: "5px"
-              }
+            { fill: theme.textColour # toHexString
+            , marginRight: "10px"
+            , marginBottom: "5px"
+            }
           }
   component "Header" \{ kids, className } -> React.do
     classNames <- useStyles {}

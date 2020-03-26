@@ -1,6 +1,7 @@
 module Yoga.Theme.CSSBaseline where
 
 import Prelude hiding (add)
+import Color (toHexString)
 import Effect (Effect)
 import JSS (JSSClasses, JSSElem, jss, jssClasses)
 import React.Basic (ReactComponent)
@@ -70,11 +71,11 @@ styles =
           }
         , body:
           { margin: 0
-          , backgroundColor: theme.backgroundColour
-          , color: theme.textColour
+          , backgroundColor: theme.backgroundColour # toHexString
+          , color: theme.textColour # toHexString
           , fontFamily: theme.textFontFamily
           , "&::backdrop":
-            { backgroundColor: theme.backgroundColour
+            { backgroundColor: theme.backgroundColour # toHexString
             }
           }
         , "h1, h2, h3, h4":

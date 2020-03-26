@@ -20,44 +20,46 @@ type Theme
     , red ∷ Color
     , blue ∷ Color
     , white ∷ Color
+    , grey ∷ Color
     , measure ∷ String
     , borderThin ∷ String
     }
 
 type YogaTheme
-  = ( backgroundColour ∷ String
-    , backgroundColourLighter ∷ String
-    , backgroundColourLightest ∷ String
-    , backgroundColourDarker ∷ String
-    , backgroundColourDarkest ∷ String
-    , interfaceColour ∷ String
-    , interfaceColourDarker ∷ String
-    , interfaceColourDarkest ∷ String
-    , interfaceColourLighter ∷ String
-    , interfaceColourLightest ∷ String
-    , textColourLightest ∷ String
-    , textColourLighter ∷ String
-    , textColour ∷ String
-    , textColourDarker ∷ String
-    , textColourDarkest ∷ String
-    , highlightColourRotatedForwards ∷ String
-    , highlightColourRotatedBackwards ∷ String
-    , highlightColour ∷ String
-    , highlightColourDark ∷ String
-    , altHighlightColour ∷ String
-    , altHighlightColourDark ∷ String
+  = ( backgroundColour ∷ Color
+    , backgroundColourLighter ∷ Color
+    , backgroundColourLightest ∷ Color
+    , backgroundColourDarker ∷ Color
+    , backgroundColourDarkest ∷ Color
+    , interfaceColour ∷ Color
+    , interfaceColourDarker ∷ Color
+    , interfaceColourDarkest ∷ Color
+    , interfaceColourLighter ∷ Color
+    , interfaceColourLightest ∷ Color
+    , textColourLightest ∷ Color
+    , textColourLighter ∷ Color
+    , textColour ∷ Color
+    , textColourDarker ∷ Color
+    , textColourDarkest ∷ Color
+    , highlightColourRotatedForwards ∷ Color
+    , highlightColourRotatedBackwards ∷ Color
+    , highlightColour ∷ Color
+    , highlightColourDark ∷ Color
+    , altHighlightColour ∷ Color
+    , altHighlightColourDark ∷ Color
     , isLight ∷ Boolean
     , textFontFamily ∷ String
     , headingFontFamily ∷ String
     , codeFontFamily ∷ String
-    , yellow ∷ String
-    , green ∷ String
-    , pink ∷ String
-    , orange ∷ String
-    , turquoise ∷ String
-    , red ∷ String
-    , blue ∷ String
-    , white ∷ String
+    , yellow ∷ Color
+    , green ∷ Color
+    , pink ∷ Color
+    , orange ∷ Color
+    , turquoise ∷ Color
+    , red ∷ Color
+    , blue ∷ Color
+    , grey ∷ Color
+    , white ∷ Color
     , fontWeightBold ∷ String
     , measure ∷ String
     , borderThin ∷ String

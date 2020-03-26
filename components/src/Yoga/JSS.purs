@@ -1,7 +1,7 @@
 module JSS where
 
 import Prelude
-import CSS (Key(..), Rule(..), StyleM, Value(..), plain, runS)
+import CSS (Color, Key(..), Rule(..), StyleM, Value(..), cssStringRGBA, plain, runS)
 import Data.Foldable (foldMap)
 import Data.Symbol (class IsSymbol, SProxy(..), reflectSymbol)
 import Debug.Trace (spy)
@@ -89,6 +89,9 @@ class JSSAble p a | a -> p where
 
 instance jssAbleJssElem ∷ JSSAble p (JSSElem p) where
   jss = identity
+
+instance jssAbleColor ∷ JSSAble p Color where
+  jss c = PrimitiveJss (coerce (cssStringRGBA c))
 
 instance jssAbleString ∷ JSSAble p String where
   jss = coerce >>> PrimitiveJss

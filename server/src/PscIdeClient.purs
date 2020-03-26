@@ -104,8 +104,8 @@ newtype PscIdeConnection
   , folder ∷ Folder
   }
 
-derive instance ntPscIdeConnection :: Newtype PscIdeConnection _
-instance eqPscIdeConnection :: Eq PscIdeConnection where
+derive instance ntPscIdeConnection ∷ Newtype PscIdeConnection _
+instance eqPscIdeConnection ∷ Eq PscIdeConnection where
   eq c1 c2 = (unwrap c1).port == (unwrap c2).port
 
 saveMainFile ∷ Folder -> String -> Aff Unit

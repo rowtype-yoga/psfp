@@ -2,17 +2,16 @@ module Main where
 
 import Prelude
 
-import Control.Parallel (parTraverse)
+import Control.Parallel (parOneOf, parTraverse)
 import Data.Array ((..))
 import Data.Bifunctor (lmap)
 import Data.Either (Either(..))
 import Data.Int (fromString)
-import Data.Maybe (Maybe, fromMaybe)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (un)
-import Data.Time.Duration (Seconds(..), fromDuration)
-import Data.Traversable (for)
+import Data.Time.Duration (class Duration, Seconds(..), fromDuration)
 import Effect (Effect)
-import Effect.Aff (Aff, attempt, launchAff_, message)
+import Effect.Aff (Aff, attempt, delay, launchAff_, message)
 import Effect.Aff.Class (liftAff)
 import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Class.Console (info, log)
@@ -59,14 +58,17 @@ type ErrorWithCode
 asErrorWithCode ∷ ∀ a. a -> Maybe ErrorWithCode
 asErrorWithCode = read_ <<< unsafeToForeign
 
-runCode ∷ Folder -> Aff ExecResult
-runCode folder = execCommand folder "node run.js"
+runCode ∷ ∀ d. Duration d => d -> Folder -> Aff (Maybe ExecResult)
+runCode timeout folder = parOneOf
+   [ Just <$> execCommand folder "exec node run.js"
+   , Nothing <$ delay (timeout # fromDuration)
+   ]
 
 compileAndRunJob ∷ CompileRequest -> (Handler -> Aff Unit) -> NewJob PscIdeConnection
 compileAndRunJob json handle =
   NewJob \jobId conn -> do
     stringOrErr <- attempt $ compileCode json.code conn
-    case ((readJSON <$> stringOrErr) :: _ _ (_ _ CompileResult)) of 
+    case ((readJSON <$> stringOrErr) ∷ _ _ (_ _ CompileResult)) of 
       Left e -> do
         handle $ setStatus 500
         log $ "Aff failed with " <> message e
@@ -75,13 +77,20 @@ compileAndRunJob json handle =
         handle $ setStatus 422
         handle $ Response.send $ write res
       Right (Right res) -> do
-        runResult <- runCode (getFolder conn)
-        resultBody <- toBody runResult
-        handle $ Response.send $ write (resultBody ∷ Body.RunResult)
+        runResult <- runCode timeout (getFolder conn) 
+        case runResult of
+          Nothing -> do
+            handle $ setStatus 408
+            handle $ Response.send $ write { error: "Timed out after running for " <> show timeout}
+          Just rr -> do
+            resultBody <- toBody rr
+            handle $ Response.send $ write (resultBody ∷ Body.RunResult)
       Right (Left errs) -> do
         handle $ setStatus 500
         log $ "Could not decode: " <> show (lmap (const "no way") stringOrErr) <> "\nErrors: " <> show errs
         handle $ Response.send $ write {}
+    where
+      timeout = 1.0 # Seconds
 
 compileAndRunHandler ∷ Queue PscIdeConnection -> Handler
 compileAndRunHandler queue = do
@@ -166,3 +175,4 @@ serverSetup app = do
     key <- readTextFile UTF8 "server.key"
     cert <- readTextFile UTF8 "server.cert"
     pure { key, cert }
+

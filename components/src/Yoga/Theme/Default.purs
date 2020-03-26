@@ -30,6 +30,7 @@ darkTheme =
   , turquoise: Color.rgb 127 219 202
   , red: Color.rgb 255 88 116
   , blue: Color.rgb 130 170 255
+  , grey: Color.rgb 150 150 150
   , white: Color.rgb 250 250 250
   , measure: "60ch"
   , borderThin: "0.125rem"
@@ -39,9 +40,11 @@ lightTheme ∷ Theme
 lightTheme =
   darkTheme
     { textColour = Color.hsl 225.0 0.18 0.25
-    , backgroundColour = Color.hsl 230.0 0.15 0.90
+    -- , backgroundColour = Color.hsl 210.0 0.08 0.87
+    , backgroundColour = hex "#F6F9FC"
     , interfaceColour = Color.hsl 210.0 0.10 0.89
-    , highlightColour = Color.hsl 209.0 0.95 0.69
+    -- , highlightColour = Color.hsl 209.0 0.95 0.69
+    , highlightColour = Color.hsl 350.0 0.90 0.70
     , altHighlightColour = Color.hsl 84.0 0.617 0.631
     , green = Color.hsl 84.0 0.617 0.431
     , pink = Color.hsl 276.0 0.677 0.545

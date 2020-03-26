@@ -1,7 +1,7 @@
 module Yoga.CompileEditor.Component where
 
 import Prelude hiding (add)
-import CSS (JustifyContentValue(..), flexEnd)
+import CSS (JustifyContentValue(..), flexEnd, toHexString)
 import Data.Array (intercalate)
 import Data.Either (Either(..))
 import Data.Foldable (for_)
@@ -51,16 +51,13 @@ mkCompileEditor fetch = do
             , padding: "20px"
             , marginTop: "0px"
             , borderRadius: "12px"
-            , boxShadow: i "22px 22px 24px " theme.backgroundColourDarker ", -22px -22px 24px " theme.backgroundColourLighter ∷ String
+            , boxShadow: i "22px 22px 24px " (toHexString theme.backgroundColourDarker) ", -22px -22px 24px " (toHexString theme.backgroundColourLighter) ∷ String
             , display: "flex"
             , flexDirection: "column"
             , minWidth: theme.measure
             }
           , card:
-            { marginLeft: "35px"
-            , marginRight: "35px"
-            , opacity: 0
-            , zIndex: 0
+            { zIndex: 0
             }
           , cardHidden: { opacity: 0 }
           , compileError: { color: theme.red, opacity: 1, transition: "opacity 2.0s ease" }
@@ -99,28 +96,23 @@ mkCompileEditor fetch = do
             res <- compileAndRun (M.fetch fetch) { code }
             setCompileResult (Just res) # liftEffect
     pure
-      $ fragment
-          [ R.div
-              { children:
-                pure
-                  $ jsx stack { space: "--s0" }
-                      [ element editor { onLoad, height, language }
-                      , jsx cluster { justify: JustifyContentValue flexEnd }
-                          [ R.div_
-                              [ jsx button
-                                  { onClick: handler_ reset
-                                  }
-                                  [ R.text "Reset" ]
-                              , jsx button
-                                  { buttonType: HighlightedButton
-                                  , onClick: handler_ compile
-                                  }
-                                  [ R.text "Compile" ]
-                              ]
-                          ]
+      $ jsx stack { space: "--s1" }
+          [ jsx stack { space: "--s0", className: classes.editor }
+              [ element editor { onLoad, height, language }
+              , jsx cluster { justify: JustifyContentValue flexEnd }
+                  [ R.div_
+                      [ jsx button
+                          { onClick: handler_ reset
+                          }
+                          [ R.text "Reset" ]
+                      , jsx button
+                          { buttonType: HighlightedButton
+                          , onClick: handler_ compile
+                          }
+                          [ R.text "Run" ]
                       ]
-              , className: classes.editor
-              }
+                  ]
+              ]
           , element card
               { kids: [ R.text (compileResultToString compileResult) ]
               , className: classes.card <> " " <> compileResultToClass compileResult

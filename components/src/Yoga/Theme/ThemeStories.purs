@@ -1,6 +1,7 @@
 module Yoga.Theme.Stories where
 
 import Prelude hiding (add)
+import Color (toHexString)
 import Effect (Effect)
 import React.Basic.DOM (css)
 import React.Basic.DOM as R
@@ -50,21 +51,21 @@ stories = do
                       , paddingBottom: "20px"
                       }
                   , children:
-                    [ sw "IF Darkest" cssTheme.interfaceColourDarkest
-                    , sw "IF Darker" cssTheme.interfaceColourDarker
-                    , sw "Interface" cssTheme.interfaceColour
-                    , sw "IF Lighter" cssTheme.interfaceColourLighter
-                    , sw "IF Lightest" cssTheme.interfaceColourLightest
-                    , sw "Highlight" cssTheme.highlightColour
-                    , sw "Highlight++" cssTheme.highlightColourRotatedForwards
-                    , sw "HighlightGradient" $ "linear-gradient(45deg," <> cssTheme.highlightColourRotatedForwards <> "," <> cssTheme.highlightColourRotatedBackwards <> ")"
-                    , sw "TXT Darkest" cssTheme.textColourDarkest
-                    , sw "TXT Darker" cssTheme.textColourDarker
-                    , sw "TXT" cssTheme.textColour
-                    , sw "TXT Lighter" cssTheme.textColourLighter
-                    , sw "TXT Lightest" cssTheme.textColourLightest
-                    , sw "HighlightDK" cssTheme.highlightColourDark
-                    , sw "Highlight--" cssTheme.highlightColourRotatedBackwards
+                    [ sw "IF Darkest" (toHexString cssTheme.interfaceColourDarkest)
+                    , sw "IF Darker" (toHexString cssTheme.interfaceColourDarker)
+                    , sw "Interface" (toHexString cssTheme.interfaceColour)
+                    , sw "IF Lighter" (toHexString cssTheme.interfaceColourLighter)
+                    , sw "IF Lightest" (toHexString cssTheme.interfaceColourLightest)
+                    , sw "Highlight" (toHexString cssTheme.highlightColour)
+                    , sw "Highlight++" (toHexString cssTheme.highlightColourRotatedForwards)
+                    , sw "HighlightGradient" $ "linear-gradient(45deg," <> toHexString cssTheme.highlightColourRotatedForwards <> "," <> toHexString cssTheme.highlightColourRotatedBackwards <> ")"
+                    , sw "TXT Darkest" (toHexString cssTheme.textColourDarkest)
+                    , sw "TXT Darker" (toHexString cssTheme.textColourDarker)
+                    , sw "TXT" (toHexString cssTheme.textColour)
+                    , sw "TXT Lighter" (toHexString cssTheme.textColourLighter)
+                    , sw "TXT Lightest" (toHexString cssTheme.textColourLightest)
+                    , sw "HighlightDK" (toHexString cssTheme.highlightColourDark)
+                    , sw "Highlight--" (toHexString cssTheme.highlightColourRotatedBackwards)
                     ]
                   }
               ]

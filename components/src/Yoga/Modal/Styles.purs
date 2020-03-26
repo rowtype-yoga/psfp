@@ -1,9 +1,8 @@
 module Yoga.Modal.Styles where
 
 import Prelude hiding (top)
-import CSS (backgroundColor, black, borderRadius, boxShadow, fromHexString, hotpink, nil, rem)
+import CSS (backgroundColor, black, borderRadius, boxShadow, nil, rem, toHexString)
 import JSS (JSSClasses, JSSElem, jssClasses)
-import Yoga.Helpers ((?||))
 import Yoga.Theme.Types (YogaTheme)
 
 type PropsR
@@ -36,11 +35,11 @@ styles =
         }
       , box:
         do
-          backgroundColor (fromHexString theme.interfaceColour ?|| hotpink)
+          backgroundColor theme.interfaceColour
           boxShadow nil nil (3.5 # rem) black
           borderRadius boxBorderRadius boxBorderRadius boxBorderRadius boxBorderRadius
       , closeIcon:
-        { fill: theme.backgroundColour
+        { fill: toHexString theme.backgroundColour
         , width: "calc(0.67 * var(--s1))"
         , height: "calc(0.67 * var(--s1))"
         , margin: 0

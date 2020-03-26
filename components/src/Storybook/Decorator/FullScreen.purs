@@ -2,8 +2,7 @@ module Storybook.Decorator.FullScreen where
 
 import Prelude
 import Data.Array (find)
-import Data.Map (Map)
-import Data.Traversable (for_, traverse_)
+import Data.Traversable (traverse_)
 import Effect (Effect)
 import JSS (jss, jssClasses)
 import React.Basic (JSX)
@@ -13,7 +12,6 @@ import React.Basic.DOM.Events (targetValue)
 import React.Basic.Events (handler)
 import React.Basic.Hooks (ReactComponent, component, element, useEffect, useState, (/\))
 import React.Basic.Hooks as React
-import Simple.JSON (readJSON_, writeJSON)
 import Web.HTML (window)
 import Web.HTML.Window (localStorage)
 import Web.Storage.Storage (getItem, setItem)
@@ -52,15 +50,16 @@ fullScreenDecorator mkChild = do
           ]
         }
 
-type ThemesWithNames
-  = Map String CSSTheme
-
-type DefaultTheme
+type NamedTheme
   = { name ∷ String, theme ∷ CSSTheme }
 
 mkThemeSwitcher ∷
   Effect
-    ( ReactComponent { defaultTheme ∷ DefaultTheme, themes ∷ Array DefaultTheme, child ∷ JSX }
+    ( ReactComponent
+        { defaultTheme ∷ NamedTheme
+        , themes ∷ Array NamedTheme
+        , child ∷ JSX
+        }
     )
 mkThemeSwitcher = do
   themeProvider <- mkThemeProvider
@@ -80,20 +79,21 @@ mkThemeSwitcher = do
   component "ThemeSwitcher" \{ defaultTheme, themes, child } -> React.do
     { theme, name } /\ modTheme <- useState defaultTheme
     useEffect unit do
-      maybeSaved <- getItem "theme" storage <#> (_ >>= readJSON_)
-      for_ maybeSaved (modTheme <<< const)
+      maybeSaved <- getItem "theme" storage
+      traverse_ (modTheme <<< const) do
+        saved <- maybeSaved
+        find (\x -> x.name == saved) themes
+      pure mempty
+    useEffect name do
+      setItem "theme" name storage
       pure mempty
     classes <- useStyles {}
     let
-      setTheme newTheme = do
-        setItem "theme" (writeJSON newTheme) storage
-        modTheme (const newTheme)
-    let
       handleClicked maybeValue =
-        traverse_ setTheme do
+        traverse_ (modTheme <<< const) do
           value <- maybeValue
-          themes # find \x -> x.name == value
-    let
+          find (\x -> x.name == value) themes
+
       themeSelect =
         R.select
           { onChange: handler targetValue handleClicked

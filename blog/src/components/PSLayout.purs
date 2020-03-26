@@ -2,18 +2,20 @@ module PSLayout where
 
 import Prelude
 
+import Color (toHexString)
 import Data.Array as Array
-import Data.Maybe (fromMaybe)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
 import Data.String as String
 import Effect (Effect)
 import JSS (jss, jssClasses)
+import Justifill (justifill)
 import Milkis.Impl (FetchImpl)
 import React.Basic (JSX, ReactComponent)
 import React.Basic.DOM (unsafeCreateDOMComponent)
 import React.Basic.DOM as R
-import React.Basic.Helpers (element_)
+import React.Basic.Helpers (jsx)
 import React.Basic.Hooks (ReactChildren, component, componentWithChildren, element, reactChildrenToArray)
 import React.Basic.Hooks as React
 import Yoga.CompileEditor.Component (mkCompileEditor)
@@ -62,10 +64,10 @@ mkLayout fetchImpl = do
   mdxProviderComponent <- mkMdxProviderComponent fetchImpl
   componentWithChildren "MDXLayout" \{ children, siteInfo } -> React.do
     pure
-      $ element_ themeProvider
+      $ element themeProvider
           { theme: fromTheme darkTheme
           , children:
-            [ element_ mdxProviderComponent
+            [ element mdxProviderComponent
                 { children
                 , siteInfo
                 }
@@ -88,31 +90,30 @@ mkMdxProviderComponent fetchImpl = do
   h <- mkH
   p <- mkP
   useStyles <-
-    makeStylesJSS $ jssClasses \(theme :: CSSTheme) ->
-      { code:
-        jss
-          { fontFamily: theme.codeFontFamily
-          , backgroundColor: theme.interfaceColour
-          , fontSize: "10pt"
-          , border: "1px solid #383c39"
-          , padding: "3px"
-          , borderRadius: "3px"
+    makeStylesJSS
+      $ jssClasses \(theme ∷ CSSTheme) ->
+          { code:
+              { fontFamily: theme.codeFontFamily
+              , backgroundColor: toHexString $ theme.interfaceColour
+              , fontSize: "10pt"
+              , border: "1px solid #383c39"
+              , padding: "3px"
+              , borderRadius: "3px"
+              }
+          , flexer:
+              { display: "flex"
+              , flexDirection: "row"
+              }
           }
-      , flexer:
-        jss
-          { display: "flex"
-          , flexDirection: "row"
-          }
-      }
   componentWithChildren "MDXProviderComponent" \{ children, siteInfo } -> React.do
     classes <- useStyles {}
     let
-      baseline child = element_ cssBaseline { kids: child }
+      baseline child = element cssBaseline { kids: child }
 
       siteInfoJSX =
         R.div
           { children:
-            [ element_ header { kids: [ R.text siteInfo.site.siteMetadata.title ], className: "" }
+            [ jsx header { className: "" } [ R.text siteInfo.site.siteMetadata.title ]
             , element sidebar { links: siteInfo.site.siteMetadata.menuLinks }
             , R.div_ (reactChildrenToArray children)
             ]
@@ -121,17 +122,17 @@ mkMdxProviderComponent fetchImpl = do
       mdxComponents =
         { h1:
           \props ->
-            element_ h { level: H2, text: props.children }
+            element h ({ level: H2, text: props.children, className: Nothing })
         , h2:
           \props ->
-            element_ h { level: H3, text: props.children }
+            element h { level: H3, text: props.children, className: Nothing }
         , h3:
           \props ->
-            element_ h { level: H4, text: props.children }
+            element h { level: H4, text: props.children , className: Nothing}
         , p:
           \props ->
             R.div
-              { children: [ element_ p { text: props.children } ]
+              { children: [ element p { text: props.children } ]
               }
         , inlineCode:
           \props -> do
@@ -164,7 +165,7 @@ mkMdxProviderComponent fetchImpl = do
 
               language = fromMaybe "" (classNameQ >>= String.stripPrefix (String.Pattern "language-"))
             if isCode then
-              element_ editor
+              element editor
                 { initialCode: fromMaybe "" codeQ
                 , height
                 , language
@@ -185,22 +186,25 @@ mkMdxProviderComponent fetchImpl = do
 mkSidebar = do
   withSidebar <- WithSidebar.makeComponent
   useStyles <-
-    makeStylesJSS $ jssClasses \(theme :: CSSTheme) ->
-      { flexer:
-        jss
-          { display: "flex"
-          , flexDirection: "row"
-          , width: "300px"
-          , height: "300px"
+    makeStylesJSS
+      $ jssClasses \(theme ∷ CSSTheme) ->
+          { flexer:
+            jss
+              { display: "flex"
+              , flexDirection: "row"
+              , width: "300px"
+              , height: "300px"
+              }
           }
-      }
   component "Sidebar" \{ links } -> React.do
     classes <- useStyles {}
     pure
-      $ element_ withSidebar 
-          { sidebarChildren: [ R.div_ [ R.text "hahahaha"] ]
-          , notSidebarChildren: []
-          }
+      $ element withSidebar
+          ( justifill
+              { sidebarChildren: [ R.div_ [ R.text "hahahaha" ] ]
+              , notSidebarChildren: [] ∷ Array JSX
+              }
+          )
 
 foreign import mdxProvider ∷
   ∀ r.

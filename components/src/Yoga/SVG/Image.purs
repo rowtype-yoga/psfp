@@ -1,6 +1,7 @@
 module Yoga.SVG.Image where
 
 import Prelude
+import Color (toHexString)
 import Data.Array (elem, foldl, head, intercalate, snoc, uncons, zip, (:))
 import Data.Int (round, toNumber)
 import Data.Maybe (Maybe(..), maybe)
@@ -8,7 +9,7 @@ import Data.String (codePointFromChar)
 import Data.String as String
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
-import JSS (jss, jssClasses)
+import JSS (jssClasses)
 import Random.PseudoRandom (mkSeed, randomRs)
 import React.Basic (JSX, element)
 import React.Basic.DOM (unsafeCreateDOMComponent)
@@ -32,104 +33,86 @@ mkLandingPageBackground = do
     makeStylesJSS
       $ jssClasses \(theme ∷ CSSTheme) ->
           { laptopBackground:
-            jss
-              { fill: theme.backgroundColour
-              }
+            { fill: theme.backgroundColour # toHexString
+            }
           , lightEllipsis:
-            jss
-              { cx: if theme.isLight then "721" else "175"
-              , cy: if theme.isLight then "355" else "310"
-              , rx: if theme.isLight then "647" else "330"
-              , ry: if theme.isLight then "310" else "252"
-              }
+            { cx: if theme.isLight then "721" else "175"
+            , cy: if theme.isLight then "355" else "310"
+            , rx: if theme.isLight then "647" else "330"
+            , ry: if theme.isLight then "310" else "252"
+            }
           , laptopBody:
-            jss
-              { fill: if theme.isLight then "url(#_Linear9)" else "url(#_Linear12)"
-              }
+            { fill: if theme.isLight then "url(#_Linear9)" else "url(#_Linear12)"
+            }
           , screenText:
-            jss
-              { fontFamily: theme.codeFontFamily
-              , fontSize: "0.85em"
-              , fill: theme.textColour
-              }
-          , keyword: jss { fill: theme.green }
-          , typeName: jss { fill: theme.pink }
+            { fontFamily: theme.codeFontFamily
+            , fontSize: "0.85em"
+            , fill: theme.textColour # toHexString
+            }
+          , keyword: { fill: theme.green # toHexString }
+          , typeName: { fill: theme.pink # toHexString }
           , "@keyframes animatedCursor":
-            jss
-              { "0%": { opacity: "0.0" }
-              , "50%": { opacity: "1.0" }
-              }
+            { "0%": { opacity: "0.0" }
+            , "50%": { opacity: "1.0" }
+            }
           , cursor:
-            jss
-              { animation: "$animatedCursor 0.5s linear infinite"
-              , animationDirection: "alternate"
-              }
+            { animation: "$animatedCursor 0.5s linear infinite"
+            , animationDirection: "alternate"
+            }
           , "@keyframes movingCloud1":
-            jss
-              { "0%": { transform: "translate3d(-140%, 4%, 0)" }
-              , "100%": { transform: "translate3d(70%, -4%, 0)" }
-              }
+            { "0%": { transform: "translate3d(-140%, 4%, 0)" }
+            , "100%": { transform: "translate3d(70%, -4%, 0)" }
+            }
           , movingCloud1:
-            jss
-              { animation: "$movingCloud1 200s linear infinite"
-              , animationDelay: "-150s"
-              }
+            { animation: "$movingCloud1 200s linear infinite"
+            , animationDelay: "-150s"
+            }
           , "@keyframes movingCloud2":
-            jss
-              { "0%": { transform: "translate3d(-10%, 0%, 0)" }
-              , "100%": { transform: "translate3d(10%, 0%, 0)" }
-              }
+            { "0%": { transform: "translate3d(-10%, 0%, 0)" }
+            , "100%": { transform: "translate3d(10%, 0%, 0)" }
+            }
           , movingCloud2:
-            jss
-              { animation: "$movingCloud2 120s linear infinite"
-              , animationDirection: "alternate"
-              }
+            { animation: "$movingCloud2 120s linear infinite"
+            , animationDirection: "alternate"
+            }
           , movingCloud3:
-            jss
-              { animation: "$movingCloud2 120s linear infinite"
-              , animationDelay: "-120s"
-              , animationDirection: "alternate"
-              }
+            { animation: "$movingCloud2 120s linear infinite"
+            , animationDelay: "-120s"
+            , animationDirection: "alternate"
+            }
           , "@keyframes twinkle":
-            jss
-              { "0%": { fill: "rgba(250, 250, 250, 0.2)" }
-              , "50%": { fill: "rgba(250, 250, 250, 0.7)" }
-              , "70%": { fill: "rgba(250, 250, 250, 0.4)" }
-              , "100%": { fill: "rgba(250, 250, 250, 1.0)" }
-              }
+            { "0%": { fill: "rgba(250, 250, 250, 0.2)" }
+            , "50%": { fill: "rgba(250, 250, 250, 0.7)" }
+            , "70%": { fill: "rgba(250, 250, 250, 0.4)" }
+            , "100%": { fill: "rgba(250, 250, 250, 1.0)" }
+            }
           , "@keyframes twinkleFast":
-            jss
-              { "0%": { fill: "rgba(250, 250, 250, 0.7)" }
-              , "100%": { fill: "rgba(250, 250, 250, 0.78)" }
-              }
+            { "0%": { fill: "rgba(250, 250, 250, 0.7)" }
+            , "100%": { fill: "rgba(250, 250, 250, 0.78)" }
+            }
           , twinklingStar1:
-            jss
-              { animation: "$twinkleFast 0.2s ease-in-out infinite"
-              , animationDirection: "alternate"
-              }
+            { animation: "$twinkleFast 0.2s ease-in-out infinite"
+            , animationDirection: "alternate"
+            }
           , twinklingStar2:
-            jss
-              { animation: "$twinkle 8s ease-in-out infinite"
-              , animationDelay: "4s"
-              , animationDirection: "alternate"
-              }
+            { animation: "$twinkle 8s ease-in-out infinite"
+            , animationDelay: "4s"
+            , animationDirection: "alternate"
+            }
           , twinklingStar3:
-            jss
-              { animation: "$twinkle 4s ease-in-out infinite"
-              , animationDelay: "3s"
-              , animationDirection: "alternate"
-              }
+            { animation: "$twinkle 4s ease-in-out infinite"
+            , animationDelay: "3s"
+            , animationDirection: "alternate"
+            }
           , "@keyframes rotateStars":
-            jss
-              { "0%": { transform: "rotate(0deg) scale(1,1)" }
-              , "100%": { transform: "rotate(1deg) scale(1.01, 1.01)" }
-              }
+            { "0%": { transform: "rotate(0deg) scale(1,1)" }
+            , "100%": { transform: "rotate(1deg) scale(1.01, 1.01)" }
+            }
           , stars:
-            jss
-              { animation: "$rotateStars 30s linear infinite"
-              , transformOrigin: "top center"
-              , animationDirection: "alternate"
-              }
+            { animation: "$rotateStars 30s linear infinite"
+            , transformOrigin: "top center"
+            , animationDirection: "alternate"
+            }
           }
   React.component "LandingPageBackground" \{ className } -> React.do
     theme <- useTheme
@@ -209,7 +192,7 @@ mkLandingPageBackground = do
                   , buildings theme.isLight scrolled
                   -- bar
                   , SVG.path
-                      { fill: theme.backgroundColour
+                      { fill: theme.backgroundColour # toHexString
                       , d: "M-3.028 431.298h826.844v20.006H-3.028z"
                       }
                   -- laptop

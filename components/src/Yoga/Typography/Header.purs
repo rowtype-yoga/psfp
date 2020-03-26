@@ -1,11 +1,12 @@
 module Yoga.Typography.Header where
 
 import Prelude
+import Color (toHexString)
 import Data.Array as Array
 import Data.Foldable (intercalate)
 import Data.Maybe (Maybe)
 import Effect (Effect)
-import JSS (jss, jssClasses)
+import JSS (jssClasses)
 import React.Basic.DOM as R
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
@@ -26,12 +27,10 @@ mkH = do
     makeStylesJSS
       $ jssClasses \(theme ∷ CSSTheme) ->
           { common:
-            jss
-              { color: theme.textColour
+              { color: theme.textColour # toHexString
               , fontFamily: theme.headingFontFamily
               }
           , h1:
-            jss
               { textTransform: "uppercase"
               , fontSize: "3.6em"
               , letterSpacing: "0.07em"
@@ -39,7 +38,6 @@ mkH = do
               , padding: 0
               }
           , h2:
-            jss
               { textTransform: "uppercase"
               , fontSize: "3em"
               , letterSpacing: "0.05em"
@@ -47,23 +45,20 @@ mkH = do
               , padding: 0
               }
           , h3:
-            jss
               { fontSize: "2.2em"
               , margin: 0
               , padding: 0
               }
           , h4:
-            jss
               { fontSize: "1.5em"
               , margin: 0
               , padding: 0
               }
           , h5:
-            jss
               { fontSize: "1.0em"
               , margin: 0
               , padding: 0
-              , color: theme.textColourLighter
+              , color: theme.textColourLighter # toHexString
               }
           }
   component "Heading" \{ level, text, className } -> React.do
