@@ -154,7 +154,7 @@ let additions =
             ]
           , repo =
               "https://github.com/i-am-the-slime/purescript-react-testing-library.git"
-          , version = "5a10027deeeee12de3ccfeecfdb033d1e53f8d05"
+          , version = "4120c0ab605bc71ca03836f761bc687fc1cdd377"
           }
       , pseudo-random =
           { dependencies =

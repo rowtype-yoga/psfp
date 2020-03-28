@@ -27,39 +27,39 @@ mkH = do
     makeStylesJSS
       $ jssClasses \(theme ∷ CSSTheme) ->
           { common:
-              { color: theme.textColour # toHexString
-              , fontFamily: theme.headingFontFamily
-              }
+            { color: theme.textColour # toHexString
+            , fontFamily: theme.headingFontFamily
+            }
           , h1:
-              { textTransform: "uppercase"
-              , fontSize: "3.6em"
-              , letterSpacing: "0.07em"
-              , margin: 0
-              , padding: 0
-              }
+            { textTransform: "uppercase"
+            -- , fontSize: "3.6em"
+            , letterSpacing: "0.07em"
+            , margin: 0
+            , padding: 0
+            }
           , h2:
-              { textTransform: "uppercase"
-              , fontSize: "3em"
-              , letterSpacing: "0.05em"
-              , margin: 0
-              , padding: 0
-              }
+            { textTransform: "uppercase"
+            -- , fontSize: "3em"
+            , letterSpacing: "0.05em"
+            , margin: 0
+            , padding: 0
+            }
           , h3:
-              { fontSize: "2.2em"
-              , margin: 0
-              , padding: 0
-              }
+            { -- fontSize: "2.2em"
+            margin: 0
+            , padding: 0
+            }
           , h4:
-              { fontSize: "1.5em"
-              , margin: 0
-              , padding: 0
-              }
+            { fontSize: "1.5em"
+            , margin: 0
+            , padding: 0
+            }
           , h5:
-              { fontSize: "1.0em"
-              , margin: 0
-              , padding: 0
-              , color: theme.textColourLighter # toHexString
-              }
+            { fontSize: "1.0em"
+            , margin: 0
+            , padding: 0
+            , color: theme.textColourLighter # toHexString
+            }
           }
   component "Heading" \{ level, text, className } -> React.do
     classes <- useStyles {}

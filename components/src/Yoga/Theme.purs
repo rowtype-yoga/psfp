@@ -20,6 +20,11 @@ increaseContrast contrastWith = go 0
     else
       go (i + 1) (modify 0.1 col)
 
+withAlpha ∷ Number -> Color -> Color
+withAlpha alpha c1 = Color.rgba' r g b alpha
+  where
+  { r, g, b } = Color.toRGBA' c1
+
 unsafeWithAlpha ∷ Number -> String -> String
 unsafeWithAlpha alpha s1 =
   fromMaybe "yellow" do

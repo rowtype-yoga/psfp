@@ -1,12 +1,14 @@
 module Yoga.Card.Stories where
 
 import Prelude hiding (add)
-import Yoga.Card.Component (mkCard, mkCardContent, mkCardSubtitle, mkCardTitle)
-import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Effect (Effect)
 import React.Basic.DOM as R
-import React.Basic.Hooks (component, element)
+import React.Basic.Helpers (jsx)
+import React.Basic.Hooks (component)
+import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
+import Yoga.Box.Component as Box
+import Yoga.Card.Component (mkCard)
 
 stories ∷ Effect Storybook
 stories = do
@@ -20,24 +22,14 @@ stories = do
       ]
   where
   mkExample = do
+    box <- Box.makeComponent
     card <- mkCard
-    cardTitle <- mkCardTitle
-    cardSubtitle <- mkCardSubtitle
-    cardContent <- mkCardContent
     component "ExampleCard" \{ title, subtitle, content } -> React.do
       pure
-        $ R.div
-            { children:
-              pure
-                $ element card
-                    { kids:
-                      [ element cardTitle { kids: [ R.text title ] }
-                      , element cardSubtitle { kids: [ R.text subtitle ] }
-                      , element cardContent { kids: [ content ] }
-                      ]
-                    , className: ""
-                    }
-            }
+        $ jsx box {}
+            [ jsx card {}
+                [ R.text "hi there!" ]
+            ]
 
 loremIpsum ∷ String
 loremIpsum =

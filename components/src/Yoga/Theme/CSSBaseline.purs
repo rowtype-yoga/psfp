@@ -91,9 +91,12 @@ styles =
           }
         , "h3, .h3":
           { "font-size": "var(--s2)"
+          , "hyphens": "auto"
+          , "text-transform": "uppercase"
           }
         , "h4, .h4":
           { "font-size": "var(--s1)"
+          , "text-transform": "uppercase"
           }
         }
     }

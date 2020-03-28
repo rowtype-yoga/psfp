@@ -2,8 +2,6 @@ module Yoga.Spec.Helpers where
 
 import Prelude
 import Effect (Effect)
-import Effect.Aff (Aff)
-import Effect.Class (liftEffect)
 import Prim.Row (class Lacks)
 import React.Basic.Hooks (ReactComponent, component, element)
 import Yoga.Theme (fromTheme)
@@ -18,17 +16,16 @@ withTheme ∷
   Lacks "key" props =>
   CSSTheme ->
   Effect (ReactComponent { | props }) ->
-  Aff (ReactComponent { | props })
-withTheme theme mkComp =
-  liftEffect do
-    themeProvider <- mkThemeProvider
-    comp <- mkComp
-    component "ThemeWrapper" \(props ∷ { | props }) -> React.do
-      pure
-        $ element themeProvider
-            { theme
-            , children: [ element comp props ]
-            }
+  Effect (ReactComponent { | props })
+withTheme theme mkComp = do
+  themeProvider <- mkThemeProvider
+  comp <- mkComp
+  component "ThemeWrapper" \(props ∷ { | props }) -> React.do
+    pure
+      $ element themeProvider
+          { theme
+          , children: [ element comp props ]
+          }
 
 withDarkTheme ∷
   ∀ props.
@@ -36,7 +33,7 @@ withDarkTheme ∷
   Lacks "ref" props =>
   Lacks "key" props =>
   Effect (ReactComponent (Record props)) ->
-  Aff (ReactComponent (Record props))
+  Effect (ReactComponent (Record props))
 withDarkTheme = withTheme (fromTheme darkTheme)
 
 withLightTheme ∷
@@ -45,5 +42,5 @@ withLightTheme ∷
   Lacks "ref" props =>
   Lacks "key" props =>
   Effect (ReactComponent (Record props)) ->
-  Aff (ReactComponent (Record props))
+  Effect (ReactComponent (Record props))
 withLightTheme = withTheme (fromTheme lightTheme)

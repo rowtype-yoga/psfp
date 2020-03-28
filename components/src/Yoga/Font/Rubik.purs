@@ -23,9 +23,9 @@ fontFamilies =
     , fontWeight: "normal"
     , fontStyle: "italic"
     }
-  , { fontFamily: "Rubik Medium"
+  , { fontFamily: "Rubik"
     , src: "url(" <> unsafeCoerce rubikMediumwoff2 <> """) format("woff2")"""
-    , fontWeight: "400"
+    , fontWeight: "600"
     , fontStyle: "normal"
     }
   , { fontFamily: "Rubik"
@@ -36,19 +36,19 @@ fontFamilies =
   , { fontFamily: "Rubik"
     , src: "url(" <> unsafeCoerce rubikItalicwoff2 <> """) format("woff2")"""
     , fontWeight: "400"
-    , fontStyle: "normal"
+    , fontStyle: "italic"
     }
-  , { fontFamily: "Rubik Light"
+  , { fontFamily: "Rubik"
     , src: "url(" <> unsafeCoerce rubikLightwoff2 <> """) format("woff2")"""
-    , fontWeight: "400"
+    , fontWeight: "200"
     , fontStyle: "normal"
     }
-  , { fontFamily: "Rubik Light"
+  , { fontFamily: "Rubik"
     , src: "url(" <> unsafeCoerce rubikLightItalicwoff2 <> """) format("woff2")"""
     , fontWeight: "400"
     , fontStyle: "italic"
     }
-  , { fontFamily: "Rubik Regular"
+  , { fontFamily: "Rubik"
     , src: "url(" <> unsafeCoerce rubikRegularwoff2 <> """) format("woff2")"""
     , fontWeight: "normal"
     , fontStyle: "normal"

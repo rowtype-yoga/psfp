@@ -29,8 +29,8 @@ stories = do
         $ R.div
             { style:
               css
-                { color: cssTheme.textColour
-                , backgroundColor: cssTheme.backgroundColour
+                { color: toHexString cssTheme.textColour
+                , backgroundColor: toHexString cssTheme.backgroundColour
                 }
             , children:
               [ R.div

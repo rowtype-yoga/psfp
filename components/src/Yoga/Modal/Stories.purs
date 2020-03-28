@@ -1,6 +1,7 @@
 module Yoga.Modal.Stories where
 
 import Prelude hiding (add)
+import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
@@ -25,7 +26,6 @@ stories = do
       [ justifill
           { content: R.text "I'm a Modal"
           , title: "Something important has happened this is excessively, if not prohibitively long title text to see what will happen"
-          , onClose: log "On close"
           }
       ]
     add "Interactive Modal Example" mkExample
@@ -38,7 +38,7 @@ mkExample = do
   centre <- Centre.makeComponent
   button <- mkButton
   component "ModalStory" \{} -> React.do
-    state /\ modState <- useState { open: false }
+    state /\ modState <- useState { open: true }
     pure
       $ fragment
           [ jsx centre {}
@@ -53,6 +53,6 @@ mkExample = do
                   { title: "Warning"
                   , content:
                     R.text "This is more interactive"
-                  , onClose: modState (_ { open = false })
+                  , onClose: Just $ modState (_ { open = false })
                   }
           ]

@@ -14,7 +14,6 @@ newtype UseScrollYPosition hooks
   = UseScrollYPosition (UseLayoutEffect Unit (UseState Number hooks))
 
 derive instance ntUseScrollYPosition ∷ Newtype (UseScrollYPosition hooks) _
-
 useScrollYPosition ∷ Hook UseScrollYPosition Number
 useScrollYPosition =
   coerceHook React.do
@@ -31,6 +30,4 @@ makeListener setPosition = do
   eventListener
     $ const do
         win <- window
-        let
-          yPos = (unsafeCoerce win).scrollY
-        setPosition yPos
+        setPosition (unsafeCoerce win).scrollY

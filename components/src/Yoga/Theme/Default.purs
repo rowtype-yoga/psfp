@@ -15,10 +15,11 @@ hex c = c # Color.fromHexString # fromMaybe' \_ -> unsafeCrashWith $ "Invalid he
 
 darkTheme ∷ Theme
 darkTheme =
-  { backgroundColour: Color.hsl 220.0 0.42 0.13
+  { backgroundColour: Color.hsl 228.0 0.12 0.20
   , textColour: Color.hsl 225.0 0.28 0.90
   , interfaceColour: Color.hsl 225.0 0.48 0.12
-  , highlightColour: Color.rgb 209 51 225
+  , highlightColour: Color.hsl 350.0 0.50 0.67
+  -- , highlightColour: Color.hsl 33.0 0.37 0.8
   , altHighlightColour: Color.hsl 84.0 0.617 0.631
   , textFontFamily: cons' "Rubik" systemFontStack
   , headingFontFamily: cons' "Rubik" systemFontStack
@@ -41,7 +42,7 @@ lightTheme =
   darkTheme
     { textColour = Color.hsl 225.0 0.18 0.25
     -- , backgroundColour = Color.hsl 210.0 0.08 0.87
-    , backgroundColour = hex "#F6F9FC"
+    , backgroundColour = Color.hsl 30.0 0.50 0.96
     , interfaceColour = Color.hsl 210.0 0.10 0.89
     -- , highlightColour = Color.hsl 209.0 0.95 0.69
     , highlightColour = Color.hsl 350.0 0.90 0.70

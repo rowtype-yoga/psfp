@@ -113,10 +113,10 @@ mkCompileEditor fetch = do
                       ]
                   ]
               ]
-          , element card
-              { kids: [ R.text (compileResultToString compileResult) ]
-              , className: classes.card <> " " <> compileResultToClass compileResult
+          , jsx card
+              { className: classes.card <> " " <> compileResultToClass compileResult
               }
+              [ R.text (compileResultToString compileResult) ]
           ]
 
 compileAndRun ∷ M.Fetch -> Body.CompileRequest -> Aff (Either Body.CompileResult Body.RunResult)

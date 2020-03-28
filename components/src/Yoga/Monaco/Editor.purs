@@ -1,10 +1,11 @@
 module Yoga.Editor where
 
 import Prelude
-import CSS (backgroundColor, borderBox, boxSizing, margin, pct, unitless, width)
+import CSS (backgroundColor, borderBox, boxSizing, margin, pct, toHexString, unitless, width)
 import CSS.Overflow (hidden, overflowY)
 import Control.Promise (Promise)
 import Control.Promise as Promise
+import Data.Foldable (for_)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Nullable (Nullable)
 import Data.Tuple.Nested ((/\))
@@ -18,7 +19,7 @@ import JSS (jssClasses)
 import Prim.Row (class Union)
 import React.Basic (JSX, ReactComponent, Ref, element, fragment)
 import React.Basic.DOM as R
-import React.Basic.Hooks (component, useState)
+import React.Basic.Hooks (component, useEffect, useState)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Aff (useAff)
 import Web.DOM (Node)
@@ -46,9 +47,9 @@ foreign import defineThemeImpl ∷ Monaco -> String -> MonacoTheme -> Effect Uni
 
 foreign import setThemeImpl ∷ Monaco -> String -> Effect Unit
 
-foreign import nightOwlTheme ∷ MonacoTheme
+foreign import nightOwlTheme ∷ String -> MonacoTheme
 
-foreign import vsCodeTheme ∷ MonacoTheme
+foreign import vsCodeTheme ∷ String -> MonacoTheme
 
 foreign import getValue ∷ Editor -> Effect String
 
@@ -79,10 +80,10 @@ foreign import registerLanguageImpl ∷ Monaco -> String -> Effect Unit
 
 foreign import setMonarchTokensProviderImpl ∷ Monaco -> String -> MonarchLanguage -> Effect Unit
 
-initEditor ∷ Monaco -> Effect Unit
-initEditor monaco = do
-  defineThemeImpl monaco darkThemeName nightOwlTheme
-  defineThemeImpl monaco lightThemeName vsCodeTheme
+initEditor ∷ CSSTheme -> Monaco -> Effect Unit
+initEditor theme monaco = do
+  defineThemeImpl monaco darkThemeName (nightOwlTheme (toHexString theme.backgroundColour))
+  defineThemeImpl monaco lightThemeName (vsCodeTheme (toHexString theme.backgroundColour))
   registerLanguageImpl monaco "purescript"
   setMonarchTokensProviderImpl monaco "purescript" purescriptSyntax
 
@@ -108,10 +109,14 @@ mkEditor = do
   component "Editor" \{ onLoad, height, language } -> React.do
     classes <- useStyles {}
     maybeEditor /\ modifyEditor <- useState Nothing
+    maybeMonaco /\ modifyMonaco <- useState Nothing
     useAff unit do
       eddy <- monacoEditor
       liftEffect $ modifyEditor (const (Just eddy))
     theme <- useTheme
+    useEffect theme do
+      for_ maybeMonaco (initEditor theme)
+      pure mempty
     let
       themeName = if theme.isLight then lightThemeName else darkThemeName
     pure
@@ -140,7 +145,10 @@ mkEditor = do
                           , language
                           -- https://microsoft.github.io/monaco-editor/playground.html#extending-language-services-custom-languages
                           , editorDidMount: mkEffectFn2 \e _ -> onLoad e
-                          , editorWillMount: mkEffectFn1 initEditor
+                          , editorWillMount:
+                            mkEffectFn1 \m -> do
+                              modifyMonaco (const $ Just m)
+                              (initEditor theme m)
                           }
                 ]
               }

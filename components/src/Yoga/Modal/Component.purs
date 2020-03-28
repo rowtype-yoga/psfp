@@ -2,7 +2,10 @@ module Yoga.Modal.Component where
 
 import Prelude
 import CSS (JustifyContentValue(..), spaceBetween)
+import Data.Foldable (foldMap)
+import Data.Maybe (Maybe)
 import Effect (Effect)
+import Foreign.Object as Obj
 import React.Basic (JSX)
 import React.Basic.DOM as R
 import React.Basic.DOM.Events (stopPropagation)
@@ -14,6 +17,7 @@ import React.Basic.Hooks as React
 import Record.Extra (pick)
 import Yoga.Box.Component as Box
 import Yoga.Cluster.Component as Cluster
+import Yoga.Helpers ((?||))
 import Yoga.Imposter.Component as Imposter
 import Yoga.Modal.Styles as Style
 import Yoga.Stack.Component as Stack
@@ -25,7 +29,7 @@ type Props
 type PropsR
   = ( title ∷ String
     , content ∷ JSX
-    , onClose ∷ Effect Unit
+    , onClose ∷ Maybe (Effect Unit)
     | Style.PropsR
     )
 
@@ -41,34 +45,34 @@ makeComponent = do
     let
       darkOverlay =
         jsx imposter
-          { className: cs.darkOverlay <> " animated fadeIn"
+          { className: cs.darkOverlay <> " " <> cs.fadeIn
           , fixed: true
           , breakout: false
-          , onClick: handler_ props.onClose
+          , onClick: props.onClose ?|| mempty # handler_
           }
 
       dialogImposter =
         jsx imposter
-          { className: cs.dialog ∷ String
-          , onClick: handler stopPropagation (\_ -> pure unit)
+          { className: cs.dialog
+          , onClick: handler stopPropagation mempty
           , fixed: true
           }
 
       dialogBox =
         jsx box
-          { className: cs.box <> " animated lightSpeedIn"
-          , invert: true
-          } -- [TODO]: reconsider
+          { className: cs.box <> " " <> cs.zoomIn
+          }
 
       dialogBoxStack =
         jsx stack
-          { className: cs.dialogBoxStack ∷ String
+          { className: cs.dialogBoxStack
           }
 
       titleCluster =
         jsx cluster
-          { className: cs.titleCluster ∷ String
+          { className: cs.titleCluster
           , justify: JustifyContentValue spaceBetween
+          , space: "0"
           }
 
       title =
@@ -77,7 +81,7 @@ makeComponent = do
           , R.div
               { className: cs.closeIcon
               , children:
-                [ closeIcon (handler_ props.onClose) cs
+                [ props.onClose # foldMap (closeIcon cs <<< handler_)
                 ]
               }
           ]
@@ -93,15 +97,16 @@ makeComponent = do
               ]
           ]
 
-closeIcon ∷ ∀ a. EventHandler -> { closeIcon ∷ String | a } -> JSX
-closeIcon onClick classes =
+closeIcon ∷ ∀ a. { closeIcon ∷ String | a } -> EventHandler -> JSX
+closeIcon classes onClick =
   SVG.svg
     { xmlns: "http://www.w3.org/2000/svg"
-    , viewBox: "19 19 85 85"
+    , viewBox: "5 0 100 105"
     , fillRule: "evenodd"
     , clipRule: "evenodd"
     , strokeLinejoin: "round"
     , strokeMiterlimit: "2"
+    , _data: Obj.singleton "testid" "close-icon-svg"
     , onClick
     , className: classes.closeIcon
     , children:

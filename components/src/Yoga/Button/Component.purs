@@ -1,7 +1,7 @@
 module Yoga.Button.Component where
 
 import Prelude
-import CSS (Color, ColorSpace(..), mix, toHexString)
+import CSS (Color, cssStringRGBA, desaturate)
 import CSS as Color
 import Data.Foldable (intercalate)
 import Data.Interpolate (i)
@@ -15,7 +15,7 @@ import React.Basic.Events (EventHandler)
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
 import Yoga.Helpers ((?||))
-import Yoga.Theme (increaseContrast, unsafeWithAlpha)
+import Yoga.Theme (withAlpha)
 import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.Theme.Types (CSSTheme, YogaTheme)
 
@@ -38,29 +38,15 @@ highlightStyles =
         { highlightedButton:
           { background:
             linearGradient
-              ( if theme.isLight then
-                  "180deg"
-                else
-                  "0deg"
-              )
-              [ do
-                  let
-                    col = theme.highlightColourRotatedBackwards
-
-                    { r, g, b, a } = Color.toRGBA (Color.saturate (10.0) col)
-                  Color.rgba r g b 0.5
-              , do
-                  let
-                    col = theme.highlightColourRotatedForwards
-
-                    { r, g, b, a } = Color.toRGBA (Color.saturate (10.0) col)
-                  Color.rgba r g b 0.5
+              "135deg"
+              [ withAlpha (if theme.isLight then 0.15 else 0.07) theme.backgroundColourDarker
+              , withAlpha (if theme.isLight then 0.15 else 0.07) theme.backgroundColourLighter
               ]
           , "&:active":
             { background:
               linearGradient "145deg" [ theme.highlightColourDark, theme.highlightColour ]
             }
-          , color: Color.white
+          , color: theme.backgroundColour
           }
         }
 
@@ -69,99 +55,103 @@ styles ∷
     ( "@keyframes gradientBG" ∷ JSSElem StyleProps
     , btn ∷ JSSElem StyleProps
     , buttonContainer ∷ JSSElem StyleProps
+    , disabled ∷ JSSElem StyleProps
     )
 styles =
   jssClasses
     $ \(theme ∷ CSSTheme) ->
-        { buttonContainer:
-          { padding: "var(--s-4)"
-          , background:
-            linearGradient "135deg"
-              [ theme.highlightColourRotatedBackwards
-              , theme.highlightColourRotatedForwards
-              ]
-          , borderRadius: "var(--s1)"
-          , height: "calc(var(--s1) - var(--s1-3))"
-          , minWidth: "var(--s2)"
-          , boxSizing: "border-box"
-          , boxShadow:
-            ( unsafeWithAlpha 0.15 "#000000"
-            )
-              <> " 0px 1px 2px 2px"
-          }
-        , "@keyframes gradientBG":
-          { "0%": { backgroundPosition: "0% 50%" }
-          , "50%": { backgroundPosition: "100% 50%" }
-          , "100%": { backgroundPosition: "0% 50%" }
-          }
-        , btn:
-          { width: "100%"
-          , background:
-            linearGradient "180deg"
-              [ Color.darken 0.05 theme.backgroundColour
-              , Color.darken 0.10 theme.backgroundColour
-              ]
-          , color:
-            let
-              c = theme.highlightColour
-            in
-              if Color.isLight c then Color.rotateHue (-10.0) c else Color.lighten 0.2 c
-          , borderRadius: "var(--s1)"
-          , border: "0"
-          , height: "calc(var(--s2) + var(--s-4) - 2px)"
-          , fontSize: "calc(var(--s-1))"
-          , fontFamily: "Rubik Regular"
-          , fontWeight: "600"
-          , padding: "0 var(--s0) 0 var(--s0)"
-          , letterSpacing: "var(--s-5)"
-          , textTransform: "uppercase"
-          , outline: "none"
-          , "&:focus":
-            { background:
-              linearGradient
-                "145deg"
-                [ theme.interfaceColourDarker
-                , theme.highlightColourDark
-                , theme.highlightColour
+        let
+          darken x = Color.darken x
+
+          lighten x = Color.lighten x
+
+          more amount x = if Color.isLight x then lighten amount x else darken amount x
+
+          less amount x = if Color.isLight x then darken amount x else lighten amount x
+        in
+          { buttonContainer:
+            { padding: "var(--s-4)"
+            , background:
+              linearGradient "225deg"
+                [ theme.highlightColourRotatedBackwards
+                , theme.highlightColourRotatedForwards
+                ]
+            , borderRadius: "var(--s1)"
+            , height: "calc(var(--s1) - var(--s1-3))"
+            , minWidth: "var(--s2)"
+            , boxSizing: "border-box"
+            , boxShadow:
+              ( cssStringRGBA (Color.rgba 0 0 0 0.15)
+              )
+                <> " 0 var(--s-5) var(--s-5) var(--s-5)"
+            }
+          , "@keyframes gradientBG":
+            { "0%": { backgroundPosition: "0% 50%" }
+            , "50%": { backgroundPosition: "100% 50%" }
+            , "100%": { backgroundPosition: "0% 50%" }
+            }
+          , btn:
+            { width: "calc(100%)"
+            , background:
+              linearGradient "80deg"
+                [ less 0.03 theme.backgroundColour
+                , less 0.05 theme.backgroundColour
                 ]
             , color:
-              do
-                let
-                  hlc = theme.highlightColour
-
-                  hlcd = theme.highlightColourDark
-
-                  bg = if theme.isLight then hlc else mix HSL hlc hlcd 0.5
-
-                  tc = theme.textColour
-                increaseContrast bg tc
-            , backgroundSize: "200% 400%, 100% 100%"
-            , animation: "$gradientBG 3s ease infinite"
+              let
+                c = theme.highlightColour
+              in
+                if Color.isLight c then Color.rotateHue (-10.0) c else Color.lighten 0.2 c
+            , borderRadius: "var(--s1)"
+            , border: "0"
+            , height: "calc(var(--s2))"
+            , fontSize: "calc(var(--s-1))"
+            , fontFamily: theme.textFontFamily
+            , fontWeight: "600"
+            , padding: "0 var(--s0) 0 var(--s0)"
+            , letterSpacing: "var(--s-5)"
+            , textTransform: "uppercase"
+            , outline: "none"
+            , "&:focus":
+              { boxShadow:
+                ( i "var(--s-4) 0 var(--s-2)"
+                    (cssStringRGBA theme.highlightColourRotatedForwards)
+                    ", calc(-1 * var(--s-4)) 0 var(--s-2)"
+                    (cssStringRGBA theme.highlightColourRotatedForwards)
+                    ", 0 calc(-1 * var(--s-4)) var(--s-2)"
+                    (cssStringRGBA theme.highlightColourRotatedBackwards)
+                    ", 0 var(--s-4) var(--s-2)"
+                    (cssStringRGBA theme.highlightColourRotatedBackwards)
+                ) ∷
+                  String
+              }
+            , "&:active":
+              { boxShadow:
+                ( i "inset var(--s-3) var(--s-3) var(--s-3) "
+                    (cssStringRGBA $ darken 0.3 theme.backgroundColourDarker)
+                    ", inset calc(-1 * var(--s-3)) calc(-1 * -var(--s-3)) var(--s-3) "
+                    (cssStringRGBA theme.backgroundColourDarkest)
+                ) ∷
+                  String
+              , background:
+                linearGradient
+                  "145deg"
+                  [ theme.backgroundColourDarker
+                  , theme.backgroundColourDarkest
+                  ]
+              }
+            , "&:disabled":
+              { boxShadow: "0 0 0 black"
+              , background: less 0.1 theme.backgroundColour
+              , color: less 0.2 theme.backgroundColour
+              }
             }
-          , "&:active":
-            { boxShadow:
-              ( i "inset 6px 6px 6px "
-                  (toHexString theme.backgroundColourDarkest)
-                  ", inset -6px -6px 6px "
-                  (toHexString theme.backgroundColourLightest)
-              ) ∷
-                String
-            , background:
-              linearGradient
-                "145deg"
-                [ theme.backgroundColourDarker
-                , theme.backgroundColourLighter
-                ]
-            }
-          , "&:disabled":
-            { boxShadow: "0 0 0 black"
-            , background: theme.grey
-            , border: "1px dotted " <> toHexString theme.interfaceColourLightest
-            , textDecoration: "line-through"
-            , textDecorationColor: theme.red
+          , "disabled":
+            { background:
+              (cssStringRGBA $ less 0.1 theme.backgroundColour)
+                <> " !important"
             }
           }
-        }
 
 type Props
   = { kids ∷ Array JSX
@@ -183,7 +173,7 @@ mkButton = do
       className = props.className ?|| ""
     pure
       $ R.div
-          { className: classes.buttonContainer
+          { className: classes.buttonContainer <> " " <> if buttonType == DisabledButton then classes.disabled else ""
           , children:
             [ R.button
                 $ { className:
@@ -200,4 +190,4 @@ mkButton = do
           }
 
 linearGradient ∷ String -> Array Color -> String
-linearGradient direction elems = "linear-gradient(" <> direction <> "," <> intercalate "," (map toHexString elems) <> ")"
+linearGradient direction elems = "linear-gradient(" <> direction <> "," <> intercalate "," (map cssStringRGBA elems) <> ")"

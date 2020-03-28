@@ -78,7 +78,7 @@ exports.setMonarchTokensProviderImpl = function (monacoInstance) {
         };
     };
 };
-exports.vsCodeTheme = {
+exports.vsCodeTheme = function (bg) { return ({
     base: "vs",
     inherit: true,
     rules: [
@@ -165,14 +165,14 @@ exports.vsCodeTheme = {
     ],
     colors: {
         "editor.foreground": "#000000",
-        "editor.background": "#DDE0EE",
+        "editor.background": bg,
         "editor.selectionBackground": "#B5D5FF",
         "editor.lineHighlightBackground": "#00000012",
         "editorCursor.foreground": "#000000",
         "editorWhitespace.foreground": "#BFBFBF"
     }
-};
-exports.nightOwlTheme = {
+}); };
+exports.nightOwlTheme = function (bg) { return ({
     base: "vs-dark",
     inherit: true,
     rules: [
@@ -840,7 +840,7 @@ exports.nightOwlTheme = {
     colors: {
         "editor.foreground": "#d6deeb",
         //    "editor.background": "#011627",
-        "editor.background": "#131D2F",
+        "editor.background": bg,
         "editor.selectionBackground": "#5f7e9779",
         "editor.lineHighlightBackground": "#010E17",
         "editorCursor.foreground": "#80a4c2",
@@ -848,7 +848,7 @@ exports.nightOwlTheme = {
         "editorIndentGuide.background": "#5e81ce52",
         "editor.selectionHighlightBorder": "#122d42"
     }
-};
+}); };
 exports.purescriptSyntax = {
     displayName: "Purescript",
     name: "purescript",
