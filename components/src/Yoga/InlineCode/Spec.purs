@@ -6,7 +6,6 @@ import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
-import Effect.Class.Console (logShow)
 import Effect.Ref (Ref)
 import Effect.Ref as Ref
 import React.Basic.Extra.Hooks (useAffReducer)
@@ -55,10 +54,9 @@ mkWrapper = do
   inlineCode <- InlineCode.makeComponent
   component "Wrapper" \{ strRef } -> React.do
     state /\ dispatch <- useAffReducer Nothing (mkReducer strRef)
-    useEffect state (logShow state $> mempty)
+    useEffect state mempty
     pure
       $ element inlineCode
-          ( { dispatch: dispatch <<< InlineCodeAction
-            , className: Nothing
-            }
-          )
+          { dispatch: dispatch <<< InlineCodeAction
+          , className: Nothing
+          }

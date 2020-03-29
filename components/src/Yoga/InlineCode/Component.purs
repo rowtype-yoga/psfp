@@ -45,7 +45,6 @@ makeComponent = do
           { children:
             [ R.input
                 { className: intercalate " " [ classes.inlinecode, fold className ]
-                , "type": "text"
                 , value
                 , onChange:
                   handler targetValue
@@ -56,5 +55,5 @@ makeComponent = do
             ]
           , onSubmit:
             handler preventDefault
-              (const (log ("dispatching " <> value) *> dispatch (CompileAndRunCode value)))
+              (const $ dispatch $ CompileAndRunCode value)
           }
