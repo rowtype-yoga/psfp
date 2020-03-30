@@ -26,12 +26,12 @@ useAffReducer initialState reducer =
   coerceHook React.do
     state /\ modifyState <- useState initialState
     maybeAction /\ modifyAction <- useState Nothing
+    useAff maybeAction do
+      for_ maybeAction \action -> do
+        newState <- reducer state action
+        liftEffect do
+          modifyState (const newState)
+          modifyAction (const Nothing)
     let
       dispatch = modifyAction <<< const <<< Just
-    useAff maybeAction
-      $ for_ maybeAction \action -> do
-          newState <- reducer state action
-          liftEffect do
-            modifyState (const newState)
-            modifyAction (const Nothing)
     pure (state /\ dispatch)

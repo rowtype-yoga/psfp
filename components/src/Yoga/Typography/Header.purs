@@ -3,6 +3,7 @@ module Yoga.Typography.Header where
 import Prelude
 import Color (toHexString)
 import Data.Array as Array
+import Data.Array.NonEmpty as NEA
 import Data.Foldable (intercalate)
 import Data.Maybe (Maybe)
 import Effect (Effect)
@@ -28,7 +29,7 @@ mkH = do
       $ jssClasses \(theme ∷ CSSTheme) ->
           { common:
             { color: theme.textColour # toHexString
-            , fontFamily: theme.headingFontFamily
+            , fontFamily: NEA.head theme.headingFontFamily
             }
           , h1:
             { textTransform: "uppercase"
@@ -45,8 +46,8 @@ mkH = do
             , padding: 0
             }
           , h3:
-            { -- fontSize: "2.2em"
-            margin: 0
+            { fontSize: "2.2em"
+            , margin: 0
             , padding: 0
             }
           , h4:

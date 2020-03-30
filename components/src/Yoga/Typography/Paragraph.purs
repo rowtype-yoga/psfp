@@ -17,7 +17,6 @@ mkP = do
       $ jssClasses \(theme ∷ CSSTheme) ->
           { p:
             { color: theme.textColour # toHexString
-            , fontFamily: theme.textFontFamily
             , fontSize: "1em"
             , margin: "0.67em 0 0.33em 0"
             , padding: "0.67em 0 0.33em 0"

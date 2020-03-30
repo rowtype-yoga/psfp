@@ -1,10 +1,10 @@
 module Yoga.Theme where
 
 import Prelude
-import CSS (contrast, darken, isLight, lighten, rotateHue)
+import CSS (CSSVariable, Size, contrast, darken, isLight, lighten, reference, rotateHue, unitless, variable, (!*))
+import CSS.Size (Calc, (!/))
 import Color (Color)
 import Color as Color
-import Data.Foldable (intercalate)
 import Data.Maybe (fromMaybe)
 import Data.Symbol (SProxy(..))
 import Record.Builder as RB
@@ -85,14 +85,56 @@ fromTheme theme =
             (theme.altHighlightColour # darken 0.2)
         -- fonts
         
-        >>> RB.modify (f ∷ _ "textFontFamily") (intercalate ",")
-        >>> RB.modify (f ∷ _ "headingFontFamily") (intercalate ",")
-        >>> RB.modify (f ∷ _ "codeFontFamily") (intercalate ",")
+        -- >>> RB.modify (f ∷ _ "textFontFamily") (intercalate ",")
+        
+        -- >>> RB.modify (f ∷ _ "headingFontFamily") (intercalate ",")
+        
+        -- >>> RB.modify (f ∷ _ "codeFontFamily") (intercalate ",")
+        
         >>> RB.insert (f ∷ _ "isLight") isLightTheme
+        -- variables
+        
         >>> RB.insert (f ∷ _ "fontWeightBold") "300"
+        >>> RB.insert (f ∷ _ "ratioVar") (ratio)
+        >>> RB.insert (f ∷ _ "s0Var") (s0)
+        >>> RB.modify (f ∷ _ "s0") (const $ reference s0)
+        >>> RB.modify (f ∷ _ "ratio") (const $ reference ratio)
+        >>> RB.insert (f ∷ _ "s1Var") s1
+        >>> RB.insert (f ∷ _ "s2Var") s2
+        >>> RB.insert (f ∷ _ "s3Var") s3
+        >>> RB.insert (f ∷ _ "s4Var") s4
+        >>> RB.insert (f ∷ _ "s5Var") s5
+        >>> RB.insert (f ∷ _ "s_1Var") s_1
+        >>> RB.insert (f ∷ _ "s_2Var") s_2
+        >>> RB.insert (f ∷ _ "s_3Var") s_3
+        >>> RB.insert (f ∷ _ "s_4Var") s_4
+        >>> RB.insert (f ∷ _ "s_5Var") s_5
+        >>> RB.insert (f ∷ _ "s1") (reference s1)
+        >>> RB.insert (f ∷ _ "s2") (reference s2)
+        >>> RB.insert (f ∷ _ "s3") (reference s3)
+        >>> RB.insert (f ∷ _ "s4") (reference s4)
+        >>> RB.insert (f ∷ _ "s5") (reference s5)
+        >>> RB.insert (f ∷ _ "s_1") (reference s_1)
+        >>> RB.insert (f ∷ _ "s_2") (reference s_2)
+        >>> RB.insert (f ∷ _ "s_3") (reference s_3)
+        >>> RB.insert (f ∷ _ "s_4") (reference s_4)
+        >>> RB.insert (f ∷ _ "s_5") (reference s_5)
     )
     theme
   where
+  ratio ∷ CSSVariable (Size Calc)
+  ratio = variable "ratio" (unitless theme.ratio !* unitless 1.0)
+  s5 = variable "s5" (reference s4 !* reference ratio)
+  s4 = variable "s4" (reference s3 !* reference ratio)
+  s3 = variable "s3" (reference s2 !* reference ratio)
+  s2 = variable "s2" (reference s1 !* reference ratio)
+  s1 = variable "s1" (reference s0 !* reference ratio)
+  s0 = variable "s0" (theme.s0)
+  s_1 = variable "s-1" (reference s0 !/ reference ratio)
+  s_2 = variable "s-2" (reference s_1 !/ reference ratio)
+  s_3 = variable "s-3" (reference s_2 !/ reference ratio)
+  s_4 = variable "s-4" (reference s_3 !/ reference ratio)
+  s_5 = variable "s-5" (reference s_4 !/ reference ratio)
   isLightTheme = isLight theme.backgroundColour
   lighter ∷ Color -> Color
   lighter = if isLightTheme then lighten 0.04 else lighten 0.02

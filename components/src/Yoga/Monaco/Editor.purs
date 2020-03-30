@@ -114,7 +114,7 @@ mkEditor = do
       eddy <- monacoEditor
       liftEffect $ modifyEditor (const (Just eddy))
     theme <- useTheme
-    useEffect theme do
+    useEffect theme.backgroundColour do
       for_ maybeMonaco (initEditor theme)
       pure mempty
     let

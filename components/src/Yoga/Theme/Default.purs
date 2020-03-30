@@ -1,6 +1,7 @@
 module Yoga.Theme.Default where
 
 import Prelude
+import CSS (rem)
 import Color as Color
 import Data.Array.NonEmpty (cons')
 import Data.Maybe (fromMaybe')
@@ -23,7 +24,7 @@ darkTheme =
   , altHighlightColour: Color.hsl 84.0 0.617 0.631
   , textFontFamily: cons' "Rubik" systemFontStack
   , headingFontFamily: cons' "Rubik" systemFontStack
-  , codeFontFamily: cons' "'VictorMono'" [ "monospace" ]
+  , codeFontFamily: cons' "VictorMono" []
   , yellow: Color.rgb 255 235 149
   , green: Color.hsl 84.0 0.617 0.631
   , pink: Color.hsl 276.0 0.677 0.745
@@ -35,6 +36,8 @@ darkTheme =
   , white: Color.rgb 250 250 250
   , measure: "60ch"
   , borderThin: "0.125rem"
+  , ratio: 1.5
+  , s0: 1.0 # rem
   }
 
 lightTheme ∷ Theme

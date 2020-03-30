@@ -8,6 +8,7 @@ import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
 import Effect.Ref (Ref)
 import Effect.Ref as Ref
+import Justifill (justifill)
 import React.Basic.Extra.Hooks (useAffReducer)
 import React.Basic.Hooks (ReactComponent, component, element, useEffect)
 import React.Basic.Hooks as React
@@ -57,6 +58,7 @@ mkWrapper = do
     useEffect state mempty
     pure
       $ element inlineCode
-          { dispatch: dispatch <<< InlineCodeAction
-          , className: Nothing
-          }
+          ( justifill
+              { dispatch: dispatch <<< InlineCodeAction
+              }
+          )

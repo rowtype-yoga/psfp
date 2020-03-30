@@ -30,7 +30,6 @@ mkHeader = do
             , borderRight: "1px solid " <> (theme.backgroundColourLightest # toHexString)
             , borderLeft: "1px solid " <> (theme.backgroundColourLightest # toHexString)
             , color: theme.textColour # toHexString
-            , fontFamily: theme.textFontFamily
             , fontSize: "2em"
             , padding: "20px"
             , display: "flex"

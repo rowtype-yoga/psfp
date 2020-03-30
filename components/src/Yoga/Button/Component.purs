@@ -3,6 +3,7 @@ module Yoga.Button.Component where
 import Prelude
 import CSS (Color, cssStringRGBA, desaturate)
 import CSS as Color
+import Data.Array.NonEmpty as NEA
 import Data.Foldable (intercalate)
 import Data.Interpolate (i)
 import Data.Maybe (Maybe)
@@ -106,7 +107,7 @@ styles =
             , border: "0"
             , height: "calc(var(--s2))"
             , fontSize: "calc(var(--s-1))"
-            , fontFamily: theme.textFontFamily
+            , fontFamily: NEA.head theme.textFontFamily
             , fontWeight: "600"
             , padding: "0 var(--s0) 0 var(--s0)"
             , letterSpacing: "var(--s-5)"

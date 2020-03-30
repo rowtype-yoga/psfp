@@ -1,7 +1,9 @@
 module Yoga.Theme.CSSBaseline where
 
 import Prelude hiding (add)
+import CSS (declare)
 import Color (toHexString)
+import Data.Array.NonEmpty as NEA
 import Effect (Effect)
 import JSS (JSSClasses, JSSElem, jss, jssClasses)
 import React.Basic (ReactComponent)
@@ -10,7 +12,7 @@ import React.Basic.Hooks as React
 import Yoga.Font.Rubik as Rubik
 import Yoga.Font.VictorMono as VictorMono
 import Yoga.Theme.Styles (makeStylesJSS)
-import Yoga.Theme.Types (YogaTheme)
+import Yoga.Theme.Types (YogaTheme, CSSTheme)
 
 mkCssBaseline ∷
   Effect (ReactComponent { kids ∷ Array JSX })
@@ -29,22 +31,21 @@ html =
     , boxSizing: "border-box"
     }
 
-root ∷ JSSElem {}
-root =
-  jss
-    { "--ratio": "1.5"
-    , "--s-5": "calc(var(--s-4) / var(--ratio))"
-    , "--s-4": "calc(var(--s-3) / var(--ratio))"
-    , "--s-3": "calc(var(--s-2) / var(--ratio))"
-    , "--s-2": "calc(var(--s-1) / var(--ratio))"
-    , "--s-1": "calc(var(--s0) / var(--ratio))"
-    , "--s0": "1rem"
-    , "--s1": "calc(var(--s0) * var(--ratio))"
-    , "--s2": "calc(var(--s1) * var(--ratio))"
-    , "--s3": "calc(var(--s2) * var(--ratio))"
-    , "--s4": "calc(var(--s3) * var(--ratio))"
-    , "--s5": "calc(var(--s4) * var(--ratio))"
-    }
+root ∷ CSSTheme -> JSSElem {}
+root theme =
+  jss do
+    declare theme.ratioVar
+    declare theme.s_5Var
+    declare theme.s_4Var
+    declare theme.s_3Var
+    declare theme.s_2Var
+    declare theme.s_1Var
+    declare theme.s0Var
+    declare theme.s1Var
+    declare theme.s2Var
+    declare theme.s3Var
+    declare theme.s4Var
+    declare theme.s5Var
 
 styles ∷ JSSClasses YogaTheme {} ( "@global" ∷ JSSElem {} )
 styles =
@@ -53,7 +54,7 @@ styles =
       jss
         { html
         , "@font-face": jss (Rubik.fontFamilies <> VictorMono.fontFamilies)
-        , ":root": root
+        , ":root": root theme
         , "*":
           { maxWidth: theme.measure
           }
@@ -73,7 +74,7 @@ styles =
           { margin: 0
           , backgroundColor: theme.backgroundColour # toHexString
           , color: theme.textColour # toHexString
-          , fontFamily: theme.textFontFamily
+          , fontFamily: NEA.head theme.textFontFamily
           , "&::backdrop":
             { backgroundColor: theme.backgroundColour # toHexString
             }
@@ -97,6 +98,12 @@ styles =
         , "h4, .h4":
           { "font-size": "var(--s1)"
           , "text-transform": "uppercase"
+          }
+        , "code, pre":
+          { fontFamily: NEA.head theme.codeFontFamily
+          , lineHeight: "var(--ratio)"
+          , fontSize: "var(--s0)"
+          , fontSmooth: "never"
           }
         }
     }

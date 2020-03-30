@@ -3,6 +3,7 @@ module Yoga.SVG.Image where
 import Prelude
 import Color (toHexString)
 import Data.Array (elem, foldl, head, intercalate, snoc, uncons, zip, (:))
+import Data.Array.NonEmpty as NEA
 import Data.Int (round, toNumber)
 import Data.Maybe (Maybe(..), maybe)
 import Data.String (codePointFromChar)
@@ -45,7 +46,7 @@ mkLandingPageBackground = do
             { fill: if theme.isLight then "url(#_Linear9)" else "url(#_Linear12)"
             }
           , screenText:
-            { fontFamily: theme.codeFontFamily
+            { fontFamily: NEA.head theme.codeFontFamily
             , fontSize: "0.85em"
             , fill: theme.textColour # toHexString
             }

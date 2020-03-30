@@ -1,5 +1,7 @@
 module Yoga.Theme.Types where
 
+import CSS (CSSVariable, Rel, Size)
+import CSS.Size (Calc)
 import Color (Color)
 import Data.Array.NonEmpty (NonEmptyArray)
 
@@ -23,6 +25,8 @@ type Theme
     , grey ∷ Color
     , measure ∷ String
     , borderThin ∷ String
+    , ratio ∷ Number
+    , s0 ∷ Size Rel
     }
 
 type YogaTheme
@@ -48,9 +52,9 @@ type YogaTheme
     , altHighlightColour ∷ Color
     , altHighlightColourDark ∷ Color
     , isLight ∷ Boolean
-    , textFontFamily ∷ String
-    , headingFontFamily ∷ String
-    , codeFontFamily ∷ String
+    , textFontFamily ∷ NonEmptyArray String
+    , headingFontFamily ∷ NonEmptyArray String
+    , codeFontFamily ∷ NonEmptyArray String
     , yellow ∷ Color
     , green ∷ Color
     , pink ∷ Color
@@ -63,6 +67,30 @@ type YogaTheme
     , fontWeightBold ∷ String
     , measure ∷ String
     , borderThin ∷ String
+    , ratioVar ∷ CSSVariable (Size Calc)
+    , s_5Var ∷ CSSVariable (Size Calc)
+    , s_4Var ∷ CSSVariable (Size Calc)
+    , s_3Var ∷ CSSVariable (Size Calc)
+    , s_2Var ∷ CSSVariable (Size Calc)
+    , s_1Var ∷ CSSVariable (Size Calc)
+    , s0Var ∷ CSSVariable (Size Rel)
+    , s1Var ∷ CSSVariable (Size Calc)
+    , s2Var ∷ CSSVariable (Size Calc)
+    , s3Var ∷ CSSVariable (Size Calc)
+    , s4Var ∷ CSSVariable (Size Calc)
+    , s5Var ∷ CSSVariable (Size Calc)
+    , s0 ∷ Size Rel
+    , ratio ∷ Size Calc
+    , s_5 ∷ Size Calc
+    , s_4 ∷ Size Calc
+    , s_3 ∷ Size Calc
+    , s_2 ∷ Size Calc
+    , s_1 ∷ Size Calc
+    , s1 ∷ Size Calc
+    , s2 ∷ Size Calc
+    , s3 ∷ Size Calc
+    , s4 ∷ Size Calc
+    , s5 ∷ Size Calc
     )
 
 type CSSTheme

@@ -3,9 +3,9 @@ module Yoga.InlineCode.Component where
 import Prelude
 import Data.Foldable (fold, intercalate)
 import Data.Maybe (Maybe)
+import Data.String (trim)
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
-import Effect.Class.Console (log)
 import Foreign.Object as Obj
 import React.Basic.DOM as R
 import React.Basic.DOM.Events (preventDefault, targetValue)
@@ -42,9 +42,11 @@ makeComponent = do
     classes <- useStyles $ pick props
     pure
       $ R.form
-          { children:
+          { className: classes.form
+          , children:
             [ R.input
                 { className: intercalate " " [ classes.inlinecode, fold className ]
+                , maxLength: props.width ?|| 10
                 , value
                 , onChange:
                   handler targetValue

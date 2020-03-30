@@ -17,7 +17,8 @@
     "express": "^4.17.1",
     "fs-extra": "^9.0.0",
     "json-parser": "^3.1.2",
-    "uuid": "^7.0.2"
+    "uuid": "^7.0.2",
+    "minimist": "^1.2.2"
   },
   "devDependencies": {
     "purescript": "^0.13.6",

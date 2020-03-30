@@ -1,9 +1,11 @@
 module JSS where
 
 import Prelude
-import CSS (Color, Key(..), Rule(..), StyleM, Value(..), cssStringRGBA, plain, runS)
+import CSS (App(..), Color, Key(..), Keyframes(..), Path(..), Predicate(..), Refinement(..), Rule(..), Selector(..), StyleM, Value(..), cssStringRGBA, plain, predicate, runS)
 import Data.Foldable (foldMap)
+import Data.Int (round)
 import Data.Symbol (class IsSymbol, SProxy(..), reflectSymbol)
+import Data.Tuple (Tuple(..))
 import Debug.Trace (spy)
 import Foreign (unsafeToForeign)
 import Foreign.Object (Object)
@@ -51,6 +53,8 @@ data JSSElem props
 
 instance semigroupJssElem ∷ Semigroup (JSSElem props) where
   append = case _, _ of
+    PrimitiveJss p1, PrimitiveJss p2
+      | p1 == p2 -> PrimitiveJss p1
     NestedJss n1, NestedJss n2 -> NestedJss (n1 <> n2)
     ArrayJss a1, ArrayJss a2 -> ArrayJss (a1 <> a2)
     NestedJss n1, PropsJss fn ->
@@ -59,23 +63,24 @@ instance semigroupJssElem ∷ Semigroup (JSSElem props) where
         other -> do
           let
             _ = spy "other" other
-          unsafeCrashWith "Untreated branch, fix me"
+          unsafeCrashWith "Untreated branch (1), fix me"
     PropsJss fn1, PropsJss fn2 ->
       PropsJss \props -> do
         case fn1 props, fn2 props of
           n1@(NestedJss _), n2@(NestedJss _) -> n1 <> n2
+          p1@(PrimitiveJss _), p2@(PrimitiveJss _) -> p1 <> p2
           x, y -> do
             let
               _ = spy "x" x
 
               _ = spy "y" y
-            unsafeCrashWith "Untreated branch second, fix me"
+            unsafeCrashWith "Untreated branch (2), fix me"
     x, y -> do
       let
         _ = spy "x" x
 
         _ = spy "y" y
-      unsafeCrashWith "Untreated branch second, fix me"
+      unsafeCrashWith "Untreated branch (3), fix me"
 
 instance wfJSSElem ∷ WriteForeign (JSSElem props) where
   writeImpl = case _ of
@@ -117,6 +122,13 @@ instance jssAbleCss ∷ JSSAble p (StyleM Unit) where
     rules = runS someCss
     ruleToObject = case _ of
       Property (Key k) (Value v) -> Object.singleton (plain k) (jss (plain v))
+      Nested (Sub (Selector (Refinement preds) (Elem el))) rules -> Object.singleton (el <> foldMap predicate preds) (jss (foldMap ruleToObject rules))
+      Keyframe (Keyframes name frames) ->
+        frames
+          # foldMap \(Tuple pos rules) ->
+              Object.singleton
+                (show (round pos) <> "%")
+                (NestedJss (foldMap ruleToObject rules))
       x ->
         unsafeCrashWith do
           let

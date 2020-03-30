@@ -6,7 +6,7 @@ import Data.Maybe (Maybe(..), fromMaybe)
 fromMaybeFlipped ∷ ∀ a. Maybe a -> a -> a
 fromMaybeFlipped = flip fromMaybe
 
-infixr 7 fromMaybeFlipped as ?||
+infixr 5 fromMaybeFlipped as ?||
 
 ifJustTrue ∷ ∀ m. Monoid m => Maybe Boolean -> m -> m
 ifJustTrue option value = if option == Just true then value else mempty
