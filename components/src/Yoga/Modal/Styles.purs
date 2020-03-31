@@ -44,7 +44,7 @@ styles =
           boxShadow nil nil (3.5 # rem) (Color.rgba 0 0 0 0.5)
           borderRadius boxBorderRadius boxBorderRadius boxBorderRadius boxBorderRadius
       , closeIcon:
-        { fill: toHexString theme.backgroundColour
+        { fill: theme.textColour
         , width: "calc(0.8em * var(--ratio))"
         , height: "calc(0.8em * var(--ratio))"
         , margin: 0

@@ -1,4 +1,4 @@
-module Yoga.InlineCode.Component where
+module Yoga.Layer.Component where
 
 import Prelude
 import Data.Foldable (fold, intercalate)
@@ -14,8 +14,8 @@ import React.Basic.Hooks (ReactComponent, component, useState)
 import React.Basic.Hooks as React
 import Record.Extra (pick)
 import Yoga.Helpers ((?||))
-import Yoga.InlineCode.Styles (styles)
-import Yoga.InlineCode.Styles as Styles
+import Yoga.Layer.Styles (styles)
+import Yoga.Layer.Styles as Styles
 import Yoga.Theme.Styles (makeStylesJSS)
 
 type Props
@@ -37,7 +37,7 @@ type OptionalProps r
 makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do
   useStyles <- makeStylesJSS styles
-  component "InlineCode" \props@{ className, dispatch } -> React.do
+  component "Layer" \props@{ className, dispatch } -> React.do
     value /\ modifyValue <- useState ""
     classes <- useStyles $ pick props
     pure

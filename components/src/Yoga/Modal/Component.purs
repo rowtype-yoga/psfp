@@ -11,6 +11,7 @@ import React.Basic.DOM as R
 import React.Basic.DOM.Events (stopPropagation)
 import React.Basic.DOM.SVG as SVG
 import React.Basic.Events (EventHandler, handler, handler_)
+import React.Basic.Extra.Hooks.UseKeyUp (useKeyUp)
 import React.Basic.Helpers (jsx)
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
@@ -42,6 +43,7 @@ makeComponent = do
   useStyles <- makeStylesJSS Style.styles
   component "Modal" \props -> React.do
     cs <- useStyles (pick props)
+    useKeyUp 27 $ props.onClose ?|| pure unit
     let
       darkOverlay =
         jsx imposter

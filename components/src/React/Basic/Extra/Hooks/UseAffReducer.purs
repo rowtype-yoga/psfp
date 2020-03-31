@@ -1,4 +1,4 @@
-module React.Basic.Extra.Hooks where
+module React.Basic.Extra.Hooks.UseAffReducer where
 
 import Prelude
 import Data.Foldable (for_)
