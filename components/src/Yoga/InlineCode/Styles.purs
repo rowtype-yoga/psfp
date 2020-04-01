@@ -1,4 +1,4 @@
-module Yoga.Layer.Styles where
+module Yoga.InlineCode.Styles where
 
 import Prelude
 import CSS (GenericFontFamily(..), Selector, TimingFunction(..), animation, background, border, borderBottom, borderBox, borderRadius, boxSizing, color, darken, display, element, focus, fontFamily, fontSize, fromString, inlineBlock, iterationCount, keyframes, lighten, lineHeight, nil, padding, sec, solid, transform, transition, unitless, width, (!*), (!+), (&), (?))

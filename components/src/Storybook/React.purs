@@ -2,6 +2,7 @@ module Storybook.React
   ( storiesOf
   , Storybook
   , add
+  , add_
   , addDecorator
   ) where
 
@@ -29,6 +30,12 @@ add name mkComponent propsArray = do
       comp <- mkComponent
       pure $ fragment $ propsArray <#> element comp
   newBook <- lift $ addImpl sb component name
+  local (const newBook) (pure unit)
+
+add_ ∷ String -> JSX -> ReaderT Storybook Effect Unit
+add_ name jsx = do
+  sb <- ask
+  newBook <- lift $ addImpl sb (pure jsx) name
   local (const newBook) (pure unit)
 
 addDecorator ∷ (Effect JSX -> Effect JSX) -> ReaderT Storybook Effect Unit

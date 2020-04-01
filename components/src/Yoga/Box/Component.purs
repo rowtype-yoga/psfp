@@ -9,6 +9,7 @@ import React.Basic.DOM as R
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
 import Record.Extra (pick)
+import Unsafe.Coerce (unsafeCoerce)
 import Yoga.Box.Styles (styles)
 import Yoga.Box.Styles as Styles
 import Yoga.Helpers (ifJustTrue)
@@ -35,4 +36,5 @@ makeComponent = do
       $ R.div
           { className: intercalate " " [ classes.box, ifJustTrue props.invert classes.invert, fold className ]
           , children: kids
+          , style: (unsafeCoerce props).style -- Hack for animated components :(
           }

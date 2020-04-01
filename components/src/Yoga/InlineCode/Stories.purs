@@ -1,4 +1,4 @@
-module Yoga.Layer.Stories where
+module Yoga.InlineCode.Stories where
 
 import Prelude hiding (add)
 import Data.Array (intercalate)
@@ -21,39 +21,39 @@ import React.Basic.Hooks as React
 import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
 import Yoga.CompileEditor.Component (compileAndRun)
-import Yoga.Layer.Component (Action(..))
-import Yoga.Layer.Component as Layer
+import Yoga.InlineCode.Component (Action(..))
+import Yoga.InlineCode.Component as InlineCode
 import Yoga.Modal.Component as Modal
 
 stories ∷ Effect Storybook
 stories = do
-  storiesOf "Layer" do
+  storiesOf "InlineCode" do
     addDecorator fullScreenDecorator
-    add "The Layer" Layer.makeComponent
+    add "The InlineCode" InlineCode.makeComponent
       [ ( justifill
-            { dispatch: \(_ ∷ Layer.Action) -> ((log "hi") ∷ Effect Unit)
+            { dispatch: \(_ ∷ InlineCode.Action) -> ((log "hi") ∷ Effect Unit)
             }
         )
       ]
-    add "The Layer with some context" mkWrapper
+    add "The InlineCode with some context" mkWrapper
       [ { inside:
           \inlineCode ->
             [ R.text "hi!"
-            , element inlineCode (justifill { dispatch: \(_ ∷ Layer.Action) -> (log "Hi") ∷ Effect Unit })
+            , element inlineCode (justifill { dispatch: \(_ ∷ InlineCode.Action) -> (log "Hi") ∷ Effect Unit })
             , R.text "hello again!"
             ]
         }
       ]
-    add "The Layer with some code" mkWrapper
+    add "The InlineCode with some code" mkWrapper
       [ { inside:
           \inlineCode ->
             [ R.code_ [ R.text "main = logShow \"" ]
-            , element inlineCode (justifill { dispatch: \(_ ∷ Layer.Action) -> (log "Hi") ∷ Effect Unit })
+            , element inlineCode (justifill { dispatch: \(_ ∷ InlineCode.Action) -> (log "Hi") ∷ Effect Unit })
             , R.code_ [ R.text "\"" ]
             ]
         }
       ]
-    add "The Layer with some real code" mkRealWrapper
+    add "The InlineCode with some real code" mkRealWrapper
       [ {} ]
 
 codePrefix =
@@ -69,10 +69,10 @@ renderCode c = intercalate [ R.br {} ] (toJSX <$> lines)
   toJSX line = [ R.code_ [ R.text line ] ]
   lines = split (Pattern "\n") c
 
-mkWrapper ∷ Effect (ReactComponent { inside ∷ ReactComponent Layer.Props -> Array JSX })
+mkWrapper ∷ Effect (ReactComponent { inside ∷ ReactComponent InlineCode.Props -> Array JSX })
 mkWrapper = do
-  inlineCode <- Layer.makeComponent
-  component "LayerWrapper" \{ inside } -> React.do
+  inlineCode <- InlineCode.makeComponent
+  component "InlineCodeWrapper" \{ inside } -> React.do
     pure
       $ R.div_ (inside inlineCode)
 
@@ -80,21 +80,21 @@ type State
   = Maybe Boolean
 
 data RealAction
-  = LayerAction Layer.Action
+  = InlineCodeAction InlineCode.Action
   | CloseModal
 
 derive instance eqRealAction ∷ Eq RealAction
 mkRealWrapper ∷ Effect (ReactComponent {})
 mkRealWrapper = do
-  inlineCode <- Layer.makeComponent
+  inlineCode <- InlineCode.makeComponent
   modal <- Modal.makeComponent
-  component "LayerWrapper" \{} -> React.do
+  component "InlineCodeWrapper" \{} -> React.do
     state /\ dispatch <- useAffReducer Nothing realReducer
     pure
       $ R.div_
           [ R.h2_ [ R.text "Let's log some 'Magick'" ]
           , fragment $ renderCode codePrefix
-          , element inlineCode (justifill { dispatch: dispatch <<< LayerAction, width: String.length "Magick" })
+          , element inlineCode (justifill { dispatch: dispatch <<< InlineCodeAction, width: String.length "Magick" })
           , fragment $ renderCode codeSuffix
           , R.br {}
           , case state of
@@ -106,7 +106,7 @@ mkRealWrapper = do
 realReducer ∷ State -> RealAction -> Aff State
 realReducer state = case _ of
   CloseModal -> pure Nothing
-  LayerAction (CompileAndRunCode code) -> do
+  InlineCodeAction (CompileAndRunCode code) -> do
     res <- compileAndRun (M.fetch windowFetch) { code: codePrefix <> code <> codeSuffix }
     (pure <<< pure) case res of
       Right { stdout }

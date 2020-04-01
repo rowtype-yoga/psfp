@@ -1,4 +1,4 @@
-module Yoga.Layer.Spec where
+module Yoga.InlineCode.Spec where
 
 import Prelude
 import Data.Maybe (Maybe(..))
@@ -17,7 +17,8 @@ import Test.Spec (Spec, it)
 import Test.Spec.Assertions (shouldEqual)
 import Web.Event.Internal.Types (Event)
 import Web.HTML.HTMLElement (focus)
-import Yoga.Layer.Component as Layer
+import Yoga.InlineCode.Component as InlineCode
+import Yoga.Spec.Helpers (withDarkTheme)
 
 foreign import newInputEvent ∷ String -> Event
 
@@ -25,8 +26,8 @@ foreign import newChangeEvent ∷ Event
 
 spec ∷ Spec Unit
 spec =
-  describeComponent mkWrapper
-    "The Layer Component" do
+  describeComponent (withDarkTheme mkWrapper)
+    "The InlineCode Component" do
     it "renders without problems" \wrapper -> do
       strRef <- Ref.new "" # liftEffect
       void $ renderComponent wrapper { strRef }
@@ -41,24 +42,24 @@ spec =
       refContent `shouldEqual` "Heinzelmän"
 
 data Action
-  = LayerAction Layer.Action
+  = InlineCodeAction InlineCode.Action
 
 derive instance eqAction ∷ Eq Action
 mkReducer ∷ Ref String -> Maybe String -> Action -> Aff (Maybe String)
 mkReducer ref state = case _ of
-  LayerAction (Layer.CompileAndRunCode s) -> do
+  InlineCodeAction (InlineCode.CompileAndRunCode s) -> do
     Ref.write s ref # liftEffect
     pure state
 
 mkWrapper ∷ Effect (ReactComponent { strRef ∷ Ref String })
 mkWrapper = do
-  inlineCode <- Layer.makeComponent
+  inlineCode <- InlineCode.makeComponent
   component "Wrapper" \{ strRef } -> React.do
     state /\ dispatch <- useAffReducer Nothing (mkReducer strRef)
     useEffect state mempty
     pure
       $ element inlineCode
           ( justifill
-              { dispatch: dispatch <<< LayerAction
+              { dispatch: dispatch <<< InlineCodeAction
               }
           )

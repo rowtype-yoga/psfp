@@ -1,8 +1,9 @@
 module Yoga.Modal.Styles where
 
 import Prelude hiding (top)
-import CSS (backgroundColor, borderRadius, boxShadow, nil, rem, toHexString)
+import CSS (backgroundColor, borderRadius, boxShadow, nil, opacity, rem, toHexString, transform, transforms, transition)
 import CSS as Color
+import CSS.Transform (scaleZ)
 import JSS (JSSClasses, JSSElem, jssClasses)
 import Yoga.Theme.Types (YogaTheme)
 
@@ -44,7 +45,7 @@ styles =
           boxShadow nil nil (3.5 # rem) (Color.rgba 0 0 0 0.5)
           borderRadius boxBorderRadius boxBorderRadius boxBorderRadius boxBorderRadius
       , closeIcon:
-        { fill: theme.textColour
+        { fill: theme.red
         , width: "calc(0.8em * var(--ratio))"
         , height: "calc(0.8em * var(--ratio))"
         , margin: 0
