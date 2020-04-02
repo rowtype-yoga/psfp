@@ -34,7 +34,8 @@
   "homepage": "https://github.com/i-am-the-slime/psfp#readme",
   "dependencies": {
     "react-jss": "^10.1.1",
-    "react-spring": "^8.0.27"
+    "react-spring": "^9.0.0-beta.34",
+    "react-use-gesture": "^7.0.8"
   },
   "devDependencies": {
     "@babel/core": "^7.6.0",
