@@ -1,10 +1,11 @@
 module React.Basic.Hooks.Spring where
 
 import Prelude
-import Data.Tuple (Tuple(..))
-import Data.Tuple.Nested (type (/\), (/\))
+import Data.Maybe (Maybe)
+import Data.Nullable (Nullable, toNullable)
+import Data.Nullable as Nullable
 import Effect (Effect)
-import Effect.Uncurried (EffectFn1, runEffectFn1)
+import Effect.Uncurried (EffectFn1, EffectFn3, runEffectFn1, runEffectFn3)
 import Prim.Row (class Union)
 import React.Basic (JSX, ReactComponent, element)
 import React.Basic.DOM (CSS, Props_div)
@@ -31,13 +32,20 @@ useSpring f = React.do
 
 foreign import data UseTransition ∷ Type -> Type -> Type
 
-{- foreign import useTransitionImpl ∷ ∀ r. _ -> () -> Effect ({ | r } /\ (EffectFn1 { | r } Unit))
+foreign import useTransitionImpl ∷ ∀ a. EffectFn3 (Array a) (Nullable (a -> String)) CSS (Array { item ∷ Nullable a, key ∷ Nullable String, props ∷ CSS })
 
--- useTransition ∷ ∀ r props. (props -> { | r }) -> Hook (UseTransition { | r }) ({ | r } /\ ({ | r } -> Effect Unit))
--- useTransition f = React.do
---   styles /\ setFn <- unsafeHook (useTransitionImpl Tuple (f))
---   pure (styles /\ (runEffectFn1 setFn))
--}
+useTransition ∷
+  ∀ item.
+  Array item ->
+  Maybe (item -> String) ->
+  CSS ->
+  Hook (UseTransition item) (Array { item ∷ Maybe item, key ∷ Maybe String, props ∷ CSS })
+useTransition items toKey transition =
+  unsafeHook
+    ( runEffectFn3 useTransitionImpl items (toNullable toKey) transition
+        <#> map \x -> x { item = x.item # Nullable.toMaybe, key = x.key # Nullable.toMaybe }
+    )
+
 foreign import animatedImpl ∷ ∀ attrs. String -> ReactComponent { | attrs }
 
 foreign import animatedComponentImpl ∷ ∀ attrs. ReactComponent { style ∷ CSS | attrs } -> ReactComponent { style ∷ CSS | attrs }
