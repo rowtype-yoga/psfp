@@ -1,8 +1,8 @@
 import { useSpring, useTransition, animated } from "react-spring";
 
-exports.useSpringImpl = tuple => mkStyles => () => {
+exports.useSpringImpl = mkStyles => () => {
   const result = useSpring(mkStyles);
-  return tuple(result[0])(result[1]);
+  return { style: result[0], set: result[1], stop: result[2] };
 };
 
 exports.useTransitionImpl = useTransition;

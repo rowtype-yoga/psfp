@@ -4,7 +4,6 @@ import Prelude hiding (add)
 import Data.Tuple.Nested ((/\))
 import Debug.Trace (spy)
 import Effect (Effect)
-import Effect.Unsafe (unsafePerformEffect)
 import JSS (jssClasses)
 import Justifill (justifill)
 import React.Basic.DOM (css)
@@ -36,14 +35,14 @@ mkAnimated = do
   box <- Box.makeComponent
   component "Animated Example" \{} -> React.do
     toggled /\ modifyToggled <- useState false
-    springStyles /\ set <- useSpring $ const { marginTop: "80px", marginBottom: "80px", opacity: 0.7, transform: "scale3d(" <> if toggled then "0.9, 0.9, 1.0" else "1.0, 2.0, 1.0" <> ")" }
+    { style, set, stop } <- useSpring $ const { opacity: 0.7, transform: "scale3d(" <> if toggled then "0.9, 0.9, 1.0" else "1.0, 2.0, 1.0" <> ")" }
     useLayoutEffect toggled do
-      set { marginTop: "80px", marginBottom: "30px", opacity: if toggled then 0.7 else 0.9, transform: "scale3d(" <> if toggled then "0.9, 0.9, 1.0" else "1.0, 2.0, 1.0" <> ")" }
+      (spy "fuck" set) { opacity: if toggled then 0.7 else 0.9, transform: "scale3d(" <> if toggled then "0.9, 0.9, 1.0" else "1.0, 2.0, 1.0" <> ")" }
       pure mempty
     pure
       $ fragment
           [ animatedDiv
-              { style: css springStyles
+              { style: css style
               , children: [ jsx box {} [ R.text "Click the button" ] ]
               }
           , R.button { children: [ R.text "Toggle" ], onClick: handler_ (modifyToggled not) }
@@ -54,7 +53,7 @@ mkDragAnimated = do
   box <- Box.makeComponent
   useStyles <- makeStylesJSS $ jssClasses \t -> { div: { width: "200px", height: "200px", background: "hotpink" } }
   component "Draggable Example" \{} -> React.do
-    springStyles /\ set <- useSpring $ const { x: 0.0, y: 0.0 }
+    { style, set } <- useSpring $ const { x: 0.0, y: 0.0 }
     classes <- useStyles {}
     mkDragProps <-
       useDrag \{ down, movement: mx /\ my } ->
@@ -62,7 +61,7 @@ mkDragAnimated = do
     pure
       $ fragment
           [ animatedDiv
-              ( { style: css springStyles
+              ( { style: css style
                 , className: classes.div
                 , children: [ jsx box {} [ R.text "Drag me somewhere" ] ]
                 }
