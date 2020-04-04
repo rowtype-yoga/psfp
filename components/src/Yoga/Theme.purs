@@ -1,7 +1,7 @@
 module Yoga.Theme where
 
 import Prelude
-import CSS (CSSVariable, Size, contrast, darken, isLight, lighten, reference, rotateHue, unitless, variable, (!*))
+import CSS (CSSVariable, Size, contrast, darken, desaturate, isLight, lighten, reference, rotateHue, unitless, variable, (!*))
 import CSS.Size (Calc, (!/))
 import Color (Color)
 import Color as Color
@@ -74,7 +74,7 @@ fromTheme theme =
         -- highlight
         
         >>> RB.insert (f ∷ _ "highlightColourDark")
-            (theme.highlightColour # darken 0.2 # rotateHue (-10.0))
+            (theme.highlightColour # darken 0.2 # desaturate 0.35)
         >>> RB.insert (f ∷ _ "highlightColourRotatedForwards")
             (theme.highlightColour # rotateHue (20.0))
         >>> RB.insert (f ∷ _ "highlightColourRotatedBackwards")

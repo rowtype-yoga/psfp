@@ -16,7 +16,9 @@ import React.Basic.Hooks.Spring (animatedDiv, useSpring, useTransition)
 import React.Basic.Hooks.UseGesture (useDrag, withDragProps)
 import Storybook.React (Storybook, add, storiesOf)
 import Yoga.Box.Component as Box
+import Yoga.Box.Component as Center
 import Yoga.Button.Component (mkButton)
+import Yoga.Card.Component (mkCard)
 import Yoga.Spec.Helpers (withDarkTheme)
 import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.Theme.Types (CSSTheme)
@@ -92,10 +94,15 @@ mkTransition = do
 
 mkDragAnimated ∷ Effect (ReactComponent {})
 mkDragAnimated = do
-  box <- Box.makeComponent
-  useStyles <- makeStylesJSS $ jssClasses \t -> { div: { width: "200px", height: "200px", background: "hotpink" } }
+  card <- mkCard
+  useStyles <-
+    makeStylesJSS
+      $ jssClasses \t ->
+          { card: { width: "200px", height: "200px" }
+          , div: { overflow: "visible" }
+          }
   component "Draggable Example" \{} -> React.do
-    { style, set } <- useSpring $ const { x: 0.0, y: 0.0 }
+    { style, set } <- useSpring $ const { x: 0.0, y: 0.0, config: { mass: 1, tension: 210, friction: 20 } }
     classes <- useStyles {}
     mkDragProps <-
       useDrag \{ down, movement: mx /\ my } ->
@@ -105,7 +112,9 @@ mkDragAnimated = do
           [ animatedDiv
               ( { style: css style
                 , className: classes.div
-                , children: [ jsx box {} [ R.text "Drag me somewhere" ] ]
+                , children:
+                  [ jsx card { className: classes.card } [ R.text "Drag me somewhere" ]
+                  ]
                 }
                   `withDragProps`
                     mkDragProps

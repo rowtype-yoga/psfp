@@ -1,9 +1,10 @@
 module JSS where
 
 import Prelude
-import CSS (App(..), Color, Key(..), Keyframes(..), Path(..), Predicate(..), Refinement(..), Rule(..), Selector(..), StyleM, Value(..), cssStringRGBA, plain, predicate, runS)
+import CSS (class Val, App(..), BackgroundImage, Color, Key(..), Keyframes(..), Path(..), Predicate(..), Refinement(..), Rule(..), Selector(..), StyleM, Value(..), cssStringRGBA, plain, predicate, runS, value)
 import Data.Foldable (foldMap)
 import Data.Int (round)
+import Data.Newtype (un, unwrap)
 import Data.Symbol (class IsSymbol, SProxy(..), reflectSymbol)
 import Data.Tuple (Tuple(..))
 import Debug.Trace (spy)
@@ -97,6 +98,11 @@ instance jssAbleJssElem ∷ JSSAble p (JSSElem p) where
 
 instance jssAbleColor ∷ JSSAble p Color where
   jss c = PrimitiveJss (coerce (cssStringRGBA c))
+
+instance jssAbleBackgroundImage ∷ JSSAble p BackgroundImage where
+  jss v = PrimitiveJss (coerce (render (value v)))
+    where
+    render (Value val) = plain val
 
 instance jssAbleString ∷ JSSAble p String where
   jss = coerce >>> PrimitiveJss

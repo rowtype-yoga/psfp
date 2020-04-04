@@ -5,6 +5,7 @@ import CSS (backgroundColor, borderBox, boxSizing, margin, pct, toHexString, uni
 import CSS.Overflow (hidden, overflowY)
 import Control.Promise (Promise)
 import Control.Promise as Promise
+import Data.Array.NonEmpty as NEA
 import Data.Foldable (for_)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Nullable (Nullable)
@@ -131,7 +132,7 @@ mkEditor = do
                           , height
                           , options:
                             unsafeToForeign
-                              { fontFamily: theme.codeFontFamily
+                              { fontFamily: NEA.head theme.codeFontFamily
                               , fontLigatures: true
                               , fontSize: "12pt"
                               , lineNumbers: "off"

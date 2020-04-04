@@ -8,7 +8,8 @@ import Effect (Effect)
 import Effect.Uncurried (EffectFn1, EffectFn3, runEffectFn1, runEffectFn3)
 import Prim.Row (class Union)
 import React.Basic (JSX, ReactComponent, element)
-import React.Basic.DOM (CSS, Props_div)
+import React.Basic.DOM (CSS, Props_div, Props_span)
+import React.Basic.DOM.SVG (Props_svg, Props_path)
 import React.Basic.Hooks (Hook, unsafeHook)
 import React.Basic.Hooks as React
 
@@ -23,9 +24,9 @@ type SetSpringImpl r
 type SetSpring r
   = { | r } -> Effect Unit
 
-foreign import useSpringImpl ∷ ∀ r props. (props -> { | r }) -> Effect { style ∷ { | r }, set ∷ SetSpringImpl r, stop ∷ StopSpring }
+foreign import useSpringImpl ∷ ∀ r s props. (props -> { | r }) -> Effect { style ∷ { | r }, set ∷ SetSpringImpl s, stop ∷ StopSpring }
 
-useSpring ∷ ∀ r props. (props -> { | r }) -> Hook (UseSpring { | r }) { style ∷ { | r }, set ∷ SetSpring r, stop ∷ StopSpring }
+useSpring ∷ ∀ r s props. (props -> { | r }) -> Hook (UseSpring { | r }) { style ∷ { | r }, set ∷ SetSpring s, stop ∷ StopSpring }
 useSpring f = React.do
   res <- unsafeHook (useSpringImpl f)
   pure $ res { set = runEffectFn1 res.set }
@@ -41,10 +42,12 @@ useTransition ∷
   CSS ->
   Hook (UseTransition item) (Array { item ∷ Maybe item, key ∷ Maybe String, props ∷ CSS })
 useTransition items toKey transition =
-  unsafeHook
-    ( runEffectFn3 useTransitionImpl items (toNullable toKey) transition
-        <#> map \x -> x { item = x.item # Nullable.toMaybe, key = x.key # Nullable.toMaybe }
-    )
+  unsafeHook $ runEffectFn3 useTransitionImpl items (toNullable toKey) transition
+    <#> map \x@{ item, key } ->
+        x
+          { item = item # Nullable.toMaybe
+          , key = key # Nullable.toMaybe
+          }
 
 foreign import animatedImpl ∷ ∀ attrs. String -> ReactComponent { | attrs }
 
@@ -65,3 +68,24 @@ animatedDiv ∷
   { style ∷ CSS | attrs } ->
   JSX
 animatedDiv = element (animatedImpl "div")
+
+animatedSpan ∷
+  ∀ attrs attrs_.
+  Union attrs attrs_ Props_span =>
+  { style ∷ CSS | attrs } ->
+  JSX
+animatedSpan = element (animatedImpl "span")
+
+animatedSvg ∷
+  ∀ attrs attrs_.
+  Union attrs attrs_ Props_svg =>
+  { style ∷ CSS | attrs } ->
+  JSX
+animatedSvg = element (animatedImpl "svg")
+
+animatedPath ∷
+  ∀ attrs attrs_.
+  Union attrs attrs_ Props_path =>
+  { style ∷ CSS | attrs } ->
+  JSX
+animatedPath = element (animatedImpl "path")

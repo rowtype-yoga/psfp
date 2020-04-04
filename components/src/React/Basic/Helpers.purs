@@ -1,13 +1,16 @@
 module React.Basic.Helpers where
 
+import Data.Maybe (Maybe, fromMaybe, fromMaybe')
 import Data.Symbol (SProxy(..))
 import Justifill.Fillable (class Fillable, class FillableFields, fill)
 import Justifill.Justifiable (class Justifiable, justify)
+import Literals.Undefined (undefined)
 import Prim.Row (class Lacks, class Nub)
 import Prim.RowList (class RowToList)
 import React.Basic (JSX)
 import React.Basic.Hooks (ReactComponent, element)
 import Record (disjointUnion, insert)
+import Unsafe.Coerce (unsafeCoerce)
 
 element_ ∷
   ∀ to missing missingRL thru thruRL from fromRL.
@@ -62,3 +65,6 @@ jsx x partialProps kids = element x propsWithKids
             partialProps
         )
     )
+
+orUndefined ∷ ∀ a. Maybe a -> a
+orUndefined = fromMaybe' \_ -> unsafeCoerce undefined

@@ -1,13 +1,16 @@
 module Yoga.Button.Component where
 
 import Prelude
-import CSS (Color, cssStringRGBA, desaturate)
+import CSS (Color, angular, black, cssStringRGBA, deg, desaturate, pct, saturate)
+import CSS as C
 import CSS as Color
+import Color.Scheme.Clrs (blue)
 import Data.Array.NonEmpty as NEA
 import Data.Foldable (intercalate)
 import Data.Interpolate (i)
 import Data.Maybe (Maybe)
 import Data.Monoid (guard)
+import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import JSS (JSSClasses, JSSElem, jssClasses)
 import React.Basic (JSX)
@@ -43,10 +46,6 @@ highlightStyles =
               [ withAlpha (if theme.isLight then 0.15 else 0.07) theme.backgroundColourDarker
               , withAlpha (if theme.isLight then 0.15 else 0.07) theme.backgroundColourLighter
               ]
-          , "&:active":
-            { background:
-              linearGradient "145deg" [ theme.highlightColourDark, theme.highlightColour ]
-            }
           , color: theme.backgroundColour
           }
         }
@@ -136,10 +135,18 @@ styles =
                   String
               , background:
                 linearGradient
-                  "145deg"
-                  [ theme.backgroundColourDarker
-                  , theme.backgroundColourDarkest
+                  "135deg"
+                  [ withAlpha (if theme.isLight then 0.15 else 0.07) theme.backgroundColourLighter
+                  , withAlpha (if theme.isLight then 0.15 else 0.07) theme.backgroundColourDarker
                   ]
+                  <> ","
+                  <> linearGradient
+                      "180deg"
+                      [ Color.rgba 0 0 10 0.17
+                      , Color.rgba 0 0 10 0.03
+                      , Color.rgba 0 0 10 0.067
+                      ]
+              , color: theme.backgroundColour
               }
             , "&:disabled":
               { boxShadow: "0 0 0 black"
