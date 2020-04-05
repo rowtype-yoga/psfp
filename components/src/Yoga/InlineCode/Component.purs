@@ -24,12 +24,8 @@ type Props
 type PropsR
   = OptionalProps (Styles.PropsR)
 
-data Action
-  = CompileAndRunCode String
-
-derive instance eqAction ∷ Eq Action
 type OptionalProps r
-  = ( dispatch ∷ Action -> Effect Unit
+  = ( onSubmit ∷ String -> Effect Unit
     , className ∷ Maybe String
     | r
     )
@@ -37,7 +33,7 @@ type OptionalProps r
 makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do
   useStyles <- makeStylesJSS styles
-  component "InlineCode" \props@{ className, dispatch } -> React.do
+  component "InlineCode" \props@{ className, onSubmit } -> React.do
     value /\ modifyValue <- useState ""
     classes <- useStyles $ pick props
     pure
@@ -55,7 +51,5 @@ makeComponent = do
                 , _data: Obj.singleton "testid" "inline-code"
                 }
             ]
-          , onSubmit:
-            handler preventDefault
-              (const $ dispatch $ CompileAndRunCode value)
+          , onSubmit: handler preventDefault (const $ onSubmit value)
           }

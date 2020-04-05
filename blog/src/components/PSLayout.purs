@@ -4,9 +4,11 @@ import Prelude
 
 import Color (toHexString)
 import Data.Array as Array
+import Data.Array.NonEmpty as NEA
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
+import Data.Semigroup.Foldable (intercalateMap)
 import Data.String as String
 import Effect (Effect)
 import JSS (jss, jssClasses)
@@ -20,6 +22,7 @@ import React.Basic.Hooks (ReactChildren, component, componentWithChildren, eleme
 import React.Basic.Hooks as React
 import Yoga.CompileEditor.Component (mkCompileEditor)
 import Yoga.Header.Component (mkHeader)
+import Yoga.InlineCode.Component as InlineCode
 import Yoga.Theme (fromTheme)
 import Yoga.Theme.CSSBaseline (mkCssBaseline)
 import Yoga.Theme.Default (darkTheme)
@@ -87,14 +90,15 @@ mkMdxProviderComponent fetchImpl = do
   editor <- mkCompileEditor fetchImpl
   sidebar <- mkSidebar
   header <- mkHeader
+  yogaInlineCode <- InlineCode.makeComponent
   h <- mkH
   p <- mkP
   useStyles <-
     makeStylesJSS
       $ jssClasses \(theme ∷ CSSTheme) ->
           { code:
-              { fontFamily: theme.codeFontFamily
-              , backgroundColor: toHexString $ theme.interfaceColour
+              { fontFamily: theme.codeFontFamily # NEA.head
+              , backgroundColor: theme.interfaceColour
               , fontSize: "10pt"
               , border: "1px solid #383c39"
               , padding: "3px"

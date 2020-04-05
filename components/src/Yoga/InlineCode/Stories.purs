@@ -9,7 +9,7 @@ import Data.String.CodeUnits as String
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Effect.Class.Console (log)
+import Effect.Console (log)
 import Justifill (justifill)
 import Milkis as M
 import Milkis.Impl.Window (windowFetch)
@@ -22,7 +22,6 @@ import React.Basic.Hooks as React
 import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
 import Yoga.CompileEditor.Component (compileAndRun)
-import Yoga.InlineCode.Component (Action(..))
 import Yoga.InlineCode.Component as InlineCode
 import Yoga.Modal.Component as Modal
 
@@ -32,7 +31,7 @@ stories = do
     addDecorator fullScreenDecorator
     add "The InlineCode" InlineCode.makeComponent
       [ ( justifill
-            { dispatch: \(_ ∷ InlineCode.Action) -> ((log "hi") ∷ Effect Unit)
+            { onSubmit: log
             }
         )
       ]
@@ -40,7 +39,7 @@ stories = do
       [ { inside:
           \inlineCode ->
             [ R.text "hi!"
-            , element inlineCode (justifill { dispatch: \(_ ∷ InlineCode.Action) -> (log "Hi") ∷ Effect Unit })
+            , element inlineCode (justifill { onSubmit: log })
             , R.text "hello again!"
             ]
         }
@@ -49,7 +48,7 @@ stories = do
       [ { inside:
           \inlineCode ->
             [ R.code_ [ R.text "main = logShow \"" ]
-            , element inlineCode (justifill { dispatch: \(_ ∷ InlineCode.Action) -> (log "Hi") ∷ Effect Unit })
+            , element inlineCode (justifill { onSubmit: log })
             , R.code_ [ R.text "\"" ]
             ]
         }
@@ -84,7 +83,7 @@ type State
   = Maybe Boolean
 
 data RealAction
-  = InlineCodeAction InlineCode.Action
+  = InlineCodeSubmitted String
   | CloseModal
 
 derive instance eqRealAction ∷ Eq RealAction
@@ -98,7 +97,7 @@ mkRealWrapper = do
       $ R.div_
           [ R.h2_ [ R.text "Let's log some 'Magick'" ]
           , fragment $ renderCode codePrefix
-          , element inlineCode (justifill { dispatch: dispatch <<< InlineCodeAction, width: String.length "Magick" })
+          , element inlineCode (justifill { onSubmit: dispatch <<< InlineCodeSubmitted, width: String.length "Magick" })
           , fragment $ renderCode codeSuffix
           , R.br {}
           , case state of
@@ -110,7 +109,7 @@ mkRealWrapper = do
 realReducer ∷ State -> RealAction -> Aff State
 realReducer state = case _ of
   CloseModal -> pure Nothing
-  InlineCodeAction (CompileAndRunCode code) -> do
+  InlineCodeSubmitted code -> do
     res <- compileAndRun (M.fetch windowFetch) { code: codePrefix <> code <> codeSuffix }
     (pure <<< pure) case res of
       Right { stdout }

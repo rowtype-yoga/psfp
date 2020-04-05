@@ -42,12 +42,12 @@ spec =
       refContent `shouldEqual` "Heinzelmän"
 
 data Action
-  = InlineCodeAction InlineCode.Action
+  = InlineCodeAction String
 
 derive instance eqAction ∷ Eq Action
 mkReducer ∷ Ref String -> Maybe String -> Action -> Aff (Maybe String)
 mkReducer ref state = case _ of
-  InlineCodeAction (InlineCode.CompileAndRunCode s) -> do
+  InlineCodeAction s -> do
     Ref.write s ref # liftEffect
     pure state
 
@@ -60,6 +60,6 @@ mkWrapper = do
     pure
       $ element inlineCode
           ( justifill
-              { dispatch: dispatch <<< InlineCodeAction
+              { onSubmit: dispatch <<< InlineCodeAction
               }
           )
