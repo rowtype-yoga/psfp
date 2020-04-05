@@ -6,12 +6,14 @@ import Data.Nullable (Nullable, toNullable)
 import Data.Nullable as Nullable
 import Effect (Effect)
 import Effect.Uncurried (EffectFn1, EffectFn3, runEffectFn1, runEffectFn3)
+import Foreign (Foreign)
 import Prim.Row (class Union)
-import React.Basic (JSX, ReactComponent, element)
+import React.Basic (JSX, ReactComponent, Ref, element)
 import React.Basic.DOM (CSS, Props_div, Props_span)
 import React.Basic.DOM.SVG (Props_svg, Props_path)
 import React.Basic.Hooks (Hook, unsafeHook)
 import React.Basic.Hooks as React
+import Simple.JSON (class WriteForeign)
 
 foreign import data UseSpring ∷ Type -> Type -> Type
 

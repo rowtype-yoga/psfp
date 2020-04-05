@@ -1,6 +1,6 @@
-import { useSpring, useTransition, animated } from "react-spring";
+import { useChain, useSpring, useTransition, animated } from "react-spring";
 
-exports.useSpringImpl = mkStyles => () => {
+exports.useSpringImpl = (mkStyles) => () => {
   const result = useSpring(mkStyles);
   return { style: result[0], set: result[1], stop: result[2] };
 };

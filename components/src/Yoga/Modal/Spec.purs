@@ -1,14 +1,10 @@
 module Yoga.Modal.Spec where
 
 import Prelude
-import Effect (Effect)
-import Effect.Class (liftEffect)
-import Effect.Ref as Ref
 import Justifill (justifill)
 import React.Basic.DOM as R
-import React.TestingLibrary (describeComponent, fireEventClick, renderComponent)
+import React.TestingLibrary (describeComponent, renderComponent)
 import Test.Spec (Spec, it)
-import Test.Spec.Assertions (shouldEqual)
 import Yoga.Modal.Component as Modal
 import Yoga.Spec.Helpers (withDarkTheme)
 
@@ -21,20 +17,6 @@ spec =
         renderComponent modal
           $ justifill
               { title: "Hey"
-              , content: R.text "content"
-              , onClose: (pure unit) ∷ Effect Unit
+              , kids: [ R.text "content" ]
               }
       pure unit
-    it "calls the onClose handler when clicking on the svg close" \modal -> do
-      ref <- Ref.new false # liftEffect
-      { findByTestId } <-
-        renderComponent modal
-          $ justifill
-              { title: "Hey"
-              , onClose: Ref.write true ref
-              , content: R.text "content"
-              }
-      closeBtn <- findByTestId "close-icon-svg"
-      fireEventClick closeBtn
-      clicked <- Ref.read ref # liftEffect
-      clicked `shouldEqual` true

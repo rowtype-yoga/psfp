@@ -1,7 +1,7 @@
 module Yoga.Card.Component where
 
 import Prelude
-import CSS (CSS, angular, deg, desaturate, linearGradient, pct)
+import CSS (angular, deg, linearGradient, pct)
 import Color (cssStringRGBA)
 import Color as Color
 import Data.Interpolate (i)
@@ -13,7 +13,6 @@ import React.Basic (JSX)
 import React.Basic.Helpers (jsx)
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
-import Unsafe.Coerce (unsafeCoerce)
 import Yoga.Box.Component as Box
 import Yoga.Helpers ((?||))
 import Yoga.Theme.Styles (makeStylesJSS)

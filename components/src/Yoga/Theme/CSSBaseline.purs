@@ -1,7 +1,7 @@
 module Yoga.Theme.CSSBaseline where
 
 import Prelude hiding (add)
-import CSS (declare)
+import CSS (backgroundColor, cssStringRGBA, declare)
 import Color (toHexString)
 import Data.Array.NonEmpty as NEA
 import Effect (Effect)
@@ -34,6 +34,7 @@ html =
 root ∷ CSSTheme -> JSSElem {}
 root theme =
   jss do
+    backgroundColor theme.backgroundColour
     declare theme.ratioVar
     declare theme.s_5Var
     declare theme.s_4Var
@@ -72,11 +73,11 @@ styles =
           }
         , body:
           { margin: 0
-          , backgroundColor: theme.backgroundColour # toHexString
+          , backgroundColor: theme.backgroundColour # cssStringRGBA
           , color: theme.textColour # toHexString
           , fontFamily: NEA.head theme.textFontFamily
           , "&::backdrop":
-            { backgroundColor: theme.backgroundColour # toHexString
+            { backgroundColor: theme.backgroundColour # cssStringRGBA
             }
           }
         , "h1, h2, h3, h4":

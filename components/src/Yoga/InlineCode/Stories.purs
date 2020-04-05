@@ -16,6 +16,7 @@ import Milkis.Impl.Window (windowFetch)
 import React.Basic (JSX, fragment)
 import React.Basic.DOM as R
 import React.Basic.Extra.Hooks.UseAffReducer (useAffReducer)
+import React.Basic.Helpers (jsx)
 import React.Basic.Hooks (ReactComponent, component, element)
 import React.Basic.Hooks as React
 import Storybook.Decorator.FullScreen (fullScreenDecorator)
@@ -56,14 +57,17 @@ stories = do
     add "The InlineCode with some real code" mkRealWrapper
       [ {} ]
 
+codePrefix ∷ String
 codePrefix =
   """module Main where
 import Batteries
 
 main = log """"
 
+codeSuffix ∷ String
 codeSuffix = "\""
 
+renderCode ∷ String -> Array JSX
 renderCode c = intercalate [ R.br {} ] (toJSX <$> lines)
   where
   toJSX line = [ R.code_ [ R.text line ] ]
@@ -98,8 +102,8 @@ mkRealWrapper = do
           , fragment $ renderCode codeSuffix
           , R.br {}
           , case state of
-              Just true -> element modal $ justifill { title: "Success!", content: R.text "You did it!", onClose: dispatch CloseModal }
-              Just false -> element modal $ justifill { title: "Oh no!", content: R.text "Try again!", onClose: dispatch CloseModal }
+              Just true -> jsx modal { title: "Success!" } [ R.text "You did it!" ]
+              Just false -> jsx modal { title: "Oh no!" } [ R.text "Try again!" ]
               Nothing -> mempty
           ]
 

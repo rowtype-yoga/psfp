@@ -10,16 +10,18 @@ import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (ReactComponent, component, fragment, useLayoutEffect, useState)
+import React.Basic.Hooks (ReactComponent, component, fragment, useEffect, useState)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Spring (animatedDiv, useSpring, useTransition)
 import React.Basic.Hooks.UseGesture (useDrag, withDragProps)
 import Storybook.React (Storybook, add, storiesOf)
 import Yoga.Box.Component as Box
-import Yoga.Box.Component as Center
 import Yoga.Button.Component (mkButton)
 import Yoga.Card.Component (mkCard)
+import Yoga.Centre.Component as Centre
+import Yoga.Cluster.Component as Cluster
 import Yoga.Spec.Helpers (withDarkTheme)
+import Yoga.Stack.Component as Stack
 import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.Theme.Types (CSSTheme)
 
@@ -35,33 +37,51 @@ stories = do
 
 mkAnimated ∷ Effect (ReactComponent {})
 mkAnimated = do
+  button <- mkButton
+  stack <- Stack.makeComponent
+  centre <- Centre.makeComponent
   box <- Box.makeComponent
+  cluster <- Cluster.makeComponent
   component "Animated Example" \{} -> React.do
     toggled /\ modifyToggled <- useState false
-    { style, set, stop } <- useSpring $ const { opacity: 0.7, transform: "scale3d(0.9,0.9,0.9)" }
-    let
-      _ =
-        unsafePerformEffect
-          $ set { opacity: if toggled then 0.7 else 0.9, transform: "scale3d(" <> if toggled then "0.9, 0.9, 1.0" else "0.95, 0.95, 1.0" <> ")" }
+    { style, set, stop } <- useSpring $ const { opacity: 1.0, transform: "scale3d(1.0,1.0,1.0)" }
+    useEffect toggled do
+      set
+        { opacity: if toggled then 0.7 else 1.0
+        , transform: "scale3d(" <> if toggled then "0.2, 0.2, 1.0" else "1.0, 1.0, 1.0" <> ")"
+        , config: { mass: 1, tension: 200, friction: 20 }
+        }
+      pure mempty
     pure
-      $ fragment
-          [ R.button { children: [ R.text "Toggle" ], onClick: handler_ $ modifyToggled not }
-          , animatedDiv
-              { style: css style
-              , children: [ jsx box {} [ R.text "Click the button" ] ]
-              }
+      $ jsx stack {}
+          [ jsx cluster {}
+              [ R.div_
+                  [ jsx centre {}
+                      [ jsx button { onClick: handler_ $ modifyToggled not } [ R.text $ if toggled then "Zoom in" else "Zoom out" ]
+                      ]
+                  ]
+              ]
+          , jsx cluster {}
+              [ R.div_
+                  [ jsx centre {}
+                      [ animatedDiv
+                          { style: css style
+                          , children: [ jsx box { invert: true } [ R.text "Click the button" ] ]
+                          }
+                      ]
+                  ]
+              ]
           ]
 
 mkTransition ∷ Effect (ReactComponent {})
 mkTransition = do
   button <- mkButton
+  card <- mkCard
   useStyles <-
     makeStylesJSS
       $ jssClasses \(t ∷ CSSTheme) ->
           { div:
             { marginTop: "300px", marginLeft: "300px", width: "200px", height: "200px" }
-          , blue: { background: t.textColour }
-          , red: { background: t.white }
           }
   component "Transition Example" \{} -> React.do
     toggled /\ modifyToggled <- useState false
@@ -69,9 +89,10 @@ mkTransition = do
     transitions <-
       useTransition [ toggled ] Nothing
         $ css
-            { from: { opacity: 0.0, transform: "translate3d(-1000px, 0px, 0.0)", position: "absolute" }
-            , enter: { opacity: 1.0, transform: "translate3d(0.0, 0px, 0.0)" }
-            , leave: { opacity: 0.0, transform: "scale3d(0, 0, 1)" }
+            { from: { opacity: 0.0, transform: "translate3d(-50vw, 0px, 0.0) scale3d(0.2, 0.2, 0.2)", position: "absolute" }
+            , enter: { opacity: 1.0, transform: "translate3d(0.0, 0px, 0.0) scale3d(1.0,1.0,1.0)" }
+            , leave: { opacity: 0.0, transform: "translate3d(50vw, 0px, 0.0) scale3d(0.0, 0.0, 1.0)" }
+            , config: { mass: 5, tension: 500, friction: 100 }
             }
     pure
       $ fragment
@@ -79,15 +100,15 @@ mkTransition = do
             <#> \{ item, key, props } ->
                 if item == Just true then
                   animatedDiv
-                    { className: classes.div <> " " <> classes.red
+                    { className: classes.div
                     , style: props
-                    , children: [ R.text "hello, you" ]
+                    , children: [ jsx card {} [ R.text "hello, you" ] ]
                     }
                 else
                   animatedDiv
-                    { className: classes.div <> " " <> classes.blue
+                    { className: classes.div
                     , style: props
-                    , children: [ R.text "I am different" ]
+                    , children: [ jsx card {} [ R.text "hello, again" ] ]
                     }
         )
       <> [ jsx button { onClick: handler_ (modifyToggled not) } [ R.text "Toggle" ] ]
@@ -98,8 +119,7 @@ mkDragAnimated = do
   useStyles <-
     makeStylesJSS
       $ jssClasses \t ->
-          { card: { width: "200px", height: "200px" }
-          , div: { overflow: "visible" }
+          { card: { width: "200px", height: "200px", marginTop: "30px" }
           }
   component "Draggable Example" \{} -> React.do
     { style, set } <- useSpring $ const { x: 0.0, y: 0.0, config: { mass: 1, tension: 210, friction: 20 } }
@@ -108,15 +128,11 @@ mkDragAnimated = do
       useDrag \{ down, movement: mx /\ my } ->
         set { x: if down then mx else 0.0, y: if down then my else 0.0 }
     pure
-      $ fragment
-          [ animatedDiv
-              ( { style: css style
-                , className: classes.div
-                , children:
-                  [ jsx card { className: classes.card } [ R.text "Drag me somewhere" ]
-                  ]
-                }
-                  `withDragProps`
-                    mkDragProps
-              )
+      $ animatedDiv
+      $ { style: css style
+        , children:
+          [ jsx card { className: classes.card } [ R.text "Drag me somewhere" ]
           ]
+        }
+          `withDragProps`
+            mkDragProps

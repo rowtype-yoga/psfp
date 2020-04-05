@@ -1,9 +1,8 @@
 module Yoga.Modal.Styles where
 
 import Prelude hiding (top)
-import CSS (backgroundColor, borderRadius, boxShadow, nil, opacity, rem, toHexString, transform, transforms, transition)
+import CSS (backgroundColor, borderRadius, boxShadow, nil, rem)
 import CSS as Color
-import CSS.Transform (scaleZ)
 import JSS (JSSClasses, JSSElem, jssClasses)
 import Yoga.Theme.Types (YogaTheme)
 
@@ -17,7 +16,6 @@ type Props
 type Classes a
   = ( box ∷ a
     , closeIcon ∷ a
-    , darkOverlay ∷ a
     , dialog ∷ a
     , dialogBoxStack ∷ a
     , title ∷ a
@@ -30,12 +28,7 @@ styles =
     let
       boxBorderRadius = 0.33 # rem
     in
-      { darkOverlay:
-        { width: "100vw"
-        , height: "100vh"
-        , backdropFilter: "blur(6px) brightness(67%)"
-        }
-      , box:
+      { box:
         do
           backgroundColor theme.interfaceColour
           boxShadow nil nil (3.5 # rem) (Color.rgba 0 0 0 0.5)

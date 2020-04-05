@@ -15,16 +15,13 @@ stories = do
   storiesOf "Card" do
     addDecorator fullScreenDecorator
     add "Example card" mkExample
-      [ { title: "An example card"
-        , subtitle: "It says some more"
-        , content: R.text loremIpsum
-        }
+      [ {}
       ]
   where
   mkExample = do
     box <- Box.makeComponent
     card <- mkCard
-    component "ExampleCard" \{ title, subtitle, content } -> React.do
+    component "ExampleCard" \{} -> React.do
       pure
         $ jsx box {}
             [ jsx card {}
