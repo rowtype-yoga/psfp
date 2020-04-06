@@ -11,6 +11,7 @@ import Data.Nullable as Nullable
 import Data.Semigroup.Foldable (intercalateMap)
 import Data.String as String
 import Effect (Effect)
+import FillInTheGaps (mkFillInTheGaps)
 import JSS (jss, jssClasses)
 import Justifill (justifill)
 import Milkis.Impl (FetchImpl)
@@ -88,6 +89,7 @@ mkMdxProviderComponent ∷
 mkMdxProviderComponent fetchImpl = do
   cssBaseline <- mkCssBaseline
   editor <- mkCompileEditor fetchImpl
+  fillInTheGaps <- mkFillInTheGaps
   sidebar <- mkSidebar
   header <- mkHeader
   yogaInlineCode <- InlineCode.makeComponent
@@ -168,14 +170,16 @@ mkMdxProviderComponent fetchImpl = do
                     )
 
               language = fromMaybe "" (classNameQ >>= String.stripPrefix (String.Pattern "language-"))
-            if isCode then
-              element editor
-                { initialCode: fromMaybe "" codeQ
-                , height
-                , language
-                }
-            else
-              element (unsafeCreateDOMComponent "pre") props
+            case isCode, language of
+              true, "puregaps" ->
+                element fillInTheGaps { code: fromMaybe "" codeQ}
+              true, _ ->
+                element editor
+                  { initialCode: fromMaybe "" codeQ
+                  , height
+                  , language
+                  }
+              false, _ -> element (unsafeCreateDOMComponent "pre") props
         }
     pure
       $ baseline

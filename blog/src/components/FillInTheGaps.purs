@@ -3,17 +3,17 @@ module FillInTheGaps where
 import Prelude
 
 import Data.Array as A
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (fromMaybe)
 import Data.String (Pattern(..), split)
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
-import Effect.Unsafe (unsafePerformEffect)
 import Justifill (justifill)
 import Partial.Unsafe (unsafeCrashWith)
 import React.Basic (JSX, ReactComponent, element)
 import React.Basic.DOM as R
-import React.Basic.Hooks (ReactChildren, componentWithChildren, reactChildrenToArray, useState)
+import React.Basic.Hooks (component, useState)
 import React.Basic.Hooks as React
+import Yoga.Helpers (intersperse)
 import Yoga.InlineCode.Component as InlineCode
 
 data Segment = Filler String | Hole String
@@ -36,19 +36,17 @@ updateLine idx v arr = fromMaybe [] (A.modifyAt idx f arr)
     Filler s -> unsafeCrashWith "Updated a filler"
     Hole _ -> Hole v
     
-
-fillInTheGaps :: ReactComponent { children :: ReactChildren String }
-fillInTheGaps = unsafePerformEffect do 
+mkFillInTheGaps :: Effect (ReactComponent { code :: String })
+mkFillInTheGaps = do 
   ic <- InlineCode.makeComponent
-  componentWithChildren "InlineCodeWithChildren" \{ children } -> React.do 
+  component "FillInTheGaps" \{ code } -> React.do 
     let 
       separator = "???"
-      child = children # reactChildrenToArray # A.head # fromMaybe "gurki"
-      lines = split (Pattern "\n") child
-      rawSegments = split (Pattern separator)
+      lines = split (Pattern "\n") code
+      rawSegments = split (Pattern separator) >>> intersperse separator
       toSegment = case _ of
         x | x == separator -> Hole ""
         other -> Filler other
       initialSegments = lines <#> \line -> rawSegments line <#> toSegment
-    (segments :: Array (Array Segment)) /\ modifySegments <- useState initialSegments
+    segments /\ modifySegments <- useState initialSegments
     pure $ renderSegments ic (modifySegments) segments
