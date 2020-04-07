@@ -1,52 +1,171 @@
 module FillInTheGaps where
 
 import Prelude
-
+import Data.Array (foldMap, intercalate)
 import Data.Array as A
-import Data.Maybe (fromMaybe)
+import Data.Either (Either(..))
+import Data.Foldable (foldl, for_)
+import Data.Maybe (Maybe(..), fromMaybe, fromMaybe')
+import Data.Monoid (guard)
 import Data.String (Pattern(..), split)
+import Data.String as S
+import Data.String.Regex (Regex)
+import Data.String.Regex as Regex
+import Data.String.Regex.Flags as RegexFlags
+import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
+import Effect.Aff (launchAff_)
+import Effect.Class (liftEffect)
 import Justifill (justifill)
+import Milkis as M
+import Milkis.Impl (FetchImpl)
+import Milkis.Impl.Window (windowFetch)
 import Partial.Unsafe (unsafeCrashWith)
-import React.Basic (JSX, ReactComponent, element)
+import React.Basic (JSX, ReactComponent, element, fragment)
+import React.Basic.DOM (form_)
 import React.Basic.DOM as R
-import React.Basic.Hooks (component, useState)
+import React.Basic.Events (handler_)
+import React.Basic.Helpers (jsx)
+import React.Basic.Hooks (component, useEffect, useState)
 import React.Basic.Hooks as React
-import Yoga.Helpers (intersperse)
+import React.Basic.Hooks.Aff (useAff)
+import Yoga.Button.Component (ButtonType(..), mkButton)
+import Yoga.CompileEditor.Component (compileAndRun)
+import Yoga.Helpers ((?||))
 import Yoga.InlineCode.Component as InlineCode
+import Yoga.Modal.Component as Modal
 
-data Segment = Filler String | Hole String
+data Segment
+  = ExpectedResult String
+  | Start
+  | End
+  | Filler String
+  | Hole Int String
 
-renderSegments :: ReactComponent InlineCode.Props -> ((Array (Array Segment) -> Array (Array Segment)) -> Effect Unit) -> Array (Array Segment) -> JSX
-renderSegments ic update arrs = R.div_ (arrs `flip A.mapWithIndex` renderLine)
+derive instance eqSegment ∷ Eq Segment
+getResult ∷ Segment -> Maybe String
+getResult = case _ of
+  ExpectedResult r -> Just r
+  _ -> Nothing
+
+findResult ∷ Array Segment -> String
+findResult = fromMaybe' (\_ -> unsafeCrashWith "Even teachers make mistakes") <<< A.findMap getResult
+
+toCode ∷ (Array (Array Segment)) -> String
+toCode lines = intercalate "\n" mapped
   where
-  renderLine i l = R.div_ (l `flip A.mapWithIndex` renderSegment i)
-  renderSegment i j = case _ of
-    Filler s -> R.span_ [R.text s]
-    Hole _ -> element ic $ justifill { onSubmit: \s -> update (updateSegments i j s) }
+  mapped = lines <#> (intercalate "" <<< map segmentToCode)
+  segmentToCode = case _ of
+    Filler s -> s
+    Hole _ s -> s
+    _ -> ""
 
-updateSegments :: Int -> Int -> String -> Array (Array Segment) -> Array (Array Segment)
+complete ∷ (Array (Array Segment)) -> Boolean
+complete arr = foldl f true (join arr)
+  where
+  f acc seg =
+    acc
+      && case seg of
+          Hole _ s -> s /= ""
+          _ -> true
+
+renderSegments ∷ ReactComponent InlineCode.Props -> ((Array (Array Segment) -> Array (Array Segment)) -> Effect Unit) -> Array (Array Segment) -> JSX
+renderSegments ic update arrs = R.div_ (A.mapWithIndex renderLine (onlyVisible arrs))
+  where
+  onlyVisible arr = A.slice start end arr
+    where
+    start = A.findIndex (_ == [ Start ]) arr ?|| 0
+    end = A.findIndex (_ == [ End ]) arr ?|| A.length arr
+  renderLine i l = R.div_ (A.mapWithIndex (renderSegment i) l)
+  renderSegment i j = case _ of
+    Filler s -> R.code_ [ R.text s ]
+    Hole width _ -> element ic $ justifill { width, onSubmit: \v -> update (updateSegments i j (S.trim v)) }
+    _ -> mempty
+
+updateSegments ∷ Int -> Int -> String -> Array (Array Segment) -> Array (Array Segment)
 updateSegments i j v arrs = fromMaybe [] (A.modifyAt i (updateLine j v) arrs)
 
-updateLine :: Int -> String -> Array Segment -> Array Segment
+updateLine ∷ Int -> String -> Array Segment -> Array Segment
 updateLine idx v arr = fromMaybe [] (A.modifyAt idx f arr)
   where
   f = case _ of
-    Filler s -> unsafeCrashWith "Updated a filler"
-    Hole _ -> Hole v
-    
-mkFillInTheGaps :: Effect (ReactComponent { code :: String })
-mkFillInTheGaps = do 
+    Hole h _ -> Hole h v
+    _ -> unsafeCrashWith "Updated a non-hole"
+
+holeRegex ∷ Regex
+holeRegex = unsafeRegex "({-.*?-})" RegexFlags.global
+
+resultRegex ∷ Regex
+resultRegex = unsafeRegex "--result" RegexFlags.global
+
+startRegex ∷ Regex
+startRegex = unsafeRegex "--start here" RegexFlags.global
+
+endRegex ∷ Regex
+endRegex = unsafeRegex "--end here" RegexFlags.global
+
+rawSegments ∷ String -> Array String
+rawSegments = Regex.split holeRegex
+
+toSegment ∷ String -> Segment
+toSegment = case _ of
+  x
+    | Regex.test holeRegex x -> Hole (S.length x - 4) ""
+  x
+    | S.indexOf (Pattern "--result ") x == Just 0 -> ExpectedResult ((S.stripPrefix (Pattern "--result ") x) ?|| "")
+  x
+    | Regex.test startRegex x -> Start
+  x
+    | Regex.test endRegex x -> End
+  other -> Filler other
+
+mkFillInTheGaps ∷ FetchImpl -> Effect (ReactComponent { code ∷ String })
+mkFillInTheGaps fetch = do
   ic <- InlineCode.makeComponent
-  component "FillInTheGaps" \{ code } -> React.do 
-    let 
-      separator = "???"
+  modal <- Modal.makeComponent
+  button <- mkButton
+  component "FillInTheGaps" \{ code } -> React.do
+    let
       lines = split (Pattern "\n") code
-      rawSegments = split (Pattern separator) >>> intersperse separator
-      toSegment = case _ of
-        x | x == separator -> Hole ""
-        other -> Filler other
+
       initialSegments = lines <#> \line -> rawSegments line <#> toSegment
     segments /\ modifySegments <- useState initialSegments
-    pure $ renderSegments ic (modifySegments) segments
+    result /\ modifyResult <- useState Nothing
+    let
+      expectedResult = findResult (join segments)
+
+      onClick =
+        launchAff_ do
+          do
+            res <- compileAndRun (M.fetch fetch) { code: toCode segments }
+            modifyResult (const (Just $ res)) # liftEffect
+    pure
+      $ fragment
+          [ renderSegments ic (modifySegments) segments
+          , jsx button
+              { onClick: handler_ onClick
+              , buttonType:
+                -- if complete segments 
+                -- then 
+                HighlightedButton 
+                -- else DisabledButton
+              }
+              [ R.text "Try it" ]
+          , result
+              # foldMap \r ->
+                  jsx modal
+                    { title:
+                      case r of
+                        Right { stdout }
+                          | stdout == expectedResult -> "Hooray!"
+                        Left l -> "Does not compile"
+                        Right _ -> "Not " <> (findResult (join segments))
+                    }
+                    [ R.text $ compileResultToString result ]
+          ]
+
+compileResultToString = case _ of
+  Nothing -> ""
+  Just (Left cr) -> cr.result <#> _.message # intercalate "/n"
+  Just (Right r) -> r.stdout

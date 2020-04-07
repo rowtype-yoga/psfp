@@ -89,7 +89,7 @@ mkMdxProviderComponent ∷
 mkMdxProviderComponent fetchImpl = do
   cssBaseline <- mkCssBaseline
   editor <- mkCompileEditor fetchImpl
-  fillInTheGaps <- mkFillInTheGaps
+  fillInTheGaps <- mkFillInTheGaps fetchImpl
   sidebar <- mkSidebar
   header <- mkHeader
   yogaInlineCode <- InlineCode.makeComponent

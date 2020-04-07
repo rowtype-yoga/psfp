@@ -6,10 +6,15 @@ import SEO from '../components/seo'
 # Optional
 
 ```puregaps
+--result Hello World
+module Main where
 import Batteries
 
 main :: Effect Unit
-main = log "???"
+main = log $
+--start here
+  "{-Hello-}" <> " " <> "{-World-}"
+--end here
 ```
 
 ## Hans Hölzel
