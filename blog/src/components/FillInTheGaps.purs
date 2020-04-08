@@ -1,13 +1,14 @@
 module FillInTheGaps where
 
 import Prelude
+
 import Data.Array (foldMap, intercalate)
 import Data.Array as A
 import Data.Either (Either(..))
-import Data.Foldable (foldl, for_)
-import Data.Lens (over, (%~))
+import Data.Foldable (foldl)
+import Data.Lens ((%~))
 import Data.Lens.Index (ix)
-import Data.Maybe (Maybe(..), fromMaybe, fromMaybe')
+import Data.Maybe (Maybe(..), fromMaybe', isJust)
 import Data.Monoid (guard)
 import Data.String (Pattern(..), split)
 import Data.String as S
@@ -16,24 +17,26 @@ import Data.String.Regex as Regex
 import Data.String.Regex.Flags as RegexFlags
 import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.Tuple.Nested ((/\))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (launchAff_)
 import Effect.Class (liftEffect)
 import Justifill (justifill)
 import Milkis as M
 import Milkis.Impl (FetchImpl)
-import Milkis.Impl.Window (windowFetch)
 import Partial.Unsafe (unsafeCrashWith)
 import React.Basic (JSX, ReactComponent, element, fragment)
-import React.Basic.DOM (form_)
+import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (component, useEffect, useState)
+import React.Basic.Hooks (component, useState)
 import React.Basic.Hooks as React
-import React.Basic.Hooks.Aff (useAff)
+import React.Basic.Hooks.Spring (animatedDiv, useTransition)
+import Shared.Models.Body (CompileResult, RunResult)
 import Yoga.Button.Component (ButtonType(..), mkButton)
+import Yoga.ClickAway.Component as ClickAway
+import Yoga.CloseIcon.Component as CloseIcon
+import Yoga.Cluster.Component as Cluster
 import Yoga.CompileEditor.Component (compileAndRun)
 import Yoga.Helpers ((?||))
 import Yoga.InlineCode.Component as InlineCode
@@ -98,7 +101,7 @@ renderSegments ic update arrs = R.div_ (A.mapWithIndex renderLine arrs)
       mempty
 
 updateSegments ∷ Int -> Int -> String -> Array (Array Segment) -> Array (Array Segment)
-updateSegments i j v = (ix (spy "i" i) <<< ix (spy "j" j)) %~ f
+updateSegments i j v = (ix i <<< ix j) %~ f
   where
   f = case _ of
     Hole h _ -> Hole h v
@@ -135,6 +138,9 @@ mkFillInTheGaps ∷ FetchImpl -> Effect (ReactComponent { code ∷ String })
 mkFillInTheGaps fetch = do
   ic <- InlineCode.makeComponent
   modal <- Modal.makeComponent
+  closeIcon <- CloseIcon.makeComponent
+  cluster <- Cluster.makeComponent
+  clickAway <- ClickAway.makeComponent
   button <- mkButton
   component "FillInTheGaps" \{ code } -> React.do
     let
@@ -143,6 +149,14 @@ mkFillInTheGaps fetch = do
       initialSegments = lines <#> \line -> rawSegments line <#> toSegment
     segments /\ modifySegments <- useState initialSegments
     result /\ modifyResult <- useState Nothing
+    modalTransitions <-
+      useTransition [ result ] (Just show)
+        $ css
+            { from: { opacity: 0.0, transform: "translate3d(-50%, -50%, 0) scale3d(0.3, 0.3, 1.0)" }
+            , enter: { opacity: 1.0, transform: "translate3d(-50%, -50%, 0) scale3d(1.0, 1.0, 1.0)" }
+            , leave: { opacity: 0.0, transform: "translate3d(-50%, -50%, 0) scale3d(0.3, 0.3, 1.0)" }
+            , config: { mass: 1.0, tension: 170, friction: 20 }
+            }
     let
       expectedResult = findResult (join segments)
 
@@ -153,29 +167,42 @@ mkFillInTheGaps fetch = do
             modifyResult (const (Just $ res)) # liftEffect
     pure
       $ fragment
-          [ renderSegments ic (modifySegments) segments
-          , jsx button
-              { onClick: handler_ onClick
-              , buttonType:
-                if complete (spy "segsm" segments) then
-                  HighlightedButton
-                else
-                  HighlightedButton
-              }
-              [ R.text "Try it" ]
-          , result
-              # foldMap \r ->
-                  jsx modal
-                    { title:
-                      case r of
-                        Right { stdout }
-                          | stdout == expectedResult -> "Hooray!"
-                        Left l -> "Does not compile"
-                        Right _ -> "Not " <> (findResult (spy "segs" $ join segments))
+      $ [ renderSegments ic (modifySegments) segments
+        , jsx cluster {}
+            [ R.div_
+                [ jsx button
+                    { onClick: handler_ onClick
+                    , buttonType:
+                      if complete segments then
+                        HighlightedButton
+                      else
+                        DisabledButton
                     }
-                    [ R.text $ compileResultToString result ]
-          ]
+                    [ R.text "Try it" ]
+                ]
+            ]
+        , guard (isJust result) do
+            element clickAway (justifill { onClick: modifyResult (const Nothing) })
+        , fragment
+            $ modalTransitions
+            <#> \{ item, key, props } ->
+                guard (isJust item)
+                  $ join item
+                  # foldMap \r ->
+                      jsx modal
+                        { title:
+                          case r of
+                            (Right { stdout })
+                              | S.stripSuffix (S.Pattern "\n") stdout == Just expectedResult -> "Hooray!"
+                            (Left l) -> "Does not compile"
+                            (Right _) -> "Not " <> (findResult $ join segments)
+                        , icon: element closeIcon { onClick: modifyResult (const Nothing), style: Nothing }
+                        , style: props
+                        }
+                        [ R.text $ compileResultToString result ]
+        ]
 
+compileResultToString ∷ Maybe (Either CompileResult RunResult) -> String
 compileResultToString = case _ of
   Nothing -> ""
   Just (Left cr) -> cr.result <#> _.message # intercalate "/n"
