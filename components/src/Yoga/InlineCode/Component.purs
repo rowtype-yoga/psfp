@@ -1,6 +1,8 @@
 module Yoga.InlineCode.Component where
 
 import Prelude
+import Prelude
+import CSS (value)
 import Data.Foldable (fold, intercalate)
 import Data.Maybe (Maybe)
 import Data.String (trim)
@@ -10,7 +12,7 @@ import Foreign.Object as Obj
 import React.Basic.DOM as R
 import React.Basic.DOM.Events (preventDefault, targetValue)
 import React.Basic.Events (handler)
-import React.Basic.Hooks (ReactComponent, component, useState)
+import React.Basic.Hooks (ReactComponent, component, useEffect, useState)
 import React.Basic.Hooks as React
 import Record.Extra (pick)
 import Yoga.Helpers ((?||))
@@ -35,6 +37,9 @@ makeComponent = do
   useStyles <- makeStylesJSS styles
   component "InlineCode" \props@{ className, onSubmit } -> React.do
     value /\ modifyValue <- useState ""
+    useEffect value do
+      onSubmit value
+      pure mempty
     classes <- useStyles $ pick props
     pure
       $ R.form
@@ -51,5 +56,5 @@ makeComponent = do
                 , _data: Obj.singleton "testid" "inline-code"
                 }
             ]
-          , onSubmit: handler preventDefault (const $ onSubmit value)
+          , onSubmit: handler preventDefault (const $ mempty)
           }

@@ -5,6 +5,8 @@ import Data.Array (foldMap, intercalate)
 import Data.Array as A
 import Data.Either (Either(..))
 import Data.Foldable (foldl, for_)
+import Data.Lens (over, (%~))
+import Data.Lens.Index (ix)
 import Data.Maybe (Maybe(..), fromMaybe, fromMaybe')
 import Data.Monoid (guard)
 import Data.String (Pattern(..), split)
@@ -14,6 +16,7 @@ import Data.String.Regex as Regex
 import Data.String.Regex.Flags as RegexFlags
 import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.Tuple.Nested ((/\))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (launchAff_)
 import Effect.Class (liftEffect)
@@ -70,24 +73,32 @@ complete arr = foldl f true (join arr)
           Hole _ s -> s /= ""
           _ -> true
 
-renderSegments ∷ ReactComponent InlineCode.Props -> ((Array (Array Segment) -> Array (Array Segment)) -> Effect Unit) -> Array (Array Segment) -> JSX
-renderSegments ic update arrs = R.div_ (A.mapWithIndex renderLine (onlyVisible arrs))
+visibleRange ∷ Array (Array Segment) -> { end ∷ Int, start ∷ Int }
+visibleRange arr = { start, end }
   where
-  onlyVisible arr = A.slice start end arr
-    where
-    start = A.findIndex (_ == [ Start ]) arr ?|| 0
-    end = A.findIndex (_ == [ End ]) arr ?|| A.length arr
+  start = A.findIndex (_ == [ Start ]) arr ?|| 0
+  end = A.findIndex (_ == [ End ]) arr ?|| A.length arr
+
+renderSegments ∷ ReactComponent InlineCode.Props -> ((Array (Array Segment) -> Array (Array Segment)) -> Effect Unit) -> Array (Array Segment) -> JSX
+renderSegments ic update arrs = R.div_ (A.mapWithIndex renderLine arrs)
+  where
+  { start, end } = visibleRange arrs
   renderLine i l = R.div_ (A.mapWithIndex (renderSegment i) l)
-  renderSegment i j = case _ of
-    Filler s -> R.code_ [ R.text s ]
-    Hole width _ -> element ic $ justifill { width, onSubmit: \v -> update (updateSegments i j (S.trim v)) }
-    _ -> mempty
+  renderSegment i j s =
+    if between start end i then case s of
+      Filler s' -> R.code_ [ R.text s' ]
+      Hole width _ ->
+        element ic
+          $ justifill
+              { width
+              , onSubmit: update <<< updateSegments i j
+              }
+      _ -> mempty
+    else
+      mempty
 
 updateSegments ∷ Int -> Int -> String -> Array (Array Segment) -> Array (Array Segment)
-updateSegments i j v arrs = fromMaybe [] (A.modifyAt i (updateLine j v) arrs)
-
-updateLine ∷ Int -> String -> Array Segment -> Array Segment
-updateLine idx v arr = fromMaybe [] (A.modifyAt idx f arr)
+updateSegments i j v = (ix (spy "i" i) <<< ix (spy "j" j)) %~ f
   where
   f = case _ of
     Hole h _ -> Hole h v
@@ -146,10 +157,10 @@ mkFillInTheGaps fetch = do
           , jsx button
               { onClick: handler_ onClick
               , buttonType:
-                -- if complete segments 
-                -- then 
-                HighlightedButton 
-                -- else DisabledButton
+                if complete (spy "segsm" segments) then
+                  HighlightedButton
+                else
+                  HighlightedButton
               }
               [ R.text "Try it" ]
           , result
@@ -160,7 +171,7 @@ mkFillInTheGaps fetch = do
                         Right { stdout }
                           | stdout == expectedResult -> "Hooray!"
                         Left l -> "Does not compile"
-                        Right _ -> "Not " <> (findResult (join segments))
+                        Right _ -> "Not " <> (findResult (spy "segs" $ join segments))
                     }
                     [ R.text $ compileResultToString result ]
           ]
