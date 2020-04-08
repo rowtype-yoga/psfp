@@ -9,7 +9,7 @@ import Data.Foldable (foldl)
 import Data.Function.Uncurried (mkFn2)
 import Data.Lens ((%~))
 import Data.Lens.Index (ix)
-import Data.Maybe (Maybe(..), fromMaybe', isJust)
+import Data.Maybe (Maybe(..), fromMaybe', isJust, isNothing)
 import Data.Monoid (guard)
 import Data.String (Pattern(..), split)
 import Data.String as S
@@ -29,7 +29,8 @@ import Partial.Unsafe (unsafeCrashWith)
 import React.Basic (JSX, ReactComponent, element, fragment)
 import React.Basic.DOM (css)
 import React.Basic.DOM as R
-import React.Basic.Events (handler_)
+import React.Basic.DOM.Events (preventDefault)
+import React.Basic.Events (handler, handler_)
 import React.Basic.Helpers (jsx)
 import React.Basic.Hooks (component, useState)
 import React.Basic.Hooks as React
@@ -189,7 +190,7 @@ mkFillInTheGaps fetch = do
                 [ jsx button
                     { onClick: handler_ onClick
                     , buttonType:
-                      if complete segments then
+                      if complete segments && isNothing result then
                         HighlightedButton
                       else
                         DisabledButton

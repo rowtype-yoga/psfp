@@ -21,6 +21,7 @@ import React.Basic.DOM as R
 import React.Basic.Helpers (jsx)
 import React.Basic.Hooks (ReactChildren, component, componentWithChildren, element, reactChildrenToArray)
 import React.Basic.Hooks as React
+import Yoga.Box.Component as Box
 import Yoga.CompileEditor.Component (mkCompileEditor)
 import Yoga.Header.Component (mkHeader)
 import Yoga.InlineCode.Component as InlineCode
@@ -90,6 +91,7 @@ mkMdxProviderComponent fetchImpl = do
   cssBaseline <- mkCssBaseline
   editor <- mkCompileEditor fetchImpl
   fillInTheGaps <- mkFillInTheGaps fetchImpl
+  box <- Box.makeComponent
   sidebar <- mkSidebar
   header <- mkHeader
   yogaInlineCode <- InlineCode.makeComponent
@@ -121,7 +123,7 @@ mkMdxProviderComponent fetchImpl = do
           { children:
             [ jsx header { className: "" } [ R.text siteInfo.site.siteMetadata.title ]
             , element sidebar { links: siteInfo.site.siteMetadata.menuLinks }
-            , R.div_ (reactChildrenToArray children)
+            , jsx box {} (reactChildrenToArray children)
             ]
           }
 
