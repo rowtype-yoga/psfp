@@ -6,6 +6,7 @@ import Data.Array (foldMap, intercalate)
 import Data.Array as A
 import Data.Either (Either(..))
 import Data.Foldable (foldl)
+import Data.Function.Uncurried (mkFn2)
 import Data.Lens ((%~))
 import Data.Lens.Index (ix)
 import Data.Maybe (Maybe(..), fromMaybe', isJust)
@@ -17,6 +18,7 @@ import Data.String.Regex as Regex
 import Data.String.Regex.Flags as RegexFlags
 import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.Tuple.Nested ((/\))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (launchAff_)
 import Effect.Class (liftEffect)
@@ -155,7 +157,21 @@ mkFillInTheGaps fetch = do
             { from: { opacity: 0.0, transform: "translate3d(-50%, -50%, 0) scale3d(0.3, 0.3, 1.0)" }
             , enter: { opacity: 1.0, transform: "translate3d(-50%, -50%, 0) scale3d(1.0, 1.0, 1.0)" }
             , leave: { opacity: 0.0, transform: "translate3d(-50%, -50%, 0) scale3d(0.3, 0.3, 1.0)" }
-            , config: { mass: 1.0, tension: 170, friction: 20 }
+            , config:  mkFn2 \_ state -> 
+                case spy "state" state of
+                  "leave" -> { mass: 1.0, tension: 140, friction: 15 }
+                  _ -> { mass: 1.0, tension: 170, friction: 20 }
+            }
+    clickAwayTransitions <-
+      useTransition [ result ] (Just show)
+        $ css
+            { from: { opacity: 0.0 }
+            , enter: { opacity: 1.0 }
+            , leave: { opacity: 0.0 }
+            , config:  mkFn2 \_ state -> 
+                case spy "state" state of
+                  "leave" -> { mass: 1.0, tension: 140, friction: 15 }
+                  _ -> { mass: 1.0, tension: 170, friction: 20 }
             }
     let
       expectedResult = findResult (join segments)
@@ -181,25 +197,31 @@ mkFillInTheGaps fetch = do
                     [ R.text "Try it" ]
                 ]
             ]
-        , guard (isJust result) do
-            element clickAway (justifill { onClick: modifyResult (const Nothing) })
+        , fragment 
+            $ clickAwayTransitions
+            >>= \{ item, key, props } ->
+                guard (isJust item)
+                  $ join item
+                  # foldMap \_ ->
+                    [element clickAway (justifill { style: props, onClick: modifyResult (const Nothing) })]
         , fragment
             $ modalTransitions
-            <#> \{ item, key, props } ->
+            >>= \{ item, key, props } ->
                 guard (isJust item)
                   $ join item
                   # foldMap \r ->
-                      jsx modal
-                        { title:
-                          case r of
-                            (Right { stdout })
-                              | S.stripSuffix (S.Pattern "\n") stdout == Just expectedResult -> "Hooray!"
-                            (Left l) -> "Does not compile"
-                            (Right _) -> "Not " <> (findResult $ join segments)
-                        , icon: element closeIcon { onClick: modifyResult (const Nothing), style: Nothing }
-                        , style: props
-                        }
-                        [ R.text $ compileResultToString result ]
+                      [ jsx modal
+                          { title:
+                            case r of
+                              (Right { stdout })
+                                | S.stripSuffix (S.Pattern "\n") stdout == Just expectedResult -> "Hooray!"
+                              (Left l) -> "Does not compile"
+                              (Right _) -> "Not " <> (findResult $ join segments)
+                          , icon: element closeIcon { onClick: modifyResult (const Nothing), style: Nothing }
+                          , style: props
+                          }
+                          [ R.text $ compileResultToString result ]
+                      ]
         ]
 
 compileResultToString ∷ Maybe (Either CompileResult RunResult) -> String
