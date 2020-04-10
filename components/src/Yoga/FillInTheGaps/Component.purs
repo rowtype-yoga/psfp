@@ -1,7 +1,6 @@
-module FillInTheGaps where
+module Yoga.FillInTheGaps.Component where
 
 import Prelude
-
 import Data.Array (foldMap, intercalate)
 import Data.Array as A
 import Data.Either (Either(..))
@@ -18,30 +17,28 @@ import Data.String.Regex as Regex
 import Data.String.Regex.Flags as RegexFlags
 import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.Tuple.Nested ((/\))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (launchAff_)
 import Effect.Class (liftEffect)
 import Justifill (justifill)
-import Milkis as M
-import Milkis.Impl (FetchImpl)
 import Partial.Unsafe (unsafeCrashWith)
 import React.Basic (JSX, ReactComponent, element, fragment)
 import React.Basic.DOM (css)
 import React.Basic.DOM as R
-import React.Basic.DOM.Events (preventDefault)
-import React.Basic.Events (handler, handler_)
+import React.Basic.Events (handler_)
 import React.Basic.Helpers (jsx)
 import React.Basic.Hooks (component, useState)
 import React.Basic.Hooks as React
-import React.Basic.Hooks.Spring (animatedDiv, useTransition)
+import React.Basic.Hooks.Spring (useTransition)
 import Shared.Models.Body (CompileResult, RunResult)
+import Type.Row (type (+))
 import Yoga.Button.Component (ButtonType(..), mkButton)
 import Yoga.ClickAway.Component as ClickAway
 import Yoga.CloseIcon.Component as CloseIcon
 import Yoga.Cluster.Component as Cluster
-import Yoga.CompileEditor.Component (compileAndRun)
+import Yoga.Compiler.Types (Compiler)
 import Yoga.Helpers ((?||))
+import Yoga.Highlighter.Types (Highlighter)
 import Yoga.InlineCode.Component as InlineCode
 import Yoga.Modal.Component as Modal
 
@@ -61,7 +58,7 @@ getResult = case _ of
 findResult ∷ Array Segment -> String
 findResult = fromMaybe' (\_ -> unsafeCrashWith "Even teachers make mistakes") <<< A.findMap getResult
 
-toCode ∷ (Array (Array Segment)) -> String
+toCode ∷ Array (Array Segment) -> String
 toCode lines = intercalate "\n" mapped
   where
   mapped = lines <#> (intercalate "" <<< map segmentToCode)
@@ -70,7 +67,7 @@ toCode lines = intercalate "\n" mapped
     Hole _ s -> s
     _ -> ""
 
-complete ∷ (Array (Array Segment)) -> Boolean
+complete ∷ Array (Array Segment) -> Boolean
 complete arr = foldl f true (join arr)
   where
   f acc seg =
@@ -137,8 +134,11 @@ toSegment = case _ of
     | Regex.test endRegex x -> End
   other -> Filler other
 
-mkFillInTheGaps ∷ FetchImpl -> Effect (ReactComponent { code ∷ String })
-mkFillInTheGaps fetch = do
+type Ctx r
+  = (Compiler + Highlighter r)
+
+makeComponent ∷ { | Ctx () } -> Effect (ReactComponent { code ∷ String })
+makeComponent { compileAndRun, highlight } = do
   ic <- InlineCode.makeComponent
   modal <- Modal.makeComponent
   closeIcon <- CloseIcon.makeComponent
@@ -158,10 +158,10 @@ mkFillInTheGaps fetch = do
             { from: { opacity: 0.0, transform: "translate3d(-50%, -50%, 0) scale3d(0.3, 0.3, 1.0)" }
             , enter: { opacity: 1.0, transform: "translate3d(-50%, -50%, 0) scale3d(1.0, 1.0, 1.0)" }
             , leave: { opacity: 0.0, transform: "translate3d(-50%, -50%, 0) scale3d(0.3, 0.3, 1.0)" }
-            , config:  mkFn2 \_ state -> 
-                case spy "state" state of
-                  "leave" -> { mass: 1.0, tension: 140, friction: 15 }
-                  _ -> { mass: 1.0, tension: 170, friction: 20 }
+            , config:
+              mkFn2 \_ state -> case state of
+                "leave" -> { mass: 1.0, tension: 140, friction: 15 }
+                _ -> { mass: 1.0, tension: 170, friction: 20 }
             }
     clickAwayTransitions <-
       useTransition [ result ] (Just show)
@@ -169,10 +169,10 @@ mkFillInTheGaps fetch = do
             { from: { opacity: 0.0 }
             , enter: { opacity: 1.0 }
             , leave: { opacity: 0.0 }
-            , config:  mkFn2 \_ state -> 
-                case spy "state" state of
-                  "leave" -> { mass: 1.0, tension: 140, friction: 15 }
-                  _ -> { mass: 1.0, tension: 170, friction: 20 }
+            , config:
+              mkFn2 \_ state -> case state of
+                "leave" -> { mass: 1.0, tension: 140, friction: 15 }
+                _ -> { mass: 1.0, tension: 170, friction: 20 }
             }
     let
       expectedResult = findResult (join segments)
@@ -180,7 +180,7 @@ mkFillInTheGaps fetch = do
       onClick =
         launchAff_ do
           do
-            res <- compileAndRun (M.fetch fetch) { code: toCode segments }
+            res <- compileAndRun { code: toCode segments }
             modifyResult (const (Just $ res)) # liftEffect
     pure
       $ fragment
@@ -198,13 +198,13 @@ mkFillInTheGaps fetch = do
                     [ R.text "Try it" ]
                 ]
             ]
-        , fragment 
+        , fragment
             $ clickAwayTransitions
             >>= \{ item, key, props } ->
                 guard (isJust item)
                   $ join item
                   # foldMap \_ ->
-                    [element clickAway (justifill { allowEscape: true, style: props, onClick: modifyResult (const Nothing) })]
+                      [ element clickAway (justifill { allowEscape: true, style: props, onClick: modifyResult (const Nothing) }) ]
         , fragment
             $ modalTransitions
             >>= \{ item, key, props } ->
@@ -221,12 +221,12 @@ mkFillInTheGaps fetch = do
                           , icon: element closeIcon { onClick: modifyResult (const Nothing), style: Nothing }
                           , style: props
                           }
-                          [ R.text $ compileResultToString result ]
+                          [ R.pre_ [ R.text $ compileResultToString result ] ]
                       ]
         ]
 
 compileResultToString ∷ Maybe (Either CompileResult RunResult) -> String
 compileResultToString = case _ of
   Nothing -> ""
-  Just (Left cr) -> cr.result <#> _.message # intercalate "/n"
+  Just (Left cr) -> cr.result <#> _.message # intercalate "\n"
   Just (Right r) -> r.stdout

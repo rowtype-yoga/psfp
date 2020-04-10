@@ -76,9 +76,9 @@ fromTheme theme =
         >>> RB.insert (f ∷ _ "highlightColourDark")
             (theme.highlightColour # darken 0.2 # desaturate 0.35)
         >>> RB.insert (f ∷ _ "highlightColourRotatedForwards")
-            (theme.highlightColour # rotateHue (20.0))
+            (theme.highlightColour # rotateHue (30.0))
         >>> RB.insert (f ∷ _ "highlightColourRotatedBackwards")
-            (theme.highlightColour # rotateHue (-20.0))
+            (theme.highlightColour # rotateHue (-30.0))
         -- altHighlight
         
         >>> RB.insert (f ∷ _ "altHighlightColourDark")

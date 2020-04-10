@@ -1,9 +1,10 @@
 module Yoga.Button.Component where
 
 import Prelude
-import CSS (Color, angular, black, cssStringRGBA, deg, desaturate, pct, saturate)
+import CSS (Color, ColorSpace(..), angular, black, cssStringRGBA, deg, desaturate, pct, saturate)
 import CSS as C
 import CSS as Color
+import Color (mixCubehelix)
 import Color.Scheme.Clrs (blue)
 import Data.Array.NonEmpty as NEA
 import Data.Foldable (intercalate)
@@ -42,20 +43,53 @@ highlightStyles =
         { highlightedButton:
           { background:
             linearGradient
-              "135deg"
-              [ withAlpha (if theme.isLight then 0.15 else 0.07) theme.backgroundColourDarker
-              , withAlpha (if theme.isLight then 0.15 else 0.07) theme.backgroundColourLighter
+              "180deg"
+              [ withAlpha (if theme.isLight then 0.2 else 0.2) (Color.lighten 0.5 theme.highlightColour)
+              , withAlpha (if theme.isLight then 0.15 else 0.4) (Color.darken 0.5 theme.highlightColour)
               ]
-          , color: theme.backgroundColour
+              <> " ,"
+              <> linearGradient
+                  "225deg"
+                  [ theme.highlightColourRotatedBackwards
+                  , theme.highlightColourRotatedForwards
+                  ]
+          , color: Color.cssStringRGBA theme.backgroundColour <> " !important"
+          , boxShadow:
+            "0 var(--s-5) var(--s-2)" <> (Color.cssStringRGBA $ withAlpha 0.2 Color.black)
+          , backgroundClip: "border-box"
+          , "-webkit-background-clip": "border-box"
+          , textFillColor: theme.backgroundColour
+          , "-webkit-text-fill-color": theme.backgroundColour
+          , "&:active":
+            { boxShadow:
+              i "inset var(--s-3) var(--s-3) var(--s-3) "
+                (cssStringRGBA $ Color.darken 0.5 theme.backgroundColourDarker)
+                ", inset calc(-1 * var(--s-3)) calc(-1 * -var(--s-3)) var(--s-3) "
+                (cssStringRGBA $ Color.darken 0.2 theme.backgroundColourDarkest) ∷
+                String
+            , color: Color.darken 0.05 theme.backgroundColour
+            , textFillColor: Color.darken 0.05 theme.backgroundColour
+            , background:
+              linearGradient
+                "0deg"
+                [ withAlpha (if theme.isLight then 0.2 else 0.2) (Color.darken 0.1 theme.highlightColour)
+                , withAlpha (if theme.isLight then 0.15 else 0.4) (Color.darken 0.8 theme.highlightColour)
+                ]
+                <> " ,"
+                <> linearGradient
+                    "225deg"
+                    [ theme.highlightColourRotatedBackwards
+                    , theme.highlightColourRotatedForwards
+                    ]
+            }
           }
         }
 
 styles ∷
   JSSClasses YogaTheme {}
-    ( "@keyframes gradientBG" ∷ JSSElem StyleProps
-    , btn ∷ JSSElem StyleProps
-    , buttonContainer ∷ JSSElem StyleProps
+    ( btn ∷ JSSElem StyleProps
     , disabled ∷ JSSElem StyleProps
+    , container ∷ JSSElem StyleProps
     )
 styles =
   jssClasses
@@ -69,95 +103,90 @@ styles =
 
           less amount x = if Color.isLight x then darken amount x else lighten amount x
         in
-          { buttonContainer:
-            { padding: "var(--s-4)"
-            , background:
-              linearGradient "225deg"
-                [ theme.highlightColourRotatedBackwards
-                , theme.highlightColourRotatedForwards
-                ]
-            , borderRadius: "var(--s1)"
-            , height: "calc(var(--s1) - var(--s1-3))"
-            , minWidth: "var(--s2)"
-            , boxSizing: "border-box"
-            , boxShadow:
-              ( cssStringRGBA (Color.rgba 0 0 0 0.15)
-              )
-                <> " 0 var(--s-5) var(--s-5) var(--s-5)"
-            }
-          , "@keyframes gradientBG":
-            { "0%": { backgroundPosition: "0% 50%" }
-            , "50%": { backgroundPosition: "100% 50%" }
-            , "100%": { backgroundPosition: "0% 50%" }
-            }
+          { container:
+            \props ->
+              { borderRadius: "var(--s1)"
+              , "-webkit-background-clip": "border-box"
+              , backgroundClip: "border-box"
+              , background:
+                linearGradient (if theme.isLight then "180deg" else "0deg")
+                  [ more 0.02 $ Color.mix HSL theme.backgroundColour theme.highlightColourRotatedBackwards 0.05 # (flip (Color.mix HSL theme.highlightColourRotatedForwards) (if theme.isLight then 0.94 else 0.85))
+                  , less 0.03 $ Color.mix HSL theme.backgroundColour theme.highlightColourRotatedForwards 0.05 # (flip (Color.mix HSL theme.highlightColourRotatedBackwards) (if theme.isLight then 0.84 else 0.70))
+                  ]
+              , display: "inline-block"
+              }
           , btn:
-            { width: "calc(100%)"
-            , background:
-              linearGradient "80deg"
-                [ less 0.03 theme.backgroundColour
-                , less 0.05 theme.backgroundColour
+            { background:
+              linearGradient "127deg"
+                [ theme.highlightColourRotatedBackwards # Color.rotateHue (-10.0)
+                , theme.highlightColourRotatedForwards # Color.rotateHue (10.0)
                 ]
-            , color:
-              let
-                c = theme.highlightColour
-              in
-                if Color.isLight c then Color.rotateHue (-10.0) c else Color.lighten 0.2 c
+            , boxShadow:
+              "0 var(--s-5) var(--s-2)" <> (Color.cssStringRGBA $ withAlpha 0.1 Color.black)
+            , padding: "calc(var(--s0) - var(--s-4)) var(--s1) calc(var(--s0) - var(--s-5)) var(--s1)"
+            , backgroundClip: "text"
+            , "-webkit-background-clip": "text"
+            , textFillColor: "transparent"
+            , "-webkit-text-fill-color": "transparent"
             , borderRadius: "var(--s1)"
             , border: "0"
-            , height: "calc(var(--s2))"
-            , fontSize: "calc(var(--s-1))"
+            -- , height: "calc(var(--s2) + var(--s-2))"
+            , fontSize: "calc(var(--s-2) + var(--s-3))"
             , fontFamily: NEA.head theme.textFontFamily
-            , fontWeight: "600"
-            , padding: "0 var(--s0) 0 var(--s0)"
-            , letterSpacing: "var(--s-5)"
+            , fontWeight: "500"
+            , letterSpacing: "var(--s-4)"
             , textTransform: "uppercase"
             , outline: "none"
             , "&:focus":
               { boxShadow:
-                ( i "var(--s-4) 0 var(--s-2)"
-                    (cssStringRGBA theme.highlightColourRotatedForwards)
-                    ", calc(-1 * var(--s-4)) 0 var(--s-2)"
-                    (cssStringRGBA theme.highlightColourRotatedForwards)
-                    ", 0 calc(-1 * var(--s-4)) var(--s-2)"
-                    (cssStringRGBA theme.highlightColourRotatedBackwards)
-                    ", 0 var(--s-4) var(--s-2)"
-                    (cssStringRGBA theme.highlightColourRotatedBackwards)
-                ) ∷
+                i "var(--s-4) 0 var(--s-2)"
+                  (cssStringRGBA $ withAlpha 0.5 theme.highlightColourRotatedForwards)
+                  ", calc(-1 * var(--s-4)) 0 var(--s-2)"
+                  (cssStringRGBA $ withAlpha 0.5 theme.highlightColourRotatedForwards)
+                  ", 0 calc(-1 * var(--s-4)) var(--s-2)"
+                  (cssStringRGBA $ withAlpha 0.5 theme.highlightColourRotatedBackwards)
+                  ", 0 var(--s-4) var(--s-2)"
+                  (cssStringRGBA $ withAlpha 0.5 theme.highlightColourRotatedBackwards) ∷
                   String
               }
             , "&:active":
               { boxShadow:
-                ( i "inset var(--s-3) var(--s-3) var(--s-3) "
-                    (cssStringRGBA $ darken 0.3 theme.backgroundColourDarker)
-                    ", inset calc(-1 * var(--s-3)) calc(-1 * -var(--s-3)) var(--s-3) "
-                    (cssStringRGBA theme.backgroundColourDarkest)
-                ) ∷
+                i "inset var(--s-3) var(--s-3) var(--s-3) "
+                  (cssStringRGBA $ darken 0.5 theme.backgroundColourDarker)
+                  ", inset calc(-1 * var(--s-3)) calc(-1 * -var(--s-3)) var(--s-3) "
+                  (cssStringRGBA $ darken 0.2 theme.backgroundColourDarkest)
+                  ", var(--s-4) 0 var(--s-2)"
+                  (cssStringRGBA $ withAlpha 0.5 theme.highlightColourRotatedForwards)
+                  ", calc(-1 * var(--s-4)) 0 var(--s-2)"
+                  (cssStringRGBA $ withAlpha 0.5 theme.highlightColourRotatedForwards)
+                  ", 0 calc(-1 * var(--s-4)) var(--s-2)"
+                  (cssStringRGBA $ withAlpha 0.5 theme.highlightColourRotatedBackwards)
+                  ", 0 var(--s-4) var(--s-2)"
+                  (cssStringRGBA $ withAlpha 0.5 theme.highlightColourRotatedBackwards) ∷
                   String
               , background:
-                linearGradient
-                  "135deg"
-                  [ withAlpha (if theme.isLight then 0.15 else 0.07) theme.backgroundColourLighter
-                  , withAlpha (if theme.isLight then 0.15 else 0.07) theme.backgroundColourDarker
+                linearGradient (if theme.isLight then "0deg" else "180deg")
+                  [ less 0.04 $ withAlpha 0.92 theme.backgroundColour
+                  , less 0.09 $ withAlpha 0.92 theme.backgroundColour
                   ]
-                  <> ","
-                  <> linearGradient
-                      "180deg"
-                      [ Color.rgba 0 0 10 0.17
-                      , Color.rgba 0 0 10 0.03
-                      , Color.rgba 0 0 10 0.067
-                      ]
-              , color: theme.backgroundColour
+              , color: more 0.02 theme.highlightColour
+              , textFillColor: more 0.02 theme.highlightColour
               }
             , "&:disabled":
-              { boxShadow: "0 0 0 black"
-              , background: less 0.1 theme.backgroundColour
+              { boxShadow: "none"
+              , backgroundClip: "border-box"
+              , "-webkit-background-clip": "border-box"
+              , textFillColor: "initial"
+              , "-webkit-text-fill-color": "initial"
+              , background: "transparent"
               , color: less 0.2 theme.backgroundColour
               }
             }
           , "disabled":
             { background:
-              (cssStringRGBA $ less 0.1 theme.backgroundColour)
+              (cssStringRGBA $ withAlpha 0.5 $ less 0.1 theme.backgroundColour)
                 <> " !important"
+            , boxShadow: "none !important"
             }
           }
 
@@ -181,7 +210,7 @@ mkButton = do
       className = props.className ?|| ""
     pure
       $ R.div
-          { className: classes.buttonContainer <> " " <> if buttonType == DisabledButton then classes.disabled else ""
+          { className: classes.container <> " " <> if buttonType == DisabledButton then classes.disabled else ""
           , children:
             [ R.button
                 $ { className:

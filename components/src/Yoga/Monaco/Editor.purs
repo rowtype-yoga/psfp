@@ -56,6 +56,8 @@ foreign import getValue ∷ Editor -> Effect String
 
 foreign import setValue ∷ String -> Editor -> Effect Unit
 
+foreign import colorizeImpl ∷ String -> String -> { tabSize ∷ Int } -> Editor -> Promise String
+
 foreign import data Monaco ∷ Type
 
 foreign import data Editor ∷ Type

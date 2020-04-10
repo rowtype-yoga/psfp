@@ -1,8 +1,12 @@
 module React.Basic.Hooks.Spring.Stories where
 
 import Prelude hiding (add)
-import Data.Maybe (Maybe(..))
+import Data.Function.Uncurried (mkFn2)
+import Data.Int (pow)
+import Data.Maybe (Maybe(..), isJust)
+import Data.Monoid (guard)
 import Data.Tuple.Nested ((/\))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Unsafe (unsafePerformEffect)
 import JSS (jssClasses)
@@ -20,6 +24,7 @@ import Yoga.Button.Component (mkButton)
 import Yoga.Card.Component (mkCard)
 import Yoga.Centre.Component as Centre
 import Yoga.Cluster.Component as Cluster
+import Yoga.Helpers ((?||))
 import Yoga.Spec.Helpers (withDarkTheme)
 import Yoga.Stack.Component as Stack
 import Yoga.Theme.Styles (makeStylesJSS)
@@ -92,24 +97,28 @@ mkTransition = do
             { from: { opacity: 0.0, transform: "translate3d(-50vw, 0px, 0.0) scale3d(0.2, 0.2, 0.2)", position: "absolute" }
             , enter: { opacity: 1.0, transform: "translate3d(0.0, 0px, 0.0) scale3d(1.0,1.0,1.0)" }
             , leave: { opacity: 0.0, transform: "translate3d(50vw, 0px, 0.0) scale3d(0.0, 0.0, 1.0)" }
-            , config: { mass: 5, tension: 500, friction: 100 }
+            , config: { mass: 1, tension: 100, friction: 12, clamp: true, easing: pow 2 }
+            , unique: true
             }
     pure
       $ fragment
       $ ( transitions
             <#> \{ item, key, props } ->
-                if item == Just true then
-                  animatedDiv
-                    { className: classes.div
-                    , style: props
-                    , children: [ jsx card {} [ R.text "hello, you" ] ]
-                    }
-                else
-                  animatedDiv
-                    { className: classes.div
-                    , style: props
-                    , children: [ jsx card {} [ R.text "hello, again" ] ]
-                    }
+                guard (item # isJust)
+                  $ if item == Just true then
+                      animatedDiv
+                        { className: classes.div
+                        , style: props
+                        , key: "you"
+                        , children: [ jsx card {} [ R.text "hello, you" ] ]
+                        }
+                    else
+                      animatedDiv
+                        { className: classes.div
+                        , style: props
+                        , key: "again"
+                        , children: [ jsx card {} [ R.text "hello, again" ] ]
+                        }
         )
       <> [ jsx button { onClick: handler_ (modifyToggled not) } [ R.text "Toggle" ] ]
 
