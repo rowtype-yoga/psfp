@@ -1,5 +1,7 @@
 "use strict";
 
+exports.newMonacoEditorImpl = require("monaco-editor/min/vs/editor");
+
 exports.monacoEditorImpl = async () => {
   const x = await import("react-monaco-editor");
   return x.default;
