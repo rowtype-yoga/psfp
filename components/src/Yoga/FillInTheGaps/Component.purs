@@ -30,17 +30,18 @@ import React.Basic.Helpers (jsx)
 import React.Basic.Hooks (component, useState)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Spring (useTransition)
+import React.Basic.SyntaxHighlighter.Component (HighlighterTheme, syntaxHighlighterImpl)
 import Shared.Models.Body (CompileResult, RunResult)
-import Type.Row (type (+))
 import Yoga.Button.Component (ButtonType(..), mkButton)
 import Yoga.ClickAway.Component as ClickAway
 import Yoga.CloseIcon.Component as CloseIcon
 import Yoga.Cluster.Component as Cluster
 import Yoga.Compiler.Types (Compiler)
 import Yoga.Helpers ((?||))
-import Yoga.Highlighter.Types (Highlighter)
 import Yoga.InlineCode.Component as InlineCode
 import Yoga.Modal.Component as Modal
+import Yoga.Theme.Styles (useTheme)
+import Yoga.Theme.Syntax (mkHighlighterTheme)
 
 data Segment
   = ExpectedResult String
@@ -82,14 +83,14 @@ visibleRange arr = { start, end }
   start = A.findIndex (_ == [ Start ]) arr ?|| 0
   end = A.findIndex (_ == [ End ]) arr ?|| A.length arr
 
-renderSegments ∷ ReactComponent InlineCode.Props -> ((Array (Array Segment) -> Array (Array Segment)) -> Effect Unit) -> Array (Array Segment) -> JSX
-renderSegments ic update arrs = R.div_ (A.mapWithIndex renderLine arrs)
+renderSegments ∷ HighlighterTheme -> ReactComponent InlineCode.Props -> ((Array (Array Segment) -> Array (Array Segment)) -> Effect Unit) -> Array (Array Segment) -> JSX
+renderSegments highlighterTheme ic update arrs = R.div_ (A.mapWithIndex renderLine arrs)
   where
   { start, end } = visibleRange arrs
   renderLine i l = R.div_ (A.mapWithIndex (renderSegment i) l)
   renderSegment i j s =
     if between start end i then case s of
-      Filler s' -> R.code_ [ R.text s' ]
+      Filler s' -> element syntaxHighlighterImpl { style: highlighterTheme, language: "purescript", children: s' }
       Hole width _ ->
         element ic
           $ justifill
@@ -135,10 +136,10 @@ toSegment = case _ of
   other -> Filler other
 
 type Ctx r
-  = (Compiler + Highlighter r)
+  = (Compiler r)
 
 makeComponent ∷ { | Ctx () } -> Effect (ReactComponent { code ∷ String })
-makeComponent { compileAndRun, highlight } = do
+makeComponent { compileAndRun } = do
   ic <- InlineCode.makeComponent
   modal <- Modal.makeComponent
   closeIcon <- CloseIcon.makeComponent
@@ -152,6 +153,9 @@ makeComponent { compileAndRun, highlight } = do
       initialSegments = lines <#> \line -> rawSegments line <#> toSegment
     segments /\ modifySegments <- useState initialSegments
     result /\ modifyResult <- useState Nothing
+    cssTheme <- useTheme
+    let
+      highlighterTheme = mkHighlighterTheme cssTheme
     modalTransitions <-
       useTransition [ result ] (Just show)
         $ css
@@ -184,7 +188,7 @@ makeComponent { compileAndRun, highlight } = do
             modifyResult (const (Just $ res)) # liftEffect
     pure
       $ fragment
-      $ [ renderSegments ic (modifySegments) segments
+      $ [ renderSegments highlighterTheme ic (modifySegments) segments
         , jsx cluster {}
             [ R.div_
                 [ jsx button

@@ -1,17 +1,13 @@
 module Yoga.Button.Component where
 
 import Prelude
-import CSS (Color, ColorSpace(..), angular, black, cssStringRGBA, deg, desaturate, pct, saturate)
-import CSS as C
+import CSS (Color, ColorSpace(..), cssStringRGBA)
 import CSS as Color
-import Color (mixCubehelix)
-import Color.Scheme.Clrs (blue)
 import Data.Array.NonEmpty as NEA
 import Data.Foldable (intercalate)
 import Data.Interpolate (i)
 import Data.Maybe (Maybe)
 import Data.Monoid (guard)
-import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import JSS (JSSClasses, JSSElem, jssClasses)
 import React.Basic (JSX)
@@ -110,16 +106,16 @@ styles =
               , backgroundClip: "border-box"
               , background:
                 linearGradient (if theme.isLight then "180deg" else "0deg")
-                  [ more 0.02 $ Color.mix HSL theme.backgroundColour theme.highlightColourRotatedBackwards 0.05 # (flip (Color.mix HSL theme.highlightColourRotatedForwards) (if theme.isLight then 0.94 else 0.85))
-                  , less 0.03 $ Color.mix HSL theme.backgroundColour theme.highlightColourRotatedForwards 0.05 # (flip (Color.mix HSL theme.highlightColourRotatedBackwards) (if theme.isLight then 0.84 else 0.70))
+                  [ (if theme.isLight then Color.rotateHue 290.0 <<< Color.desaturate 0.33 else darken 0.16) $ more 0.08 $ Color.mix HSL theme.backgroundColour theme.highlightColourRotatedBackwards 0.05 # (flip (Color.mix HSL theme.highlightColourRotatedForwards) (if theme.isLight then 0.94 else 0.85))
+                  , (if theme.isLight then Color.rotateHue 290.0 <<< Color.desaturate 0.33 else darken 0.16) $ less 0.05 $ Color.mix HSL theme.backgroundColour theme.highlightColourRotatedForwards 0.05 # (flip (Color.mix HSL theme.highlightColourRotatedBackwards) (if theme.isLight then 0.84 else 0.70))
                   ]
               , display: "inline-block"
               }
           , btn:
             { background:
               linearGradient "127deg"
-                [ theme.highlightColourRotatedBackwards # Color.rotateHue (-10.0)
-                , theme.highlightColourRotatedForwards # Color.rotateHue (10.0)
+                [ (if theme.isLight then darken 0.1 else identity) $ theme.highlightColourRotatedBackwards
+                , (if theme.isLight then darken 0.1 else identity) $ darken 0.2 $ theme.highlightColourRotatedForwards
                 ]
             , boxShadow:
               "0 var(--s-5) var(--s-2)" <> (Color.cssStringRGBA $ withAlpha 0.1 Color.black)

@@ -1,7 +1,5 @@
 "use strict";
 
-exports.newMonacoEditorImpl = require("monaco-editor/min/vs/editor");
-
 exports.monacoEditorImpl = async () => {
   const x = await import("react-monaco-editor");
   return x.default;
@@ -845,6 +843,7 @@ exports.purescriptSyntax = {
     "data",
     "derive",
     "do",
+    "ado",
     "else",
     "if",
     "import",
@@ -870,6 +869,7 @@ exports.purescriptSyntax = {
     "foreign",
     "forall",
     "∷",
+    "∀",
   ],
 
   extraKeywords: [],

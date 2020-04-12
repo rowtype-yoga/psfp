@@ -10,15 +10,15 @@ import Data.Symbol (SProxy(..))
 import Record.Builder as RB
 import Yoga.Theme.Types (Theme, CSSTheme)
 
-increaseContrast ∷ Color -> Color -> Color
-increaseContrast contrastWith = go 0
+increaseContrastTo ∷ Number -> Color -> Color -> Color
+increaseContrastTo target contrastWith = go 0
   where
-  modify = if isLight contrastWith then darken else lighten
+  modify x = if isLight contrastWith then (darken x <<< desaturate (x * (-1.5))) else (lighten x <<< desaturate (x * 0.5))
   go i col =
-    if contrast contrastWith col >= 7.5 || i >= 20 then
+    if contrast contrastWith col >= ((if isLight contrastWith then (target * 0.8) else target)) || i >= 100 then
       col
     else
-      go (i + 1) (modify 0.1 col)
+      go (i + 1) (modify 0.005 col)
 
 withAlpha ∷ Number -> Color -> Color
 withAlpha alpha c1 = Color.rgba' r g b alpha
