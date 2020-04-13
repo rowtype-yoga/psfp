@@ -1,5 +1,5 @@
-module Batteries
-  ( module Batteries
+module Grimoire
+  ( module Grimoire
   , module Control.Alt
   , module Control.Alternative
   , module Control.Apply
@@ -8,7 +8,6 @@ module Batteries
   , module Effect.Aff
   , module Effect
   , module Effect.Class
-  , module Effect.Console
   , module Control.Monad.Cont.Class
   , module Control.Monad.Cont.Trans
   , module Control.Monad.Error.Class
@@ -1073,3 +1072,9 @@ import Type.Proxy
 import Unsafe.Coerce
   ( unsafeCoerce
   )
+
+cast :: String -> Effect Unit
+cast = log
+
+summon :: forall a. Show a => a -> Effect Unit
+summon = logShow

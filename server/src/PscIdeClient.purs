@@ -54,8 +54,6 @@ startIdeServer ∷ Folder -> Int -> Aff ChildProcess
 startIdeServer folder port = do
   log $ "Spawning ide server" <> infoString
   cp <- spawnProcess folder "npx" [ "purs", "ide", "server", "-p", show port, "--editor-mode", "--no-watch" ]
-  -- liftEffect $ onDataString (CP.stdout cp) UTF8 \str -> do
-  --   log $ "--------" <> infoString <> "\n----------\n" <> str <> "\n----------\n" 
   log $ "Spawned ide server" <> infoString
   -- building once
   { error, stderr, stdout } <- execCommand folder "npx spago build"

@@ -31,11 +31,11 @@ codeWithHoles =
   """
 --result Hello World
 module Main where
-import Batteries
+import Grimoire
 
 main :: Effect Unit
 --start here
-main = log
+main = cast
   "{-Hello World-}"
 --end here
 """

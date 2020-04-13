@@ -5,16 +5,18 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Effect.Aff (Aff, attempt, error, message, throwError)
 import Milkis as M
+import Milkis.Impl (FetchImpl)
 import Shared.Json (readAff)
 import Shared.Models.Body as Body
 import Simple.JSON (writeJSON)
 import Yoga.Compiler.Types (Compiler)
 
-apiCompiler ∷ M.Fetch -> { | Compiler () }
-apiCompiler fetch =
+apiCompiler ∷ FetchImpl -> { | Compiler () }
+apiCompiler fetchImpl =
   { compileAndRun
   }
   where
+  fetch = M.fetch fetchImpl
   compileAndRun ∷ Body.CompileRequest -> Aff (Either Body.CompileResult Body.RunResult)
   compileAndRun body = do
     response <-

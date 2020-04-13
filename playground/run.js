@@ -1,1 +1,1 @@
-require ("./output/Main").main()
+require ("./output/Main").incantation()

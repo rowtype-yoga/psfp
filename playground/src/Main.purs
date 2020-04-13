@@ -1,6 +1,6 @@
 module Main where
 
-import Batteries
+import Grimoire
 
-main :: Effect Unit
-main = log "Hello, World!"
+incantation :: Effect Unit
+incantation = cast "Abracadabra"

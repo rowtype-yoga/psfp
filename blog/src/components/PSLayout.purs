@@ -1,17 +1,14 @@
 module PSLayout where
 
 import Prelude
-
-import Color (toHexString)
 import Data.Array as Array
 import Data.Array.NonEmpty as NEA
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
-import Data.Semigroup.Foldable (intercalateMap)
 import Data.String as String
 import Effect (Effect)
-import FillInTheGaps (mkFillInTheGaps)
+import Effect.Unsafe (unsafePerformEffect)
 import JSS (jss, jssClasses)
 import Justifill (justifill)
 import Milkis.Impl (FetchImpl)
@@ -19,10 +16,12 @@ import React.Basic (JSX, ReactComponent)
 import React.Basic.DOM (unsafeCreateDOMComponent)
 import React.Basic.DOM as R
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (ReactChildren, component, componentWithChildren, element, reactChildrenToArray)
+import React.Basic.Hooks (ReactChildren, component, componentWithChildren, element, reactChildrenToArray, useState)
 import React.Basic.Hooks as React
 import Yoga.Box.Component as Box
 import Yoga.CompileEditor.Component (mkCompileEditor)
+import Yoga.Compiler.Api (apiCompiler)
+import Yoga.FillInTheGaps.Component as FillInTheGaps
 import Yoga.Header.Component (mkHeader)
 import Yoga.InlineCode.Component as InlineCode
 import Yoga.Theme (fromTheme)
@@ -79,6 +78,15 @@ mkLayout fetchImpl = do
             ]
           }
 
+mkSecret :: Effect ( ReactComponent { kids ∷ Array JSX , visible ∷ Boolean })
+mkSecret = do
+  component "Secret" \{ kids, visible } -> React.do
+    pure
+      $ R.div
+          { style: R.css { visibility: if visible then "visible" else "hidden" }
+          , children: kids
+          }
+
 mkMdxProviderComponent ∷
   FetchImpl ->
   Effect
@@ -90,31 +98,33 @@ mkMdxProviderComponent ∷
 mkMdxProviderComponent fetchImpl = do
   cssBaseline <- mkCssBaseline
   editor <- mkCompileEditor fetchImpl
-  fillInTheGaps <- mkFillInTheGaps fetchImpl
+  fillInTheGaps <- FillInTheGaps.makeComponent (apiCompiler fetchImpl)
   box <- Box.makeComponent
   sidebar <- mkSidebar
   header <- mkHeader
   yogaInlineCode <- InlineCode.makeComponent
   h <- mkH
   p <- mkP
+  secret <- mkSecret
   useStyles <-
     makeStylesJSS
       $ jssClasses \(theme ∷ CSSTheme) ->
           { code:
-              { fontFamily: theme.codeFontFamily # NEA.head
-              , backgroundColor: theme.interfaceColour
-              , fontSize: "10pt"
-              , border: "1px solid #383c39"
-              , padding: "3px"
-              , borderRadius: "3px"
-              }
+            { fontFamily: theme.codeFontFamily # NEA.head
+            , backgroundColor: theme.interfaceColour
+            , fontSize: "10pt"
+            , border: "1px solid #383c39"
+            , padding: "3px"
+            , borderRadius: "3px"
+            }
           , flexer:
-              { display: "flex"
-              , flexDirection: "row"
-              }
+            { display: "flex"
+            , flexDirection: "row"
+            }
           }
   componentWithChildren "MDXProviderComponent" \{ children, siteInfo } -> React.do
     classes <- useStyles {}
+    sections <- useState []
     let
       baseline child = element cssBaseline { kids: child }
 
@@ -136,12 +146,14 @@ mkMdxProviderComponent fetchImpl = do
             element h { level: H3, text: props.children, className: Nothing }
         , h3:
           \props ->
-            element h { level: H4, text: props.children , className: Nothing}
+            element h { level: H4, text: props.children, className: Nothing }
         , p:
           \props ->
             R.div
               { children: [ element p { text: props.children } ]
               }
+        , thematicBreak:
+          \props -> R.div_ [ R.text "HOUI" ]
         , inlineCode:
           \props -> do
             R.span { className: classes.code, children: props.children }
@@ -173,8 +185,7 @@ mkMdxProviderComponent fetchImpl = do
 
               language = fromMaybe "" (classNameQ >>= String.stripPrefix (String.Pattern "language-"))
             case isCode, language of
-              true, "puregaps" ->
-                element fillInTheGaps { code: fromMaybe "" codeQ}
+              true, "puregaps" -> element fillInTheGaps { code: fromMaybe "" codeQ }
               true, _ ->
                 element editor
                   { initialCode: fromMaybe "" codeQ

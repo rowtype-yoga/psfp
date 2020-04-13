@@ -18,7 +18,7 @@ import React.Basic (ReactComponent)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (component, element, fragment, useState)
+import React.Basic.Hooks (component, element, useState)
 import React.Basic.Hooks as React
 import Shared.Json (readAff)
 import Shared.Models.Body as Body

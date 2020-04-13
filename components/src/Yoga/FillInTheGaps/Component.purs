@@ -214,7 +214,7 @@ makeComponent { compileAndRun } = do
                       else
                         DisabledButton
                     }
-                    [ R.text "Try it" ]
+                    [ R.text "Incantate" ]
                 ]
             ]
         , fragment
