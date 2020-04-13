@@ -50,6 +50,7 @@ highlightStyles =
                   , theme.highlightColourRotatedForwards
                   ]
           , color: Color.cssStringRGBA theme.backgroundColour <> " !important"
+          , transition: "box-shadow 8.0 ease-in-out"
           , boxShadow:
             "0 var(--s-5) var(--s-2)" <> (Color.cssStringRGBA $ withAlpha 0.2 Color.black)
           , backgroundClip: "border-box"
@@ -106,17 +107,19 @@ styles =
               , backgroundClip: "border-box"
               , background:
                 linearGradient (if theme.isLight then "180deg" else "0deg")
-                  [ (if theme.isLight then Color.rotateHue 290.0 <<< Color.desaturate 0.33 else darken 0.16) $ more 0.08 $ Color.mix HSL theme.backgroundColour theme.highlightColourRotatedBackwards 0.05 # (flip (Color.mix HSL theme.highlightColourRotatedForwards) (if theme.isLight then 0.94 else 0.85))
-                  , (if theme.isLight then Color.rotateHue 290.0 <<< Color.desaturate 0.33 else darken 0.16) $ less 0.05 $ Color.mix HSL theme.backgroundColour theme.highlightColourRotatedForwards 0.05 # (flip (Color.mix HSL theme.highlightColourRotatedBackwards) (if theme.isLight then 0.84 else 0.70))
+                  [ (if theme.isLight then Color.lighten 0.01 <<< Color.desaturate 0.43 else darken 0.16) $ more 0.08 $ Color.mix HSL theme.backgroundColour theme.highlightColourRotatedBackwards 0.05 # (flip (Color.mix HSL theme.highlightColourRotatedForwards) (if theme.isLight then 0.94 else 0.85))
+                  , (if theme.isLight then Color.lighten 0.02 <<< Color.desaturate 0.43 else darken 0.16) $ less 0.05 $ Color.mix HSL theme.backgroundColour theme.highlightColourRotatedForwards 0.05 # (flip (Color.mix HSL theme.highlightColourRotatedBackwards) (if theme.isLight then 0.84 else 0.70))
                   ]
               , display: "inline-block"
+              , transition: "all 0.2s ease-in-out"
               }
           , btn:
             { background:
               linearGradient "127deg"
                 [ (if theme.isLight then darken 0.1 else identity) $ theme.highlightColourRotatedBackwards
-                , (if theme.isLight then darken 0.1 else identity) $ darken 0.2 $ theme.highlightColourRotatedForwards
+                , (if theme.isLight then darken 0.1 else identity) $ theme.highlightColourRotatedForwards
                 ]
+            , transition: "all 0.2s ease-in-out"
             , boxShadow:
               "0 var(--s-5) var(--s-2)" <> (Color.cssStringRGBA $ withAlpha 0.1 Color.black)
             , padding: "calc(var(--s0) - var(--s-4)) var(--s1) calc(var(--s0) - var(--s-5)) var(--s1)"
@@ -161,10 +164,16 @@ styles =
                   (cssStringRGBA $ withAlpha 0.5 theme.highlightColourRotatedBackwards) ∷
                   String
               , background:
+                -- linearGradient (if theme.isLight then "0deg" else "180deg")
+                --   [ less 0.04 $ withAlpha 0.92 theme.backgroundColour
+                --   , less 0.09 $ withAlpha 0.92 theme.backgroundColour
+                --   ]
                 linearGradient (if theme.isLight then "0deg" else "180deg")
-                  [ less 0.04 $ withAlpha 0.92 theme.backgroundColour
-                  , less 0.09 $ withAlpha 0.92 theme.backgroundColour
-                  ]
+                  $ ( Color.darken 0.1
+                        <$> [ (if theme.isLight then Color.lighten 0.01 <<< Color.desaturate 0.43 else darken 0.16) $ more 0.08 $ Color.mix HSL theme.backgroundColour theme.highlightColourRotatedBackwards 0.05 # (flip (Color.mix HSL theme.highlightColourRotatedForwards) (if theme.isLight then 0.94 else 0.85))
+                          , (if theme.isLight then Color.lighten 0.02 <<< Color.desaturate 0.43 else darken 0.16) $ less 0.05 $ Color.mix HSL theme.backgroundColour theme.highlightColourRotatedForwards 0.05 # (flip (Color.mix HSL theme.highlightColourRotatedBackwards) (if theme.isLight then 0.84 else 0.70))
+                          ]
+                    )
               , color: more 0.02 theme.highlightColour
               , textFillColor: more 0.02 theme.highlightColour
               }

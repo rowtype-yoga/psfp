@@ -54,7 +54,7 @@ styles = jssClasses go
               overflow visible
               boxSizing borderBox
               verticalAlign baseline
-              background $ withAlpha 0.15 theme.textColour
+              background $ withAlpha 0.15 theme.grey
               border solid s_5 (Color.rgba 0 0 0 0.0)
               borderRadius s_2 s_2 s_2 s_2
               fontFamily

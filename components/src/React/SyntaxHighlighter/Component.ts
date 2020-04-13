@@ -10,11 +10,22 @@ const purescript = (hljs) => {
     ],
   };
 
-  var KEY = {
+  var ESCAPED_KEY = {
     className: "attribute",
-    begin: '"?\\w+"?',
+    begin: '"',
+    illegal: '"',
+    end: '"',
     relevance: 0,
   };
+
+  // var KEY = {
+  //   className: "attribute",
+  //   begin: "[a-z]",
+  //   illegal: ""
+  //   end: "(::|∷)",
+  //   excludeEnd: true,
+  //   relevance: 0,
+  // };
 
   var CONSTRUCTOR = {
     className: "type",
@@ -33,10 +44,19 @@ const purescript = (hljs) => {
     ],
   };
 
+  var VALUE = {};
+
+  var KEY_VALUE = {
+    className: "attribute",
+    begin: "\\w+",
+    end: ",|}",
+    contains: [VALUE],
+  };
+
   var RECORD = {
     begin: "{",
     end: "}",
-    contains: LIST.contains,
+    contains: [KEY_VALUE],
   };
 
   return {
@@ -104,13 +124,9 @@ const purescript = (hljs) => {
       },
       {
         className: "symbol",
-        begin: "<-|->|\\:\\:|\\\\|=>|<=|forall|∀|\\:|∷",
+        begin: "=|<-|->|\\:\\:|\\\\|=>|<=|forall|∀|\\:|∷|{|}|\\(|\\)|\\[|\\]|,",
+        invalid: "/",
       },
-      //   {
-      //     begin: "[{,]\\s*",
-      //     end: "\\s*(?::{2}|∷)",
-      //     contains: [KEY],
-      //   },
       {
         beginKeywords: "default",
         end: "$",

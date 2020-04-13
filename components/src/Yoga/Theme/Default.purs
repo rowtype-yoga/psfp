@@ -16,7 +16,7 @@ hex c = c # Color.fromHexString # fromMaybe' \_ -> unsafeCrashWith $ "Invalid he
 
 darkTheme ∷ Theme
 darkTheme =
-  { backgroundColour: Color.hsl 238.0 0.12 0.20
+  { backgroundColour: Color.hsl 238.0 0.18 0.20
   , textColour: Color.hsl 225.0 0.28 0.90
   , interfaceColour: Color.hsl 225.0 0.48 0.12
   , highlightColour: Color.hsl 285.0 0.88 0.72
@@ -24,11 +24,9 @@ darkTheme =
   , textFontFamily: cons' "Rubik" systemFontStack
   , headingFontFamily: cons' "Rubik" systemFontStack
   , codeFontFamily: cons' "VictorMono" []
-  , yellow: Color.rgb 255 235 149
+  , yellow: Color.hsl 36.0 0.82 0.76
   , green: Color.hsl 84.0 0.617 0.631
-  , pink: Color.hsl 276.0 0.677 0.745
-  , orange: Color.rgb 255 203 139
-  , turquoise: Color.rgb 127 219 202
+  , purple: Color.hsl 276.0 0.677 0.745
   , red: Color.rgb 255 88 116
   , blue: Color.rgb 130 170 255
   , grey: Color.rgb 150 150 150
@@ -42,13 +40,15 @@ darkTheme =
 lightTheme ∷ Theme
 lightTheme =
   darkTheme
-    { textColour = Color.hsl 225.0 0.18 0.25
-    -- , backgroundColour = Color.hsl 210.0 0.08 0.87
+    { textColour = Color.hsl 220.0 0.18 0.30
     , backgroundColour = Color.hsl 30.0 0.50 0.96
     , interfaceColour = Color.hsl 210.0 0.10 0.89
-    -- , highlightColour = Color.hsl 209.0 0.95 0.69
-    , highlightColour = Color.hsl 350.0 0.90 0.70
+    , highlightColour = Color.hsl 350.0 0.93 0.62
     , altHighlightColour = Color.hsl 84.0 0.617 0.631
-    , green = Color.hsl 84.0 0.617 0.431
-    , pink = Color.hsl 276.0 0.677 0.545
+    , green = Color.hsl 170.0 0.39 0.40
+    , purple = Color.hsl 284.0 0.64 0.60
+    , red = Color.hsl 348.0 0.80 0.58
+    , yellow = Color.hsl 36.0 0.82 0.46
+    , blue = Color.hsl 221.0 0.92 0.65
+    , grey = Color.hsl 270.0 0.10 0.60
     }

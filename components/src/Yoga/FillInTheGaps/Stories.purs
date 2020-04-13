@@ -30,39 +30,11 @@ stories = do
 codeWithHoles =
   """
 --result Hello World
---start here
 module Main where
 import Batteries
 
--- Some dumb comment
-withHighlighting = do
-  editorComponent <- memo mkEditor
-  component "WithHighlighting" \(props ∷ { code ∷ String }) -> React.do
-    gaps /\ updateGaps <- useState Nothing
-    pure
-      $ fragment
-          [ R.div
-              { style: css { visibility: "hidden" }
-              , children:
-                [ element editorComponent
-                    { height: "0"
-                    , language: "purescript"
-                    , onLoad:
-                      \editor -> do
-                        let
-                          newCtx = ctx { highlight = (monacoHighlighter editor).highlight }
-                        gapsi <- FillInTheGaps.makeComponent newCtx
-                        updateGaps $ pure <<< pure $ gapsi
-                    }
-                ]
-              }
-          , gaps
-              # foldMap \g ->
-                  element g { code: codeWithHoles }
-          ]
-
-
 main :: Effect Unit
+--start here
 main = log
   "{-Hello World-}"
 --end here

@@ -16,9 +16,7 @@ type Theme
     , codeFontFamily ∷ NonEmptyArray String
     , yellow ∷ Color
     , green ∷ Color
-    , pink ∷ Color
-    , orange ∷ Color
-    , turquoise ∷ Color
+    , purple ∷ Color
     , red ∷ Color
     , blue ∷ Color
     , white ∷ Color
@@ -57,9 +55,7 @@ type YogaTheme
     , codeFontFamily ∷ NonEmptyArray String
     , yellow ∷ Color
     , green ∷ Color
-    , pink ∷ Color
-    , orange ∷ Color
-    , turquoise ∷ Color
+    , purple ∷ Color
     , red ∷ Color
     , blue ∷ Color
     , grey ∷ Color

@@ -51,7 +51,7 @@ mkLandingPageBackground = do
             , fill: theme.textColour # toHexString
             }
           , keyword: { fill: theme.green # toHexString }
-          , typeName: { fill: theme.pink # toHexString }
+          , typeName: { fill: theme.purple # toHexString }
           , "@keyframes animatedCursor":
             { "0%": { opacity: "0.0" }
             , "50%": { opacity: "1.0" }

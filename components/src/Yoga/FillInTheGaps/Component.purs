@@ -1,7 +1,7 @@
 module Yoga.FillInTheGaps.Component where
 
 import Prelude
-import Data.Array (foldMap, intercalate)
+import Data.Array (foldMap, foldr, intercalate)
 import Data.Array as A
 import Data.Either (Either(..))
 import Data.Foldable (foldl)
@@ -17,6 +17,7 @@ import Data.String.Regex as Regex
 import Data.String.Regex.Flags as RegexFlags
 import Data.String.Regex.Unsafe (unsafeRegex)
 import Data.Tuple.Nested ((/\))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (launchAff_)
 import Effect.Class (liftEffect)
@@ -90,7 +91,7 @@ renderSegments highlighterTheme ic update arrs = R.div_ (A.mapWithIndex renderLi
   renderLine i l = R.div_ (A.mapWithIndex (renderSegment i) l)
   renderSegment i j s =
     if between start end i then case s of
-      Filler s' -> element syntaxHighlighterImpl { style: highlighterTheme, language: "purescript", children: s' }
+      Filler s' -> element syntaxHighlighterImpl { style: highlighterTheme, language: "purescript", children: spy "ch" s' }
       Hole width _ ->
         element ic
           $ justifill
@@ -135,6 +136,20 @@ toSegment = case _ of
     | Regex.test endRegex x -> End
   other -> Filler other
 
+-- Glues together Filler segments
+-- [[Filler "line1"], [Filler "line2"]] --> [[Filler "line1\nline2"]]
+-- [[Filler "line1", Filler "line2"]] --> [[Filler "line1\nline2"]]
+-- [[Filler "line1", Filler "line2"], [Filler "line3"]] --> [[Filler "line1\nline2\line3"]]
+smooshFillers ∷ Array (Array Segment) -> Array (Array Segment)
+smooshFillers = foldl smooshOuter []
+  where
+  smooshInner segments segment = case segment, A.unsnoc segments of
+    Filler f, Just { init, last: Filler prev } -> A.snoc init (Filler (prev <> "\n" <> f))
+    _, _ -> A.snoc segments segment
+  smooshOuter acc segs = case foldl smooshInner [] segs, A.unsnoc acc of
+    [ Filler f ], Just { init, last: [ Filler prev ] } -> A.snoc init [ Filler (prev <> "\n" <> f) ]
+    _, _ -> A.snoc acc segs
+
 type Ctx r
   = (Compiler r)
 
@@ -150,7 +165,7 @@ makeComponent { compileAndRun } = do
     let
       lines = split (Pattern "\n") code
 
-      initialSegments = lines <#> \line -> rawSegments line <#> toSegment
+      initialSegments = smooshFillers (lines <#> \line -> rawSegments line <#> toSegment)
     segments /\ modifySegments <- useState initialSegments
     result /\ modifyResult <- useState Nothing
     cssTheme <- useTheme
