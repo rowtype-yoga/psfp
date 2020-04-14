@@ -1,11 +1,13 @@
 module PSLayout where
 
 import Prelude
+
 import Data.Array as A
 import Data.Array as Array
 import Data.Array.NonEmpty as NEA
-import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Nullable (Nullable)
+import Data.Function.Uncurried (mkFn2)
+import Data.Maybe (Maybe(..), fromMaybe, isJust)
+import Data.Nullable (Nullable, toMaybe)
 import Data.Nullable as Nullable
 import Data.String as String
 import Data.Tuple.Nested ((/\))
@@ -14,7 +16,7 @@ import Effect (Effect)
 import JSS (jss, jssClasses)
 import Justifill (justifill)
 import Milkis.Impl (FetchImpl)
-import React.Basic (JSX, ReactComponent)
+import React.Basic (JSX, ReactComponent, fragment)
 import React.Basic.DOM (unsafeCreateDOMComponent)
 import React.Basic.DOM as R
 import React.Basic.Helpers (jsx)
@@ -24,8 +26,9 @@ import Unsafe.Coerce (unsafeCoerce)
 import Yoga.Box.Component as Box
 import Yoga.CompileEditor.Component (mkCompileEditor)
 import Yoga.Compiler.Api (apiCompiler)
+import Yoga.Compiler.Types (Compiler)
 import Yoga.FillInTheGaps.Component as FillInTheGaps
-import Yoga.FillInTheGaps.Logic (parseSegments)
+import Yoga.FillInTheGaps.Logic (complete, parseSegments)
 import Yoga.Header.Component (mkHeader)
 import Yoga.Helpers ((?||))
 import Yoga.InlineCode.Component as InlineCode
@@ -70,7 +73,7 @@ mkLayout ∷
     )
 mkLayout fetchImpl = do
   themeProvider <- mkThemeProvider
-  mdxProviderComponent <- mkMdxProviderComponent fetchImpl
+  mdxProviderComponent <- mkMdxProviderComponent (apiCompiler fetchImpl)
   componentWithChildren "MDXLayout" \{ children, siteInfo } -> React.do
     pure
       $ element themeProvider
@@ -96,16 +99,17 @@ mkSecret = do
           }
 
 mkMdxProviderComponent ∷
-  FetchImpl ->
+  ∀ r.
+  { | Compiler r } ->
   Effect
     ( ReactComponent
         { children ∷ ReactChildren JSX
         , siteInfo ∷ SiteQueryResult
         }
     )
-mkMdxProviderComponent fetchImpl = do
+mkMdxProviderComponent compiler = do
   cssBaseline <- mkCssBaseline
-  editor <- mkCompileEditor fetchImpl
+  editor <- mkCompileEditor compiler
   fillInTheGaps <- FillInTheGaps.makeComponent
   box <- Box.makeComponent
   sidebar <- mkSidebar
@@ -132,18 +136,14 @@ mkMdxProviderComponent fetchImpl = do
           }
   componentWithChildren "MDXProviderComponent" \{ children, siteInfo } -> React.do
     classes <- useStyles {}
-    visibleThroughKey /\ updateVisible <- useState ""
+    visibleThrough /\ updateVisible <- useState 1
     let
       baseline child = element cssBaseline { kids: child }
 
       kids = reactChildrenToArray children
 
       visibleKids =
-        spy "visibleKids"
-          $ fromMaybe kids do
-              i <- kids # A.findIndex (\x -> (unsafeCoerce x).key == visibleThroughKey)
-              pure $ A.take (i + 1) kids
-
+        TODO
       siteInfoJSX =
         R.div
           { children:
@@ -163,13 +163,12 @@ mkMdxProviderComponent fetchImpl = do
         , h3:
           \props ->
             element h { level: H4, text: props.children, className: Nothing }
+        , hr: (const $ R.hr {})
         , p:
           \props ->
             R.div
               { children: [ element p { text: props.children } ]
               }
-        -- , thematicBreak:
-        --   \props -> jsx secret { register: updateSections (Map.insert )  }
         , inlineCode:
           \props -> do
             R.span { className: classes.code, children: props.children }
@@ -200,23 +199,35 @@ mkMdxProviderComponent fetchImpl = do
                     )
 
               language = fromMaybe "" (classNameQ >>= String.stripPrefix (String.Pattern "language-"))
-            case isCode, language of
-              true, "puregaps" ->
-                element fillInTheGaps
-                  { initialSegments: parseSegments (codeQ ?|| "")
-                  , update: \segs -> pure unit
-                  }
-              true, _ ->
+
+              segmentsQ = parseSegments (codeQ ?|| "")
+            case isCode, language, segmentsQ of
+              true, "purescript", Just initialSegments ->
+                jsx box {}
+                  [ element fillInTheGaps
+                      { initialSegments
+                      , update:
+                        \segs ->
+                          when (complete segs)
+                            $ updateVisible
+                                (\_ -> spy "setting key to" (unsafeCoerce props).key)
+                      }
+                  ]
+              true, _, _ ->
                 element editor
                   { initialCode: fromMaybe "" codeQ
                   , height
                   , language
                   }
-              false, _ -> element (unsafeCreateDOMComponent "pre") props
+              false, _, _ -> element (unsafeCreateDOMComponent "pre") props
         }
     useEffect (A.length kids) do
       let
-        firstGaps = kids # A.find (\x -> (unsafeCoerce x).props.mdxType == "pre" && ((unsafeCoerce x).props.children.props.className == "language-puregaps")) <#> (\x -> (unsafeCoerce x).key)
+        firstGaps = kids # A.find (\x -> (unsafeCoerce x).props.mdxType == "pre" && 
+          ((unsafeCoerce x).props.children.props.className == "language-purescript") &&
+          ((unsafeCoerce x).props.children.props.mdxType == "code") &&
+          ((unsafeCoerce x).props.children.props.children # parseSegments # isJust)
+          ) <#> (\x -> spy "first boy" $ (unsafeCoerce x).key)
 
         lastKey = kids # A.last # unsafeCoerce # _.key
       updateVisible (const (firstGaps ?|| lastKey))

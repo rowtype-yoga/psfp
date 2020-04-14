@@ -7,13 +7,14 @@ import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
 import Yoga.FillInTheGaps.Component as FillInTheGaps
 import Yoga.FillInTheGaps.Logic (parseSegments)
+import Yoga.Helpers ((?||))
 
 stories ∷ Effect Storybook
 stories = do
   storiesOf "FillInTheGaps" do
     addDecorator fullScreenDecorator
     add "The FillInTheGaps" (FillInTheGaps.makeComponent)
-      [ { initialSegments: parseSegments codeWithHoles, update: pure (pure unit) }
+      [ { initialSegments: parseSegments codeWithHoles ?|| [], update: pure (pure unit) }
       ]
 
 codeWithHoles =

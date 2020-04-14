@@ -3,32 +3,18 @@ module Yoga.FillInTheGaps.Logic where
 import Prelude
 import Data.Array (intercalate)
 import Data.Array as A
-import Data.Either (Either(..))
 import Data.Foldable (foldl)
 import Data.Lens ((%~))
 import Data.Lens.Index (ix)
-import Data.Maybe (Maybe(..), fromMaybe')
+import Data.Maybe (Maybe(..))
 import Data.String (Pattern(..), split)
 import Data.String as S
 import Data.String.Regex (Regex)
 import Data.String.Regex as Regex
 import Data.String.Regex.Flags as RegexFlags
 import Data.String.Regex.Unsafe (unsafeRegex)
-import Data.Tuple.Nested ((/\))
-import Debug.Trace (spy)
-import Effect (Effect)
-import Justifill (justifill)
 import Partial.Unsafe (unsafeCrashWith)
-import React.Basic (JSX, ReactComponent, element)
-import React.Basic.DOM as R
-import React.Basic.Hooks (component, useState)
-import React.Basic.Hooks as React
-import React.Basic.SyntaxHighlighter.Component (HighlighterTheme, syntaxHighlighterImpl)
-import Shared.Models.Body (CompileResult, RunResult)
 import Yoga.Helpers ((?||))
-import Yoga.InlineCode.Component as InlineCode
-import Yoga.Theme.Styles (useTheme)
-import Yoga.Theme.Syntax (mkHighlighterTheme)
 
 complete ∷ Array (Array Segment) -> Boolean
 complete arr = foldl f true (join arr)
@@ -52,8 +38,8 @@ getResult = case _ of
   ExpectedResult r -> Just r
   _ -> Nothing
 
-findResult ∷ Array Segment -> String
-findResult = fromMaybe' (\_ -> unsafeCrashWith "Even teachers make mistakes") <<< A.findMap getResult
+findResult ∷ Array Segment -> Maybe String
+findResult = A.findMap getResult
 
 toCode ∷ Array (Array Segment) -> String
 toCode lines = intercalate "\n" mapped
@@ -112,7 +98,9 @@ smooshFillers = foldl smooshOuter []
     [ Filler f ], Just { init, last: [ Filler prev ] } -> A.snoc init [ Filler (prev <> "\n" <> f) ]
     _, _ -> A.snoc acc segs
 
-parseSegments code = segments
+parseSegments ∷ String -> Maybe (Array (Array Segment))
+parseSegments code = result $> segments
   where
   lines = split (Pattern "\n") code
   segments = smooshFillers (lines <#> \line -> rawSegments line <#> toSegment)
+  result = findResult (join segments)
