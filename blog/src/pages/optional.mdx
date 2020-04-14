@@ -6,7 +6,7 @@ import SEO from '../components/seo'
 # Optional
 
 ```puregaps
---result Apero
+--result Hello World
 module Main where
 import Grimoire
 
@@ -18,5 +18,17 @@ incantation = cast $
 ```
 
 ---
+
+```puregaps
+--result Hello World
+module Main where
+import Grimoire
+
+incantation :: Effect Unit
+--start here
+incantation = cast $
+  "{-Hello World-}"
+--end here
+```
 
 ## Hans Hölzel

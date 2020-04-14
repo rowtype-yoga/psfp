@@ -1,14 +1,17 @@
 module PSLayout where
 
 import Prelude
+
+import Data.Array as A
 import Data.Array as Array
 import Data.Array.NonEmpty as NEA
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
 import Data.String as String
+import Data.Tuple.Nested ((/\))
+import Debug.Trace (spy)
 import Effect (Effect)
-import Effect.Unsafe (unsafePerformEffect)
 import JSS (jss, jssClasses)
 import Justifill (justifill)
 import Milkis.Impl (FetchImpl)
@@ -16,13 +19,15 @@ import React.Basic (JSX, ReactComponent)
 import React.Basic.DOM (unsafeCreateDOMComponent)
 import React.Basic.DOM as R
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (ReactChildren, component, componentWithChildren, element, reactChildrenToArray, useState)
+import React.Basic.Hooks (ReactChildren, component, componentWithChildren, element, reactChildrenToArray, useEffect, useState)
 import React.Basic.Hooks as React
+import Unsafe.Coerce (unsafeCoerce)
 import Yoga.Box.Component as Box
 import Yoga.CompileEditor.Component (mkCompileEditor)
 import Yoga.Compiler.Api (apiCompiler)
 import Yoga.FillInTheGaps.Component as FillInTheGaps
 import Yoga.Header.Component (mkHeader)
+import Yoga.Helpers ((?||))
 import Yoga.InlineCode.Component as InlineCode
 import Yoga.Theme (fromTheme)
 import Yoga.Theme.CSSBaseline (mkCssBaseline)
@@ -78,9 +83,12 @@ mkLayout fetchImpl = do
             ]
           }
 
-mkSecret :: Effect ( ReactComponent { kids ∷ Array JSX , visible ∷ Boolean })
+mkSecret :: Effect ( ReactComponent { kids ∷ Array JSX , visible ∷ Boolean, register :: Effect Unit })
 mkSecret = do
-  component "Secret" \{ kids, visible } -> React.do
+  component "Secret" \{ kids, visible, register } -> React.do
+    useEffect visible do
+      unless visible register
+      pure mempty
     pure
       $ R.div
           { style: R.css { visibility: if visible then "visible" else "hidden" }
@@ -124,16 +132,20 @@ mkMdxProviderComponent fetchImpl = do
           }
   componentWithChildren "MDXProviderComponent" \{ children, siteInfo } -> React.do
     classes <- useStyles {}
-    sections <- useState []
+    visibleThroughKey /\ updateVisible <- useState ""
     let
       baseline child = element cssBaseline { kids: child }
+      kids = reactChildrenToArray children
+      visibleKids = spy "visibleKids" $ fromMaybe kids do
+         i <- kids # A.findIndex (\x -> (unsafeCoerce x).key == visibleThroughKey)
+         pure $ A.take (i+1) kids 
 
       siteInfoJSX =
         R.div
           { children:
             [ jsx header { className: "" } [ R.text siteInfo.site.siteMetadata.title ]
             , element sidebar { links: siteInfo.site.siteMetadata.menuLinks }
-            , jsx box {} (reactChildrenToArray children)
+            , jsx box {} visibleKids
             ]
           }
 
@@ -152,8 +164,8 @@ mkMdxProviderComponent fetchImpl = do
             R.div
               { children: [ element p { text: props.children } ]
               }
-        , thematicBreak:
-          \props -> R.div_ [ R.text "HOUI" ]
+        -- , thematicBreak:
+        --   \props -> jsx secret { register: updateSections (Map.insert )  }
         , inlineCode:
           \props -> do
             R.span { className: classes.code, children: props.children }
@@ -194,6 +206,13 @@ mkMdxProviderComponent fetchImpl = do
                   }
               false, _ -> element (unsafeCreateDOMComponent "pre") props
         }
+
+    useEffect (A.length kids) do
+      let 
+        firstGaps = kids # A.find (\x -> (unsafeCoerce x).props.mdxType == "pre" && ((unsafeCoerce x).props.children.props.className == "language-puregaps")) <#> (\x -> (unsafeCoerce x).key)
+        lastKey = kids # A.last # unsafeCoerce # _.key
+      updateVisible (const (firstGaps ?|| lastKey))
+      pure mempty
     pure
       $ baseline
           [ element mdxProvider

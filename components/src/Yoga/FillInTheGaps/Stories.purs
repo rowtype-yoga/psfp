@@ -1,30 +1,19 @@
 module Yoga.FillInTheGaps.Stories where
 
 import Prelude hiding (add)
-import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
 import Data.String as String
 import Effect (Effect)
 import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
 import Yoga.FillInTheGaps.Component as FillInTheGaps
-
-ctx ∷ { | FillInTheGaps.Ctx () }
-ctx =
-  { compileAndRun
-  }
-  where
-  compileAndRun = case _ of
-    { code }
-      | code == correctCode -> pure (Right { code: Nothing, stdout: "Hello World\n", stderr: "" })
-    other -> pure (Right { code: Nothing, stdout: "Not hello world", stderr: "" })
+import Yoga.FillInTheGaps.Logic (parseSegments)
 
 stories ∷ Effect Storybook
 stories = do
   storiesOf "FillInTheGaps" do
     addDecorator fullScreenDecorator
-    add "The FillInTheGaps" (FillInTheGaps.makeComponent ctx)
-      [ { code: codeWithHoles }
+    add "The FillInTheGaps" (FillInTheGaps.makeComponent)
+      [ { initialSegments: parseSegments codeWithHoles, update: pure (pure unit) }
       ]
 
 codeWithHoles =
@@ -33,9 +22,9 @@ codeWithHoles =
 module Main where
 import Grimoire
 
-main :: Effect Unit
+incantation :: Effect Unit
 --start here
-main = cast
+incantation = cast
   "{-Hello World-}"
 --end here
 """
