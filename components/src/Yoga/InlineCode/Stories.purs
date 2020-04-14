@@ -11,7 +11,6 @@ import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Console (log)
 import Justifill (justifill)
-import Milkis as M
 import Milkis.Impl.Window (windowFetch)
 import React.Basic (JSX, fragment)
 import React.Basic.DOM as R
@@ -21,7 +20,7 @@ import React.Basic.Hooks (ReactComponent, component, element)
 import React.Basic.Hooks as React
 import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
-import Yoga.CompileEditor.Component (compileAndRun)
+import Yoga.Compiler.Api (apiCompiler)
 import Yoga.InlineCode.Component as InlineCode
 import Yoga.Modal.Component as Modal
 
@@ -110,7 +109,7 @@ realReducer ∷ State -> RealAction -> Aff State
 realReducer state = case _ of
   CloseModal -> pure Nothing
   InlineCodeSubmitted code -> do
-    res <- compileAndRun (M.fetch windowFetch) { code: codePrefix <> code <> codeSuffix }
+    res <- (apiCompiler windowFetch).compileAndRun { code: codePrefix <> code <> codeSuffix }
     (pure <<< pure) case res of
       Right { stdout }
         | String.dropRight 1 stdout == "Magick" -> true

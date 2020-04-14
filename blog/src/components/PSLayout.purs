@@ -1,7 +1,6 @@
 module PSLayout where
 
 import Prelude
-
 import Data.Array as A
 import Data.Array as Array
 import Data.Array.NonEmpty as NEA
@@ -26,6 +25,7 @@ import Yoga.Box.Component as Box
 import Yoga.CompileEditor.Component (mkCompileEditor)
 import Yoga.Compiler.Api (apiCompiler)
 import Yoga.FillInTheGaps.Component as FillInTheGaps
+import Yoga.FillInTheGaps.Logic (parseSegments)
 import Yoga.Header.Component (mkHeader)
 import Yoga.Helpers ((?||))
 import Yoga.InlineCode.Component as InlineCode
@@ -83,7 +83,7 @@ mkLayout fetchImpl = do
             ]
           }
 
-mkSecret :: Effect ( ReactComponent { kids ∷ Array JSX , visible ∷ Boolean, register :: Effect Unit })
+mkSecret ∷ Effect (ReactComponent { kids ∷ Array JSX, visible ∷ Boolean, register ∷ Effect Unit })
 mkSecret = do
   component "Secret" \{ kids, visible, register } -> React.do
     useEffect visible do
@@ -106,7 +106,7 @@ mkMdxProviderComponent ∷
 mkMdxProviderComponent fetchImpl = do
   cssBaseline <- mkCssBaseline
   editor <- mkCompileEditor fetchImpl
-  fillInTheGaps <- FillInTheGaps.makeComponent (apiCompiler fetchImpl)
+  fillInTheGaps <- FillInTheGaps.makeComponent
   box <- Box.makeComponent
   sidebar <- mkSidebar
   header <- mkHeader
@@ -135,10 +135,14 @@ mkMdxProviderComponent fetchImpl = do
     visibleThroughKey /\ updateVisible <- useState ""
     let
       baseline child = element cssBaseline { kids: child }
+
       kids = reactChildrenToArray children
-      visibleKids = spy "visibleKids" $ fromMaybe kids do
-         i <- kids # A.findIndex (\x -> (unsafeCoerce x).key == visibleThroughKey)
-         pure $ A.take (i+1) kids 
+
+      visibleKids =
+        spy "visibleKids"
+          $ fromMaybe kids do
+              i <- kids # A.findIndex (\x -> (unsafeCoerce x).key == visibleThroughKey)
+              pure $ A.take (i + 1) kids
 
       siteInfoJSX =
         R.div
@@ -197,7 +201,11 @@ mkMdxProviderComponent fetchImpl = do
 
               language = fromMaybe "" (classNameQ >>= String.stripPrefix (String.Pattern "language-"))
             case isCode, language of
-              true, "puregaps" -> element fillInTheGaps { code: fromMaybe "" codeQ }
+              true, "puregaps" ->
+                element fillInTheGaps
+                  { initialSegments: parseSegments (codeQ ?|| "")
+                  , update: \segs -> pure unit
+                  }
               true, _ ->
                 element editor
                   { initialCode: fromMaybe "" codeQ
@@ -206,10 +214,10 @@ mkMdxProviderComponent fetchImpl = do
                   }
               false, _ -> element (unsafeCreateDOMComponent "pre") props
         }
-
     useEffect (A.length kids) do
-      let 
+      let
         firstGaps = kids # A.find (\x -> (unsafeCoerce x).props.mdxType == "pre" && ((unsafeCoerce x).props.children.props.className == "language-puregaps")) <#> (\x -> (unsafeCoerce x).key)
+
         lastKey = kids # A.last # unsafeCoerce # _.key
       updateVisible (const (firstGaps ?|| lastKey))
       pure mempty

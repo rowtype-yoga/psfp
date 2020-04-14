@@ -1,17 +1,23 @@
 module Yoga.CompileEditor.Stories where
 
 import Prelude hiding (add)
-import Yoga.CompileEditor.Component (mkCompileEditor)
-import Storybook.Decorator.FullScreen (fullScreenDecorator)
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Milkis.Impl.Window (windowFetch)
+import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
+import Yoga.CompileEditor.Component (mkCompileEditor)
+import Yoga.Compiler.Types (Compiler)
+
+compiler ∷ { | Compiler () }
+compiler = { compileAndRun }
+  where
+  compileAndRun { code } = pure (pure { code: Nothing, stderr: "", stdout: "" })
 
 stories ∷ Effect Storybook
 stories = do
   storiesOf "Editor" do
     addDecorator fullScreenDecorator
-    add "The Editor" (mkCompileEditor windowFetch)
+    add "The Editor" (mkCompileEditor compiler)
       [ { initialCode
         , height: "30vh"
         , language: "purescript"

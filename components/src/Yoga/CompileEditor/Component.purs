@@ -9,23 +9,19 @@ import Data.Interpolate (i)
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
-import Effect.Aff (Aff, attempt, error, launchAff_, message, throwError)
+import Effect.Aff (launchAff_)
 import Effect.Class (liftEffect)
 import JSS (jssClasses)
-import Milkis as M
-import Milkis.Impl (FetchImpl)
 import React.Basic (ReactComponent)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
 import React.Basic.Helpers (jsx)
 import React.Basic.Hooks (component, element, useState)
 import React.Basic.Hooks as React
-import Shared.Json (readAff)
-import Shared.Models.Body as Body
-import Simple.JSON (writeJSON)
 import Yoga.Button.Component (ButtonType(..), mkButton)
 import Yoga.Card.Component (mkCard)
 import Yoga.Cluster.Component as Cluster
+import Yoga.Compiler.Types (Compiler)
 import Yoga.Editor (getValue, mkEditor, setValue)
 import Yoga.Stack.Component as Stack
 import Yoga.Theme.Styles (makeStylesJSS)
@@ -34,8 +30,8 @@ import Yoga.Theme.Types (CSSTheme)
 type Props
   = { initialCode ∷ String, height ∷ String, language ∷ String }
 
-mkCompileEditor ∷ FetchImpl -> Effect (ReactComponent Props)
-mkCompileEditor fetch = do
+mkCompileEditor ∷ ∀ r. { | Compiler r } -> Effect (ReactComponent Props)
+mkCompileEditor { compileAndRun } = do
   editor <- mkEditor
   card <- mkCard
   cluster <- Cluster.makeComponent
@@ -93,7 +89,7 @@ mkCompileEditor fetch = do
           setCompileResult Nothing
           code <- getValue ed
           launchAff_ do
-            res <- compileAndRun (M.fetch fetch) { code }
+            res <- compileAndRun { code }
             setCompileResult (Just res) # liftEffect
     pure
       $ jsx stack { space: "--s1" }
@@ -118,40 +114,3 @@ mkCompileEditor fetch = do
               }
               [ R.text (compileResultToString compileResult) ]
           ]
-
-compileAndRun ∷ M.Fetch -> Body.CompileRequest -> Aff (Either Body.CompileResult Body.RunResult)
-compileAndRun fetch body = do
-  response <-
-    attempt
-      $ fetch (M.URL "/api/compileAndRun")
-          { method: M.postMethod
-          , body: writeJSON body
-          , headers: M.makeHeaders { "Content-Type": "application/json" }
-          }
-  case response of
-    Left l ->
-      pure
-        ( Left
-            { resultType: ""
-            , result:
-              [ { allSpans: []
-                , errorCode: ""
-                , errorLink: ""
-                , filename: ""
-                , message: message l
-                , moduleName: Nothing
-                , position:
-                  { endColumn: 0
-                  , endLine: 0
-                  , startColumn: 0
-                  , startLine: 0
-                  }
-                , suggestion: Nothing
-                }
-              ]
-            }
-        )
-    Right r -> case M.statusCode r of
-      200 -> M.json r >>= readAff <#> Right
-      422 -> M.json r >>= readAff <#> Left
-      code -> throwError (error $ "Unexpected response code " <> show code)
