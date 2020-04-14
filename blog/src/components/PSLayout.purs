@@ -1,7 +1,6 @@
 module PSLayout where
 
 import Prelude
-
 import Data.Array as A
 import Data.Array as Array
 import Data.Array.NonEmpty as NEA
@@ -142,8 +141,21 @@ mkMdxProviderComponent compiler = do
 
       kids = reactChildrenToArray children
 
-      visibleKids =
-        TODO
+      foldVisible ∷ { i ∷ Int, acc ∷ Array JSX } -> JSX -> { i ∷ Int, acc ∷ Array JSX }
+      foldVisible { i, acc } a =
+        if i >= visibleThrough then
+          { i, acc }
+        else
+          if (unsafeCoerce a).props.mdxType == "pre"
+            && ((unsafeCoerce a).props.children.props.className == "language-purescript")
+            && ((unsafeCoerce a).props.children.props.mdxType == "code")
+            && ((unsafeCoerce a).props.children.props.children # parseSegments # isJust) then
+            { i: i + 1, acc: A.snoc acc a }
+          else
+            { i, acc: A.snoc acc a }
+
+      visibleKids = kids # A.foldl foldVisible { i: 0, acc: [] ∷ Array JSX } # _.acc
+
       siteInfoJSX =
         R.div
           { children:
@@ -210,7 +222,7 @@ mkMdxProviderComponent compiler = do
                         \segs ->
                           when (complete segs)
                             $ updateVisible
-                                (\_ -> spy "setting key to" (unsafeCoerce props).key)
+                                (_ + 1)
                       }
                   ]
               true, _, _ ->
@@ -221,17 +233,6 @@ mkMdxProviderComponent compiler = do
                   }
               false, _, _ -> element (unsafeCreateDOMComponent "pre") props
         }
-    useEffect (A.length kids) do
-      let
-        firstGaps = kids # A.find (\x -> (unsafeCoerce x).props.mdxType == "pre" && 
-          ((unsafeCoerce x).props.children.props.className == "language-purescript") &&
-          ((unsafeCoerce x).props.children.props.mdxType == "code") &&
-          ((unsafeCoerce x).props.children.props.children # parseSegments # isJust)
-          ) <#> (\x -> spy "first boy" $ (unsafeCoerce x).key)
-
-        lastKey = kids # A.last # unsafeCoerce # _.key
-      updateVisible (const (firstGaps ?|| lastKey))
-      pure mempty
     pure
       $ baseline
           [ element mdxProvider
