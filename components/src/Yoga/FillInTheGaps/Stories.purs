@@ -14,7 +14,7 @@ stories = do
   storiesOf "FillInTheGaps" do
     addDecorator fullScreenDecorator
     add "The FillInTheGaps" (FillInTheGaps.makeComponent)
-      [ { initialSegments: parseSegments codeWithHoles ?|| [], update: pure (pure unit) }
+      [ { initialSegments: parseSegments codeWithHoles ?|| [], incantate: pure (pure unit) }
       ]
 
 codeWithHoles =

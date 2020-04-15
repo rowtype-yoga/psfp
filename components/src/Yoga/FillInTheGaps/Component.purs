@@ -4,18 +4,20 @@ import Prelude
 import Data.Array as A
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
-import Effect.Aff (Milliseconds(..), delay)
-import Effect.Class (liftEffect)
 import Justifill (justifill)
 import React.Basic (JSX, ReactComponent, element)
 import React.Basic.DOM as R
-import React.Basic.Hooks (component, useState)
+import React.Basic.Events (handler_)
+import React.Basic.Helpers (jsx)
+import React.Basic.Hooks (component, useEffect, useState)
 import React.Basic.Hooks as React
-import React.Basic.Hooks.Aff (useAff)
 import React.Basic.SyntaxHighlighter.Component (HighlighterTheme, syntaxHighlighterImpl)
-import Yoga.FillInTheGaps.Logic (Segment(..), updateSegments)
+import Yoga.Button.Component (ButtonType(..), mkButton)
+import Yoga.FillInTheGaps.Logic (Segment(..), complete, updateSegments)
 import Yoga.Helpers ((?||))
 import Yoga.InlineCode.Component as InlineCode
+import Yoga.Stack.Component as Stack
+import Yoga.Cluster.Component as Cluster
 import Yoga.Theme.Styles (useTheme)
 import Yoga.Theme.Syntax (mkHighlighterTheme)
 
@@ -43,13 +45,25 @@ renderSegments highlighterTheme ic update arrs = R.div_ (A.mapWithIndex renderLi
     else
       mempty
 
-makeComponent ∷ Effect (ReactComponent { initialSegments ∷ Array (Array Segment), update ∷ Array (Array Segment) -> Effect Unit })
+makeComponent ∷ Effect (ReactComponent { initialSegments ∷ Array (Array Segment), incantate ∷ Array (Array Segment) -> Effect Unit })
 makeComponent = do
   ic <- InlineCode.makeComponent
-  component "FillInTheGaps" \{ initialSegments, update } -> React.do
+  btn <- mkButton
+  stack <- Stack.makeComponent
+  cluster <- Cluster.makeComponent
+  component "FillInTheGaps" \{ initialSegments, incantate } -> React.do
     segments /\ modifySegments <- useState initialSegments
-    useAff segments do
-      delay (200.0 # Milliseconds)
-      update segments # liftEffect
     highlighterTheme <- useTheme <#> mkHighlighterTheme
-    pure $ renderSegments highlighterTheme ic (modifySegments) segments
+    pure
+      $ jsx stack {}
+          [ renderSegments highlighterTheme ic (modifySegments) segments
+          , jsx cluster {}
+              [ R.div_
+                  [ jsx btn
+                      { onClick: handler_ (incantate segments)
+                      , buttonType: if complete segments then HighlightedButton else DisabledButton
+                      }
+                      [ R.text "Incantate" ]
+                  ]
+              ]
+          ]

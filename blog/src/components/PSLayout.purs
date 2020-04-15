@@ -1,17 +1,20 @@
 module PSLayout where
 
 import Prelude
+
+import Data.Array (foldMap)
 import Data.Array as A
 import Data.Array as Array
 import Data.Array.NonEmpty as NEA
-import Data.Function.Uncurried (mkFn2)
+import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
-import Data.Nullable (Nullable, toMaybe)
+import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
 import Data.String as String
 import Data.Tuple.Nested ((/\))
-import Debug.Trace (spy)
 import Effect (Effect)
+import Effect.Aff (launchAff_)
+import Effect.Class (liftEffect)
 import JSS (jss, jssClasses)
 import Justifill (justifill)
 import Milkis.Impl (FetchImpl)
@@ -23,14 +26,16 @@ import React.Basic.Hooks (ReactChildren, component, componentWithChildren, eleme
 import React.Basic.Hooks as React
 import Unsafe.Coerce (unsafeCoerce)
 import Yoga.Box.Component as Box
+import Yoga.ClickAway.Component as ClickAway
 import Yoga.CompileEditor.Component (mkCompileEditor)
 import Yoga.Compiler.Api (apiCompiler)
 import Yoga.Compiler.Types (Compiler)
 import Yoga.FillInTheGaps.Component as FillInTheGaps
-import Yoga.FillInTheGaps.Logic (complete, parseSegments)
+import Yoga.FillInTheGaps.Logic (findResult, parseSegments, toCode)
 import Yoga.Header.Component (mkHeader)
 import Yoga.Helpers ((?||))
 import Yoga.InlineCode.Component as InlineCode
+import Yoga.Modal.Component as Modal
 import Yoga.Theme (fromTheme)
 import Yoga.Theme.CSSBaseline (mkCssBaseline)
 import Yoga.Theme.Default (darkTheme)
@@ -97,6 +102,13 @@ mkSecret = do
           , children: kids
           }
 
+isQuiz ∷ JSX -> Boolean
+isQuiz a =
+  (unsafeCoerce a).props.mdxType == "pre"
+    && ((unsafeCoerce a).props.children.props.className == "language-purescript")
+    && ((unsafeCoerce a).props.children.props.mdxType == "code")
+    && ((unsafeCoerce a).props.children.props.children # parseSegments # isJust)
+
 mkMdxProviderComponent ∷
   ∀ r.
   { | Compiler r } ->
@@ -114,6 +126,8 @@ mkMdxProviderComponent compiler = do
   sidebar <- mkSidebar
   header <- mkHeader
   yogaInlineCode <- InlineCode.makeComponent
+  modal <- Modal.makeComponent
+  clickAway <- ClickAway.makeComponent
   h <- mkH
   p <- mkP
   secret <- mkSecret
@@ -136,6 +150,8 @@ mkMdxProviderComponent compiler = do
   componentWithChildren "MDXProviderComponent" \{ children, siteInfo } -> React.do
     classes <- useStyles {}
     visibleThrough /\ updateVisible <- useState 1
+    questions /\ updateQuestions <- useState []
+    maybeModal /\ updateModal <- useState Nothing
     let
       baseline child = element cssBaseline { kids: child }
 
@@ -146,10 +162,7 @@ mkMdxProviderComponent compiler = do
         if i >= visibleThrough then
           { i, acc }
         else
-          if (unsafeCoerce a).props.mdxType == "pre"
-            && ((unsafeCoerce a).props.children.props.className == "language-purescript")
-            && ((unsafeCoerce a).props.children.props.mdxType == "code")
-            && ((unsafeCoerce a).props.children.props.children # parseSegments # isJust) then
+          if isQuiz a then
             { i: i + 1, acc: A.snoc acc a }
           else
             { i, acc: A.snoc acc a }
@@ -218,11 +231,14 @@ mkMdxProviderComponent compiler = do
                 jsx box {}
                   [ element fillInTheGaps
                       { initialSegments
-                      , update:
-                        \segs ->
-                          when (complete segs)
-                            $ updateVisible
-                                (_ + 1)
+                      , incantate: \segments -> launchAff_ do 
+                          let code = toCode segments
+                          result <- compiler.compileAndRun { code }
+                          liftEffect case result of
+                            Right r | String.stripSuffix (String.Pattern "\n") r.stdout == (findResult $ join segments) ->
+                              updateVisible (_ + 1)
+                            _ ->
+                              updateModal (const $ Just { title: "Failed", kids: [R.text "Try again"] })
                       }
                   ]
               true, _, _ ->
@@ -241,6 +257,13 @@ mkMdxProviderComponent compiler = do
                 ]
               , components: mdxComponents
               }
+          , maybeModal # foldMap 
+            (\modalProps -> 
+            fragment [
+              element clickAway { allowEscape: Just true, onClick: updateModal (const Nothing), style: Nothing },
+              element modal (justifill modalProps)
+            ]
+            )
           ]
 
 mkSidebar = do
