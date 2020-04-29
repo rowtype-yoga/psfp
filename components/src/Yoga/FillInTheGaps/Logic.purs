@@ -33,6 +33,7 @@ data Segment
   | Hole Int String
 
 derive instance eqSegment ∷ Eq Segment
+derive instance ordSegment ∷ Ord Segment
 getResult ∷ Segment -> Maybe String
 getResult = case _ of
   ExpectedResult r -> Just r

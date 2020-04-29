@@ -2,19 +2,30 @@ module PSLayout where
 
 import Prelude
 
+import Control.Monad.State (evalStateT, get, put, runStateT)
+import Control.Monad.State as State
+import Control.Monad.Trans.Class (lift)
 import Data.Array (foldMap)
-import Data.Array as A
 import Data.Array as Array
 import Data.Array.NonEmpty as NEA
 import Data.Either (Either(..))
+import Data.Foldable (fold)
+import Data.Function.Uncurried (mkFn2)
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
+import Data.Monoid (guard)
+import Data.Monoid.Additive (Additive(..))
+import Data.Newtype (ala)
+import Data.Newtype as NT
 import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
 import Data.String as String
+import Data.Traversable (Accum, mapAccumL)
 import Data.Tuple.Nested ((/\))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (launchAff_)
 import Effect.Class (liftEffect)
+import Effect.Class.Console (log)
 import JSS (jss, jssClasses)
 import Justifill (justifill)
 import Milkis.Impl (FetchImpl)
@@ -22,7 +33,7 @@ import React.Basic (JSX, ReactComponent, fragment)
 import React.Basic.DOM (unsafeCreateDOMComponent)
 import React.Basic.DOM as R
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (ReactChildren, component, componentWithChildren, element, reactChildrenToArray, useEffect, useState)
+import React.Basic.Hooks (ReactChildren, component, componentWithChildren, element, memo, reactChildrenToArray, readRef, useEffect, useReducer, useRef, useState, writeRef)
 import React.Basic.Hooks as React
 import Unsafe.Coerce (unsafeCoerce)
 import Yoga.Box.Component as Box
@@ -67,7 +78,12 @@ type PreProps
         }
     }
 
+data ShowModal
+  = ShowModal Modal.Props
+  | HideModal
+
 mkLayout ∷
+  ∀ r.
   FetchImpl ->
   Effect
     ( ReactComponent
@@ -77,29 +93,32 @@ mkLayout ∷
     )
 mkLayout fetchImpl = do
   themeProvider <- mkThemeProvider
-  mdxProviderComponent <- mkMdxProviderComponent (apiCompiler fetchImpl)
+  modal <- memo Modal.makeComponent
+  clickAway <- memo ClickAway.makeComponent
+  mdxProviderComponent <- memo $ mkMdxProviderComponent (apiCompiler fetchImpl)
   componentWithChildren "MDXLayout" \{ children, siteInfo } -> React.do
+    maybeModalProps /\ dispatch <-
+      useReducer Nothing case _, _ of
+        _, ShowModal props -> Just props
+        _, HideModal -> Nothing
     pure
       $ element themeProvider
           { theme: fromTheme darkTheme
           , children:
-            [ element mdxProviderComponent
-                { children
-                , siteInfo
-                }
+            [ R.div_
+                [ maybeModalProps
+                    # foldMap \modalProps ->
+                        fragment
+                          [ element clickAway { allowEscape: Just true, onClick: dispatch HideModal, style: Nothing }
+                          , element modal (justifill modalProps)
+                          ]
+                , element mdxProviderComponent
+                    { children: spy "children" children
+                    , siteInfo
+                    , showModal: dispatch <<< ShowModal
+                    }
+                ]
             ]
-          }
-
-mkSecret ∷ Effect (ReactComponent { kids ∷ Array JSX, visible ∷ Boolean, register ∷ Effect Unit })
-mkSecret = do
-  component "Secret" \{ kids, visible, register } -> React.do
-    useEffect visible do
-      unless visible register
-      pure mempty
-    pure
-      $ R.div
-          { style: R.css { visibility: if visible then "visible" else "hidden" }
-          , children: kids
           }
 
 isQuiz ∷ JSX -> Boolean
@@ -116,21 +135,19 @@ mkMdxProviderComponent ∷
     ( ReactComponent
         { children ∷ ReactChildren JSX
         , siteInfo ∷ SiteQueryResult
+        , showModal ∷ Modal.Props -> Effect Unit
         }
     )
 mkMdxProviderComponent compiler = do
-  cssBaseline <- mkCssBaseline
-  editor <- mkCompileEditor compiler
-  fillInTheGaps <- FillInTheGaps.makeComponent
-  box <- Box.makeComponent
-  sidebar <- mkSidebar
-  header <- mkHeader
+  cssBaseline <- memo mkCssBaseline
+  editor <- memo $ mkCompileEditor compiler
+  box <- memo $ Box.makeComponent
+  sidebar <- memo mkSidebar
+  header <- memo mkHeader
   yogaInlineCode <- InlineCode.makeComponent
-  modal <- Modal.makeComponent
-  clickAway <- ClickAway.makeComponent
-  h <- mkH
-  p <- mkP
-  secret <- mkSecret
+  quiz <- memo $ mkQuiz compiler
+  h <- memo mkH
+  p <- memo mkP
   useStyles <-
     makeStylesJSS
       $ jssClasses \(theme ∷ CSSTheme) ->
@@ -142,32 +159,23 @@ mkMdxProviderComponent compiler = do
             , padding: "3px"
             , borderRadius: "3px"
             }
-          , flexer:
-            { display: "flex"
-            , flexDirection: "row"
-            }
           }
-  componentWithChildren "MDXProviderComponent" \{ children, siteInfo } -> React.do
+  componentWithChildren "MDXProviderComponent" \{ children, siteInfo, showModal } -> React.do
     classes <- useStyles {}
-    visibleThrough /\ updateVisible <- useState 1
-    questions /\ updateQuestions <- useState []
-    maybeModal /\ updateModal <- useState Nothing
+    visibleUntil /\ updateVisible <- useState 1
     let
-      baseline child = element cssBaseline { kids: child }
+      onFailure = showModal (justifill { title: "Failed", kids: [ R.text "Try again" ] } ∷ Modal.Props)
+      onSuccess = updateVisible (_ + one)
 
-      kids = reactChildrenToArray children
-
-      foldVisible ∷ { i ∷ Int, acc ∷ Array JSX } -> JSX -> { i ∷ Int, acc ∷ Array JSX }
-      foldVisible { i, acc } a =
-        if i >= visibleThrough then
-          { i, acc }
-        else
-          if isQuiz a then
-            { i: i + 1, acc: A.snoc acc a }
-          else
-            { i, acc: A.snoc acc a }
-
-      visibleKids = kids # A.foldl foldVisible { i: 0, acc: [] ∷ Array JSX } # _.acc
+      mapVisible i kid =
+        { accum: i + if isQuiz kid then one else zero
+        , value: guard (i < visibleUntil) (pure kid)
+        }
+      visibleKids :: Array JSX
+      visibleKids = reactChildrenToArray children 
+        # mapAccumL mapVisible zero
+        # _.value 
+        # Array.catMaybes
 
       siteInfoJSX =
         R.div
@@ -177,8 +185,8 @@ mkMdxProviderComponent compiler = do
             , jsx box {} visibleKids
             ]
           }
-
-      mdxComponents =
+    mdxComponents /\ _ <-
+      useState
         { h1:
           \props ->
             element h ({ level: H2, text: props.children, className: Nothing })
@@ -197,9 +205,10 @@ mkMdxProviderComponent compiler = do
         , inlineCode:
           \props -> do
             R.span { className: classes.code, children: props.children }
-        , pre:
-          \(props ∷ PreProps) -> do
+        , pre: mkFn2
+          \(props ∷ PreProps) other -> do
             let
+              _ = spy "other" other
               childrenQ = Nullable.toMaybe props.children
 
               propsQ = (_.props >>> Nullable.toMaybe) =<< childrenQ
@@ -227,20 +236,7 @@ mkMdxProviderComponent compiler = do
 
               segmentsQ = parseSegments (codeQ ?|| "")
             case isCode, language, segmentsQ of
-              true, "purescript", Just initialSegments ->
-                jsx box {}
-                  [ element fillInTheGaps
-                      { initialSegments
-                      , incantate: \segments -> launchAff_ do 
-                          let code = toCode segments
-                          result <- compiler.compileAndRun { code }
-                          liftEffect case result of
-                            Right r | String.stripSuffix (String.Pattern "\n") r.stdout == (findResult $ join segments) ->
-                              updateVisible (_ + 1)
-                            _ ->
-                              updateModal (const $ Just { title: "Failed", kids: [R.text "Try again"] })
-                      }
-                  ]
+              true, "purescript", Just initialSegments -> element quiz { initialSegments, onFailure, onSuccess }
               true, _, _ ->
                 element editor
                   { initialCode: fromMaybe "" codeQ
@@ -250,20 +246,43 @@ mkMdxProviderComponent compiler = do
               false, _, _ -> element (unsafeCreateDOMComponent "pre") props
         }
     pure
-      $ baseline
-          [ element mdxProvider
-              { children:
-                [ siteInfoJSX
-                ]
-              , components: mdxComponents
+      $ element mdxProvider
+          { children: pure $ jsx cssBaseline {} [ siteInfoJSX ]
+          , components: mdxComponents
+          }
+
+mkQuiz ∷ _ -> Effect (ReactComponent _)
+mkQuiz compiler = do
+  fillInTheGaps <- FillInTheGaps.makeComponent
+  box <- Box.makeComponent
+  component "Quiz" \({ initialSegments, onFailure, onSuccess } ∷ { initialSegments ∷ _, onFailure ∷ _, onSuccess :: _}) -> React.do
+    segments /\ updateSegments <- useState initialSegments
+    solved /\ updateSolved <- useState false
+    pure
+      $ jsx box {}
+          [ element fillInTheGaps
+              { segments
+              , incantate:
+                launchAff_ do
+                  let
+                    code = toCode segments
+                  result <- compiler.compileAndRun { code }
+                  liftEffect case result of
+                    Right r
+                      | String.stripSuffix (String.Pattern "\n") r.stdout == (findResult $ join segments) -> do
+                        updateSolved (const true)
+                        onSuccess
+                    _ -> onFailure
+              , updateSegments:
+                \update -> do
+                  let
+                    updated = update segments
+                  case segments, updated of
+                    old, new
+                      | new == old -> mempty
+                    _, _ -> updateSegments (const updated)
+              , readOnly: Just solved
               }
-          , maybeModal # foldMap 
-            (\modalProps -> 
-            fragment [
-              element clickAway { allowEscape: Just true, onClick: updateModal (const Nothing), style: Nothing },
-              element modal (justifill modalProps)
-            ]
-            )
           ]
 
 mkSidebar = do
@@ -271,20 +290,13 @@ mkSidebar = do
   useStyles <-
     makeStylesJSS
       $ jssClasses \(theme ∷ CSSTheme) ->
-          { flexer:
-            jss
-              { display: "flex"
-              , flexDirection: "row"
-              , width: "300px"
-              , height: "300px"
-              }
-          }
+          {}
   component "Sidebar" \{ links } -> React.do
     classes <- useStyles {}
     pure
       $ element withSidebar
           ( justifill
-              { sidebarChildren: [ R.div_ [ R.text "hahahaha" ] ]
+              { sidebarChildren: [ R.div_ [] ]
               , notSidebarChildren: [] ∷ Array JSX
               }
           )

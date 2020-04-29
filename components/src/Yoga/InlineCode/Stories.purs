@@ -30,7 +30,7 @@ stories = do
     addDecorator fullScreenDecorator
     add "The InlineCode" InlineCode.makeComponent
       [ ( justifill
-            { onSubmit: log
+            { update: log
             }
         )
       ]
@@ -38,7 +38,7 @@ stories = do
       [ { inside:
           \inlineCode ->
             [ R.text "hi!"
-            , element inlineCode (justifill { onSubmit: log })
+            , element inlineCode (justifill { update: log })
             , R.text "hello again!"
             ]
         }
@@ -47,7 +47,7 @@ stories = do
       [ { inside:
           \inlineCode ->
             [ R.code_ [ R.text "main = logShow \"" ]
-            , element inlineCode (justifill { onSubmit: log })
+            , element inlineCode (justifill { update: log })
             , R.code_ [ R.text "\"" ]
             ]
         }
@@ -96,7 +96,7 @@ mkRealWrapper = do
       $ R.div_
           [ R.h2_ [ R.text "Let's log some 'Magick'" ]
           , fragment $ renderCode codePrefix
-          , element inlineCode (justifill { onSubmit: dispatch <<< InlineCodeSubmitted, width: String.length "Magick" })
+          , element inlineCode (justifill { update: dispatch <<< InlineCodeSubmitted, width: String.length "Magick" })
           , fragment $ renderCode codeSuffix
           , R.br {}
           , case state of

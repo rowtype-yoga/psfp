@@ -1,11 +1,10 @@
 module Yoga.InlineCode.Component where
 
 import Prelude
-import Prelude
-import CSS (value)
 import Data.Foldable (fold, intercalate)
 import Data.Maybe (Maybe)
-import Data.String (trim)
+import Data.Nullable (toNullable)
+import Data.Nullable as Nullable
 import Data.Time.Duration (Milliseconds(..))
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
@@ -13,12 +12,13 @@ import Effect.Aff (delay)
 import Effect.Class (liftEffect)
 import Foreign.Object as Obj
 import React.Basic.DOM as R
-import React.Basic.DOM.Events (capture, capture_, preventDefault, targetValue)
-import React.Basic.Events (handler, handler_)
-import React.Basic.Hooks (ReactComponent, component, useEffect, useState)
+import React.Basic.DOM.Events (targetValue)
+import React.Basic.Events (handler)
+import React.Basic.Hooks (ReactComponent, component, useState)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Aff (useAff)
 import Record.Extra (pick)
+import Unsafe.Coerce (unsafeCoerce)
 import Yoga.Helpers ((?||))
 import Yoga.InlineCode.Styles (styles)
 import Yoga.InlineCode.Styles as Styles
@@ -31,20 +31,22 @@ type PropsR
   = OptionalProps (Styles.PropsR)
 
 type OptionalProps r
-  = ( onSubmit ∷ String -> Effect Unit
+  = ( update ∷ String -> Effect Unit
+    , text ∷ Maybe String
     , className ∷ Maybe String
+    , readOnly ∷ Maybe Boolean
     | r
     )
 
 makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do
   useStyles <- makeStylesJSS styles
-  component "InlineCode" \props@{ className, onSubmit } -> React.do
-    value /\ modifyValue <- useState ""
+  component "InlineCode" \props@{ className, text, update, readOnly } -> React.do
+    value /\ modifyValue <- useState (text ?|| "")
     classes <- useStyles $ pick props
     useAff value do
       delay (200.0 # Milliseconds)
-      onSubmit value # liftEffect
+      update value # liftEffect
     pure
       $ R.div
           { className: classes.form
@@ -53,8 +55,10 @@ makeComponent = do
                 { className: intercalate " " [ classes.inlinecode, fold className ]
                 , maxLength: props.width ?|| 10
                 , value
+                , readOnly: readOnly ?|| false
+                , disabled: readOnly ?|| false
                 , spellCheck: false
-                , autoComplete: false
+                , autoComplete: unsafeCoerce "false"
                 , autoCorrect: "off"
                 , autoCapitalize: "off"
                 , onChange:

@@ -60,6 +60,6 @@ mkWrapper = do
     pure
       $ element inlineCode
           ( justifill
-              { onSubmit: dispatch <<< InlineCodeAction
+              { update: dispatch <<< InlineCodeAction
               }
           )
