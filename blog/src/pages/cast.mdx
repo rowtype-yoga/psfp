@@ -1,0 +1,67 @@
+import { Link } from 'gatsby'
+
+import SEO from '../components/seo'
+
+<SEO title="Home" keywords={['gatsby', 'application', 'react']} />
+
+# The beginning
+
+## Hocus
+
+```purescript
+--result pocus
+module Main where
+import Grimoire
+
+incantation :: Effect Unit
+incantation =
+--start here
+  cast "pocus"
+--end here
+```
+
+## Ala
+```purescript
+--result kazam
+module Main where
+import Grimoire
+
+incantation :: Effect Unit
+incantation = 
+  --start here
+  {-cast-} "kazam"
+--end here
+```
+
+## Abra
+```purescript
+--result cadabra
+module Main where
+import Grimoire
+
+incantation :: Effect Unit
+incantation = 
+  --start here
+  {-cast-} "{-cadabra-}"
+--end here
+```
+
+## Abra cadabra
+```purescript
+--result abra\ncadabra
+module Main where
+import Grimoire
+import Prelude (discard)
+
+incantation :: Effect Unit
+incantation = 
+  --start here
+  do
+  {-cast-} "{-abra-}"
+  {-cast-} "{-cadabra-}"
+--end here
+```
+
+
+<Link to="/take/"><b>Take</b> the book and venture on</Link>
+

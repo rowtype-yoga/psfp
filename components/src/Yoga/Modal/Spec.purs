@@ -6,11 +6,11 @@ import React.Basic.DOM as R
 import React.TestingLibrary (describeComponent, renderComponent)
 import Test.Spec (Spec, it)
 import Yoga.Modal.Component as Modal
-import Yoga.Spec.Helpers (withDarkTheme)
+import Yoga.Spec.Helpers (withSpecTheme)
 
 spec ∷ Spec Unit
 spec =
-  describeComponent (withDarkTheme Modal.makeComponent)
+  describeComponent (withSpecTheme Modal.makeComponent)
     "The Modal Component" do
     it "renders without problems" \modal -> do
       _ <-

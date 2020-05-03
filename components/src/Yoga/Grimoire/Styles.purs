@@ -1,8 +1,7 @@
-module Yoga.FillInTheGaps.Styles where
+module Yoga.Grimoire.Styles where
 
 import Prelude hiding (top)
-import CSS (backgroundColor, borderRadius, color, fontSize, fontStyle)
-import CSS.FontStyle (italic)
+import CSS (backgroundColor, borderRadius)
 import JSS (JSSClasses, JSSElem, jssClasses)
 import Yoga.Theme.Types (YogaTheme)
 
@@ -13,20 +12,14 @@ type Props
   = Record PropsR
 
 type Classes a
-  = ( codeContainer ∷ a
-    , solutionContainer ∷ a
+  = ( container ∷ a
     )
 
 styles ∷ JSSClasses YogaTheme Props (Classes (JSSElem Props))
 styles =
   jssClasses \theme@{ s0 } ->
-    { codeContainer:
+    { container:
       do
         borderRadius s0 s0 s0 s0
         backgroundColor theme.backgroundColourDarker
-    , solutionContainer:
-      do
-        fontStyle italic
-        fontSize theme.s1
-        color theme.highlightColour
     }

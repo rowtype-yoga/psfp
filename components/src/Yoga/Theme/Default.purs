@@ -5,7 +5,10 @@ import CSS (rem)
 import Color as Color
 import Data.Array.NonEmpty (cons')
 import Data.Maybe (fromMaybe')
+import JSS (JSSElem, jss)
 import Partial.Unsafe (unsafeCrashWith)
+import Yoga.Font.Rubik as Rubik
+import Yoga.Font.VictorMono as VictorMono
 import Yoga.Theme.Types (Theme)
 
 systemFontStack ∷ Array String
@@ -13,6 +16,9 @@ systemFontStack = [ "-apple-system", "BlinkMacSystemFont", "Helvetica", "Arial",
 
 hex ∷ String -> Color.Color
 hex c = c # Color.fromHexString # fromMaybe' \_ -> unsafeCrashWith $ "Invalid hex string " <> c
+
+fontFaces ∷ JSSElem {}
+fontFaces = jss (Rubik.fontFamilies <> VictorMono.fontFamilies)
 
 darkTheme ∷ Theme
 darkTheme =

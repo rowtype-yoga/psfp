@@ -43,7 +43,7 @@ stories =
     button <- Button.mkButton
     component "ExampleButton" \{ text, buttonType, onClick } -> React.do
       pure
-        $ jsx (button ∷ _ Button.Props)
+        $ jsx button
             { onClick
             , buttonType
             }

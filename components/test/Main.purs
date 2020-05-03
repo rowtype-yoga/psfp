@@ -7,8 +7,8 @@ import Test.Spec.Discovery (discover)
 import Test.Spec.Reporter (consoleReporter)
 import Test.Spec.Runner (runSpec)
 
-main :: Effect Unit
-main =
+main ∷ Effect Unit
+main = do
   launchAff_ do
     specs <- discover ".*Spec"
     runSpec [ consoleReporter ] specs

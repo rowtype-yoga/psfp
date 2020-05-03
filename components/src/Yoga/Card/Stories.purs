@@ -24,8 +24,9 @@ stories = do
     component "ExampleCard" \{} -> React.do
       pure
         $ jsx box {}
-            [ jsx card {}
-                [ R.text "hi there!" ]
+        $ pure
+        $ jsx card {}
+            [ jsx box {} [ R.text "hi there!" ]
             ]
 
 loremIpsum ∷ String

@@ -28,11 +28,10 @@ element_ x partialProps = element x props
   where
   props ∷ Record to
   props =
-    ( (fill ∷ { | thru } -> { | to })
-        ( (justify ∷ { | from } -> { | thru })
-            partialProps
-        )
-    )
+    (fill ∷ { | thru } -> { | to })
+      ( (justify ∷ { | from } -> { | thru })
+          partialProps
+      )
 
 type Kids r
   = ( kids ∷ Array JSX | r )

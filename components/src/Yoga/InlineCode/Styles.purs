@@ -1,10 +1,10 @@
 module Yoga.InlineCode.Styles where
 
 import Prelude
-import CSS (GenericFontFamily(..), Selector, TimingFunction(..), animation, background, border, borderBottom, borderBox, borderRadius, boxSizing, color, darken, display, element, focus, fontFamily, fontSize, fromString, inlineBlock, iterationCount, keyframes, lighten, lineHeight, nil, padding, sec, solid, transform, transition, unitless, width, (!*), (!+), (&), (?))
+import CSS (GenericFontFamily(..), Selector, TimingFunction(..), animation, background, border, borderBox, borderRadius, boxSizing, color, display, element, focus, fontFamily, fontSize, fromString, inlineBlock, iterationCount, keyframes, lineHeight, nil, padding, sec, solid, transform, unitless, width, (!*), (!+), (&), (?))
 import CSS.Animation (forwards, normalAnimationDirection)
-import CSS.Common (baseline, middle)
-import CSS.Overflow (hidden, overflow, visible)
+import CSS.Common (baseline)
+import CSS.Overflow (overflow, visible)
 import CSS.Size (ch)
 import CSS.Transform (scale3d)
 import CSS.VerticalAlign (verticalAlign)
@@ -30,13 +30,13 @@ type Props
 styles ∷
   JSSClasses YogaTheme Props
     ( inlinecode ∷ JSSElem Props
-    , form ∷ JSSElem Props
+    , container ∷ JSSElem Props
     , "@keyframes plop" ∷ JSSElem Props
     )
 styles = jssClasses go
   where
   go (theme@{ s0, s1, s_1, s_2, s_3, s_4, s_5 } ∷ CSSTheme) =
-    { form:
+    { container:
       do
         display inlineBlock
     , "@keyframes plop":
@@ -62,7 +62,7 @@ styles = jssClasses go
                 (NonEmpty (GenericFontFamily $ fromString "monospace") [])
               fontSize (s0)
               lineHeight (s0)
-              width $ (props.width ?|| 10 # toNumber # ch) !+ (unitless 4.2 !* s_5)
+              width $ (props.width ?|| 10 # toNumber # ch) !+ (unitless 4.3 !* s_5)
               padding nil s_5 nil s_5
               color theme.textColour
               this & focus

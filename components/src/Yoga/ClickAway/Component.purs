@@ -6,7 +6,7 @@ import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import React.Basic.DOM (CSS)
 import React.Basic.Events (handler_)
-import React.Basic.Extra.Hooks.UseKeyUp (useKeyUp)
+import React.Basic.Extra.Hooks.UseKeyUp (KeyCode(..), useKeyUp)
 import React.Basic.Helpers (jsx, orUndefined)
 import React.Basic.Hooks (ReactComponent, component, useState)
 import React.Basic.Hooks as React
@@ -32,7 +32,7 @@ makeComponent = do
   useStyles <- makeStylesJSS Style.styles
   component "ClickAway" \props -> React.do
     cs <- useStyles (pick props)
-    useKeyUp 27 $ ifJustTrue props.allowEscape props.onClick
+    useKeyUp Escape $ ifJustTrue props.allowEscape props.onClick
     animationDone /\ modifyAnimationDone <- useState false
     pure
       $ jsx imposter

@@ -35,6 +35,7 @@ playground/.spago
 playground/src/Main.purs
 
 blog/output
+blog/.psc-ide-port
 
 playgrounds/**
 !playgrounds/.gitkeep 

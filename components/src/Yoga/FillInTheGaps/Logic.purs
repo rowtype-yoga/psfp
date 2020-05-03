@@ -34,13 +34,30 @@ data Segment
 
 derive instance eqSegment ∷ Eq Segment
 derive instance ordSegment ∷ Ord Segment
+isHole ∷ Segment -> Boolean
+isHole = case _ of
+  Hole _ _ -> true
+  _ -> false
+
+holeToFiller ∷ Segment -> Segment
+holeToFiller = case _ of
+  Hole _ text -> Filler text
+  other -> other
+
 getResult ∷ Segment -> Maybe String
 getResult = case _ of
-  ExpectedResult r -> Just r
+  ExpectedResult r -> Just $ S.replaceAll (S.Pattern ("\\n")) (S.Replacement "\n") r
   _ -> Nothing
 
 findResult ∷ Array Segment -> Maybe String
 findResult = A.findMap getResult
+
+findFirstHoleIndex ∷ Array (Array Segment) -> Maybe { i ∷ Int, j ∷ Int }
+findFirstHoleIndex lines = do
+  i <- A.findIndex (map isHole >>> A.elem true) lines
+  line <- lines A.!! i
+  j <- A.findIndex isHole line
+  pure { i, j }
 
 toCode ∷ Array (Array Segment) -> String
 toCode lines = intercalate "\n" mapped

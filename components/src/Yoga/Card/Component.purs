@@ -1,21 +1,20 @@
 module Yoga.Card.Component where
 
 import Prelude
-import CSS (BackgroundImage, angular, deg, linearGradient, pct)
 import Color (cssStringRGBA)
 import Color as Color
+import Data.Foldable (fold)
 import Data.Interpolate (i)
 import Data.Maybe (Maybe)
-import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import JSS (JSSClasses, JSSElem, jssClasses)
 import React.Basic (JSX)
-import React.Basic.Helpers (jsx)
+import React.Basic.DOM as R
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
 import Record.Extra (pick)
 import Yoga.Box.Component as Box
-import Yoga.Helpers (ifJustTrue, (?||))
+import Yoga.Helpers (ifJustTrue)
 import Yoga.Theme (withAlpha)
 import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.Theme.Types (CSSTheme, YogaTheme)
@@ -29,6 +28,7 @@ styles =
     { card:
       \props ->
         { borderRadius: "var(--s-2)"
+        , overflow: "hidden"
         , boxShadow:
           i -- bottom right
             "var(--s-5) var(--s-3) var(--s-3) "
@@ -61,7 +61,7 @@ mkCard = do
   component "Card" \props@{ kids, className } -> React.do
     classes <- useStyles (pick props)
     pure
-      $ jsx box
-          { className: classes.card <> " " <> (className ?|| "")
+      $ R.div
+          { className: classes.card <> " " <> fold className
+          , children: kids
           }
-          kids

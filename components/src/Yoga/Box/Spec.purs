@@ -6,11 +6,11 @@ import React.Basic.DOM as R
 import React.TestingLibrary (describeComponent, renderComponent)
 import Test.Spec (Spec, it)
 import Yoga.Box.Component as Box
-import Yoga.Spec.Helpers (withDarkTheme)
+import Yoga.Spec.Helpers (withSpecTheme)
 
 spec ∷ Spec Unit
 spec =
-  describeComponent (withDarkTheme Box.makeComponent)
+  describeComponent (withSpecTheme Box.makeComponent)
     "The Box Component" do
     it "renders without problems" \stack -> do
       _ <-

@@ -9,11 +9,11 @@ import React.TestingLibrary (describeComponent, fireEventClick, renderComponent)
 import Test.Spec (Spec, it)
 import Test.Spec.Assertions (shouldEqual)
 import Yoga.CloseIcon.Component as CloseIcon
-import Yoga.Spec.Helpers (withDarkTheme)
+import Yoga.Spec.Helpers (withSpecTheme)
 
 spec ∷ Spec Unit
 spec =
-  describeComponent (withDarkTheme CloseIcon.makeComponent)
+  describeComponent (withSpecTheme CloseIcon.makeComponent)
     "The CloseIcon Component" do
     it "renders without problems" \closeicon -> do
       _ <-

@@ -1,0 +1,111 @@
+import { Link } from 'gatsby'
+
+import SEO from '../components/seo'
+
+<SEO title="Home" keywords={['gatsby', 'application', 'react']} />
+
+# Take
+
+## Hocu
+
+```purescript
+--result pocu
+module Main where
+import Grimoire
+import Data.String (take)
+
+incantation :: Effect Unit
+incantation =
+--start here
+  cast (take 4 "pocus")
+--end here
+```
+
+## Hoc
+
+```purescript
+--result poc
+module Main where
+import Grimoire
+import Data.String (take)
+
+incantation :: Effect Unit
+incantation =
+--start here
+  {-cast-} (take 3 "pocus")
+--end here
+```
+
+## H
+
+```purescript
+--result p
+module Main where
+import Grimoire
+import Data.String (take)
+
+incantation :: Effect Unit
+incantation =
+--start here
+  cast (take {-1-} "pocus")
+--end here
+```
+
+## Hocus
+```purescript
+--result pocus
+module Main where
+import Grimoire
+import Data.String (take)
+
+incantation :: Effect Unit
+incantation =
+--start here
+  {-cast-} ({-take-} 200 "pocus")
+--end here
+```
+
+## Ab
+```purescript
+--result cadab
+module Main where
+import Grimoire
+import Data.String (take)
+
+incantation :: Effect Unit
+incantation = 
+  --start here
+  {-cast-} ({-take-} 5 "cadabra")
+--end here
+```
+
+## Echo
+```purescript
+--result echo
+module Main where
+import Grimoire
+import Data.String (take)
+
+incantation :: Effect Unit
+incantation = 
+  --start here
+  cast (take {-4-} "echo")
+--end here
+```
+
+## Silence
+```purescript
+--result 
+module Main where
+import Grimoire
+import Data.String (take)
+
+incantation :: Effect Unit
+incantation = 
+  --start here
+  cast (take {-0-} "noise")
+--end here
+```
+
+<Link to="/optional/">That's it for now</Link>
+

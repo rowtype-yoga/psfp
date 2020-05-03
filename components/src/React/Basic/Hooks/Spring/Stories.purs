@@ -1,14 +1,11 @@
 module React.Basic.Hooks.Spring.Stories where
 
 import Prelude hiding (add)
-import Data.Function.Uncurried (mkFn2)
 import Data.Int (pow)
 import Data.Maybe (Maybe(..), isJust)
 import Data.Monoid (guard)
 import Data.Tuple.Nested ((/\))
-import Debug.Trace (spy)
 import Effect (Effect)
-import Effect.Unsafe (unsafePerformEffect)
 import JSS (jssClasses)
 import React.Basic.DOM (css)
 import React.Basic.DOM as R
@@ -24,8 +21,7 @@ import Yoga.Button.Component (mkButton)
 import Yoga.Card.Component (mkCard)
 import Yoga.Centre.Component as Centre
 import Yoga.Cluster.Component as Cluster
-import Yoga.Helpers ((?||))
-import Yoga.Spec.Helpers (withDarkTheme)
+import Yoga.Spec.Helpers (withSpecTheme)
 import Yoga.Stack.Component as Stack
 import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.Theme.Types (CSSTheme)
@@ -33,11 +29,11 @@ import Yoga.Theme.Types (CSSTheme)
 stories ∷ Effect Storybook
 stories = do
   storiesOf "Spring" do
-    add "The Spring" (withDarkTheme mkAnimated)
+    add "The Spring" (withSpecTheme mkAnimated)
       [ {} ]
-    add "The Transition" (withDarkTheme mkTransition)
+    add "The Transition" (withSpecTheme mkTransition)
       [ {} ]
-    add "The Drag" (withDarkTheme mkDragAnimated)
+    add "The Drag" (withSpecTheme mkDragAnimated)
       [ {} ]
 
 mkAnimated ∷ Effect (ReactComponent {})

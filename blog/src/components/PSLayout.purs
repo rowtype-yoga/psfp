@@ -2,42 +2,36 @@ module PSLayout where
 
 import Prelude
 
-import Control.Monad.State (evalStateT, get, put, runStateT)
-import Control.Monad.State as State
-import Control.Monad.Trans.Class (lift)
-import Data.Array (foldMap)
+import Data.Array (foldMap, intercalate)
 import Data.Array as Array
 import Data.Array.NonEmpty as NEA
 import Data.Either (Either(..))
-import Data.Foldable (fold)
 import Data.Function.Uncurried (mkFn2)
 import Data.Maybe (Maybe(..), fromMaybe, isJust)
 import Data.Monoid (guard)
-import Data.Monoid.Additive (Additive(..))
-import Data.Newtype (ala)
-import Data.Newtype as NT
 import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
 import Data.String as String
-import Data.Traversable (Accum, mapAccumL)
+import Data.Traversable (mapAccumL)
 import Data.Tuple.Nested ((/\))
 import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (launchAff_)
 import Effect.Class (liftEffect)
-import Effect.Class.Console (log)
-import JSS (jss, jssClasses)
+import JSS (jssClasses)
 import Justifill (justifill)
 import Milkis.Impl (FetchImpl)
 import React.Basic (JSX, ReactComponent, fragment)
 import React.Basic.DOM (unsafeCreateDOMComponent)
 import React.Basic.DOM as R
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (ReactChildren, component, componentWithChildren, element, memo, reactChildrenToArray, readRef, useEffect, useReducer, useRef, useState, writeRef)
+import React.Basic.Hooks (ReactChildren, component, componentWithChildren, element, memo, reactChildrenToArray, useReducer, useState)
 import React.Basic.Hooks as React
+import Shared.Models.Body (CompileResult)
 import Unsafe.Coerce (unsafeCoerce)
 import Yoga.Box.Component as Box
 import Yoga.ClickAway.Component as ClickAway
+import Yoga.CloseIcon.Component as CloseIcon
 import Yoga.CompileEditor.Component (mkCompileEditor)
 import Yoga.Compiler.Api (apiCompiler)
 import Yoga.Compiler.Types (Compiler)
@@ -113,9 +107,10 @@ mkLayout fetchImpl = do
                           , element modal (justifill modalProps)
                           ]
                 , element mdxProviderComponent
-                    { children: spy "children" children
+                    { children
                     , siteInfo
                     , showModal: dispatch <<< ShowModal
+                    , hideModal: dispatch HideModal
                     }
                 ]
             ]
@@ -136,6 +131,7 @@ mkMdxProviderComponent ∷
         { children ∷ ReactChildren JSX
         , siteInfo ∷ SiteQueryResult
         , showModal ∷ Modal.Props -> Effect Unit
+        , hideModal :: Effect Unit
         }
     )
 mkMdxProviderComponent compiler = do
@@ -148,6 +144,7 @@ mkMdxProviderComponent compiler = do
   quiz <- memo $ mkQuiz compiler
   h <- memo mkH
   p <- memo mkP
+  closeIcon <- CloseIcon.makeComponent
   useStyles <-
     makeStylesJSS
       $ jssClasses \(theme ∷ CSSTheme) ->
@@ -160,22 +157,32 @@ mkMdxProviderComponent compiler = do
             , borderRadius: "3px"
             }
           }
-  componentWithChildren "MDXProviderComponent" \{ children, siteInfo, showModal } -> React.do
+  componentWithChildren "MDXProviderComponent" \{ children, siteInfo, showModal, hideModal  } -> React.do
     classes <- useStyles {}
     visibleUntil /\ updateVisible <- useState 1
     let
-      onFailure = showModal (justifill { title: "Failed", kids: [ R.text "Try again" ] } ∷ Modal.Props)
+      onFailure title kids =
+        showModal
+          ( justifill
+              { title
+              , icon: element closeIcon { onClick: hideModal, style: Nothing }
+              , kids
+              } ∷ Modal.Props
+          )
+
       onSuccess = updateVisible (_ + one)
 
       mapVisible i kid =
         { accum: i + if isQuiz kid then one else zero
         , value: guard (i < visibleUntil) (pure kid)
         }
-      visibleKids :: Array JSX
-      visibleKids = reactChildrenToArray children 
-        # mapAccumL mapVisible zero
-        # _.value 
-        # Array.catMaybes
+
+      visibleKids ∷ Array JSX
+      visibleKids =
+        reactChildrenToArray children
+          # mapAccumL mapVisible zero
+          # _.value
+          # Array.catMaybes
 
       siteInfoJSX =
         R.div
@@ -205,10 +212,11 @@ mkMdxProviderComponent compiler = do
         , inlineCode:
           \props -> do
             R.span { className: classes.code, children: props.children }
-        , pre: mkFn2
-          \(props ∷ PreProps) other -> do
+        , pre:
+          mkFn2 \(props ∷ PreProps) other -> do
             let
               _ = spy "other" other
+
               childrenQ = Nullable.toMaybe props.children
 
               propsQ = (_.props >>> Nullable.toMaybe) =<< childrenQ
@@ -255,9 +263,9 @@ mkQuiz ∷ _ -> Effect (ReactComponent _)
 mkQuiz compiler = do
   fillInTheGaps <- FillInTheGaps.makeComponent
   box <- Box.makeComponent
-  component "Quiz" \({ initialSegments, onFailure, onSuccess } ∷ { initialSegments ∷ _, onFailure ∷ _, onSuccess :: _}) -> React.do
+  component "Quiz" \({ initialSegments, onFailure, onSuccess } ∷ { initialSegments ∷ _, onFailure ∷ _, onSuccess ∷ _ }) -> React.do
     segments /\ updateSegments <- useState initialSegments
-    solved /\ updateSolved <- useState false
+    solvedWith /\ updateSolvedWith <- useState Nothing
     pure
       $ jsx box {}
           [ element fillInTheGaps
@@ -270,9 +278,11 @@ mkQuiz compiler = do
                   liftEffect case result of
                     Right r
                       | String.stripSuffix (String.Pattern "\n") r.stdout == (findResult $ join segments) -> do
-                        updateSolved (const true)
+                        updateSolvedWith (const $ String.stripSuffix (String.Pattern "\n") r.stdout)
                         onSuccess
-                    _ -> onFailure
+                    Right r | r.stdout /= "\n" -> onFailure "Oh shit!" [R.text r.stdout]
+                    Right r -> onFailure "Oh shit!" [R.text r.stderr]
+                    Left (cr :: CompileResult) -> onFailure "Oh shit!" [R.text (intercalate ", " (cr.result <#> _.message))]
               , updateSegments:
                 \update -> do
                   let
@@ -281,7 +291,7 @@ mkQuiz compiler = do
                     old, new
                       | new == old -> mempty
                     _, _ -> updateSegments (const updated)
-              , readOnly: Just solved
+              , solvedWith
               }
           ]
 

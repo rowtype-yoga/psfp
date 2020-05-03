@@ -9,15 +9,14 @@ import JSS (JSSClasses, JSSElem, jss, jssClasses)
 import React.Basic (ReactComponent)
 import React.Basic.Hooks (JSX, component, fragment)
 import React.Basic.Hooks as React
-import Yoga.Font.Rubik as Rubik
-import Yoga.Font.VictorMono as VictorMono
 import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.Theme.Types (YogaTheme, CSSTheme)
 
 mkCssBaseline ∷
+  JSSElem {} ->
   Effect (ReactComponent { kids ∷ Array JSX })
-mkCssBaseline = do
-  useStyles <- makeStylesJSS styles
+mkCssBaseline fontFaces = do
+  useStyles <- makeStylesJSS (styles fontFaces)
   component "CSSBaseline" \{ kids } -> React.do
     classes <- useStyles {}
     pure
@@ -48,13 +47,13 @@ root theme =
     declare theme.s4Var
     declare theme.s5Var
 
-styles ∷ JSSClasses YogaTheme {} ( "@global" ∷ JSSElem {} )
-styles =
+styles ∷ JSSElem {} -> JSSClasses YogaTheme {} ( "@global" ∷ JSSElem {} )
+styles fontFaces =
   jssClasses \theme ->
     { "@global":
       jss
         { html
-        , "@font-face": jss (Rubik.fontFamilies <> VictorMono.fontFamilies)
+        , "@font-face": fontFaces
         , ":root": root theme
         , "*":
           { maxWidth: theme.measure

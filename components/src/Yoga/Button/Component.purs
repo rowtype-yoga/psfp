@@ -6,15 +6,18 @@ import CSS as Color
 import Data.Array.NonEmpty as NEA
 import Data.Foldable (intercalate)
 import Data.Interpolate (i)
-import Data.Maybe (Maybe)
+import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Effect (Effect)
 import JSS (JSSClasses, JSSElem, jssClasses)
+import Prim.Row (class Nub, class Union)
 import React.Basic (JSX)
+import React.Basic.DOM (Props_button)
 import React.Basic.DOM as R
 import React.Basic.Events (EventHandler)
 import React.Basic.Hooks (ReactComponent, component)
 import React.Basic.Hooks as React
+import Record as Record
 import Yoga.Helpers ((?||))
 import Yoga.Theme (withAlpha)
 import Yoga.Theme.Styles (makeStylesJSS)
@@ -195,39 +198,59 @@ styles =
             }
           }
 
-type Props
+type MyProps
+  = ( children ∷ Array JSX, className ∷ String, disabled ∷ Boolean, onClick ∷ EventHandler )
+
+type Props r
   = { kids ∷ Array JSX
     , buttonType ∷ Maybe ButtonType
     , onClick ∷ EventHandler
     , className ∷ Maybe String
+    , buttonProps ∷ Maybe { | r }
     }
 
-mkButton ∷ Effect (ReactComponent Props)
-mkButton = do
+mkButton ∷ Effect (ReactComponent (Props ()))
+mkButton = mkButtonWithProps
+
+type WithProps r
+  = Effect (ReactComponent (Props r))
+
+mkButtonWithProps ∷
+  ∀ extra given missing.
+  Union extra MyProps given =>
+  Nub given given =>
+  Union given missing Props_button =>
+  Effect (ReactComponent (Props extra))
+mkButtonWithProps = do
   useBaseStyles <- makeStylesJSS styles
   useHighlightStyles <- makeStylesJSS highlightStyles
-  component "Button" \props@{ kids, onClick } -> React.do
+  component "Button" \(props@{ kids, onClick } ∷ Props extra) -> React.do
     classes <- useBaseStyles {}
     { highlightedButton } <- useHighlightStyles {}
     let
       buttonType = props.buttonType ?|| PlainButton
 
       className = props.className ?|| ""
+
+      buttonProps ∷ { | MyProps }
+      buttonProps =
+        { className:
+          intercalate " "
+            [ classes.btn
+            , guard (buttonType == HighlightedButton) highlightedButton
+            , className
+            ]
+        , disabled: buttonType == DisabledButton
+        , onClick
+        , children: kids
+        }
     pure
       $ R.div
           { className: classes.container <> " " <> if buttonType == DisabledButton then classes.disabled else ""
           , children:
-            [ R.button
-                $ { className:
-                    intercalate " "
-                      [ classes.btn
-                      , guard (buttonType == HighlightedButton) highlightedButton
-                      , className
-                      ]
-                  , disabled: buttonType == DisabledButton
-                  , onClick
-                  , children: kids
-                  }
+            [ case props.buttonProps of
+                Just bps -> R.button $ Record.merge bps buttonProps
+                Nothing -> R.button buttonProps
             ]
           }
 

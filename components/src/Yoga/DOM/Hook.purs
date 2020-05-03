@@ -13,9 +13,9 @@ import React.Basic.Hooks as React
 import Unsafe.Coerce (unsafeCoerce)
 import Web.DOM (Node)
 import Web.DOM.Element (clientHeight)
-import Web.HTML (window)
+import Web.HTML (HTMLElement, window)
 import Web.HTML.HTMLDocument as Document
-import Web.HTML.HTMLElement (DOMRect, getBoundingClientRect)
+import Web.HTML.HTMLElement (DOMRect, focus, getBoundingClientRect)
 import Web.HTML.HTMLElement as HTMLElement
 import Web.HTML.Window (document)
 
@@ -28,7 +28,6 @@ newtype UseBoundingBox hooks
   )
 
 derive instance ntUseBoundingBox ∷ Newtype (UseBoundingBox hooks) _
-
 useBoundingBox ∷ Hook UseBoundingBox (Maybe DOMRect /\ Ref (Nullable Node))
 useBoundingBox =
   coerceHook React.do
@@ -48,7 +47,6 @@ newtype UseViewportHeight hooks
   = UseViewportHeight (UseLayoutEffect Unit (UseState (Maybe Number) hooks))
 
 derive instance ntUseViewportHeight ∷ Newtype (UseViewportHeight hooks) _
-
 useViewportHeight ∷ Hook UseViewportHeight (Maybe Number)
 useViewportHeight =
   coerceHook React.do
@@ -64,3 +62,20 @@ useViewportHeight =
           modifyViewportHeight (const $ Just ch)
       pure (pure unit)
     pure viewportHeight
+
+newtype UseFocus hooks
+  = UseFocus (UseLayoutEffect Unit (UseRef (Nullable Node) (UseState Boolean hooks)))
+
+derive instance ntUseFocus ∷ Newtype (UseFocus hooks) _
+useFocus ∷ Hook UseFocus (Ref (Nullable Node))
+useFocus =
+  coerceHook React.do
+    focussed /\ updateFocussed <- useState false
+    ref <- useRef Nullable.null
+    useLayoutEffect unit
+      $ mempty -- No callback
+      <* unless focussed do
+          maybeNode <- readRefMaybe ref
+          for_ (maybeNode >>= HTMLElement.fromNode) focus
+          updateFocussed (const true)
+    pure ref

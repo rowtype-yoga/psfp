@@ -18,6 +18,7 @@ import Web.Storage.Storage (getItem, setItem)
 import Yoga.Theme (fromTheme)
 import Yoga.Theme.CSSBaseline (mkCssBaseline)
 import Yoga.Theme.Default (darkTheme, lightTheme)
+import Yoga.Theme.Default as Default
 import Yoga.Theme.Provider (mkThemeProvider)
 import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.Theme.Types (CSSTheme)
@@ -63,7 +64,7 @@ mkThemeSwitcher ∷
     )
 mkThemeSwitcher = do
   themeProvider <- mkThemeProvider
-  baseline <- mkCssBaseline
+  baseline <- mkCssBaseline Default.fontFaces
   useStyles <-
     makeStylesJSS
       $ jssClasses \_ ->

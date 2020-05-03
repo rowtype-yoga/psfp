@@ -33,7 +33,7 @@ makeWrapper = do
           { segments
           , updateSegments
           , incantate: mempty
-          , readOnly: Just false
+          , solvedWith: Nothing
           }
 
 codeWithHoles =
