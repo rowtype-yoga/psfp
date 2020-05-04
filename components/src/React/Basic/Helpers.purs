@@ -1,6 +1,7 @@
 module React.Basic.Helpers where
 
-import Data.Maybe (Maybe, fromMaybe, fromMaybe')
+import Prelude
+import Data.Maybe (Maybe, fromMaybe')
 import Data.Symbol (SProxy(..))
 import Justifill.Fillable (class Fillable, class FillableFields, fill)
 import Justifill.Justifiable (class Justifiable, justify)
@@ -8,6 +9,7 @@ import Literals.Undefined (undefined)
 import Prim.Row (class Lacks, class Nub)
 import Prim.RowList (class RowToList)
 import React.Basic (JSX)
+import React.Basic.DOM as R
 import React.Basic.Hooks (ReactComponent, element)
 import Record (disjointUnion, insert)
 import Unsafe.Coerce (unsafeCoerce)
@@ -57,13 +59,18 @@ jsx x partialProps kids = element x propsWithKids
   where
   propsWithKids ∷ Record (Kids to)
   propsWithKids = disjointUnion { kids } props
+  fill' ∷ { | thru } -> { | to }
+  fill' = fill
+  justify' ∷ { | from } -> { | thru }
+  justify' = justify
   props ∷ Record to
-  props =
-    ( (fill ∷ { | thru } -> { | to })
-        ( (justify ∷ { | from } -> { | thru })
-            partialProps
-        )
-    )
+  props = fill' (justify' partialProps)
 
 orUndefined ∷ ∀ a. Maybe a -> a
 orUndefined = fromMaybe' \_ -> unsafeCoerce undefined
+
+classSpan ∷ String -> Array JSX -> JSX
+classSpan className children = R.span { className, children }
+
+classDiv ∷ String -> Array JSX -> JSX
+classDiv className children = R.div { className, children }

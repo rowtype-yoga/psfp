@@ -14,5 +14,11 @@ stories = do
     addDecorator fullScreenDecorator
     add "The Grimoire" Grimoire.makeComponent
       [ justifill
-          {}
+          { spells }
       ]
+
+spells =
+  [ { name: "cast", signature: "String -> Effect Unit", description: "Casts an incantation" }
+  , { name: "take", signature: "Int -> String -> String", description: "Takes the first characters of a string" }
+  , { name: "append", signature: "a -> a -> a", description: "Takes two values and produces one" }
+  ]

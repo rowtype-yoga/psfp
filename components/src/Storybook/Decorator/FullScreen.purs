@@ -112,5 +112,14 @@ mkThemeSwitcher = do
     pure
       $ element themeProvider
           { theme
-          , children: [ element baseline { kids: [ R.div_ [ themeSelect, child ] ] } ]
+          , children:
+            [ element baseline
+                { kids:
+                  [ R.div
+                      { style: css { width: "100%" }
+                      , children: [ themeSelect, child ]
+                      }
+                  ]
+                }
+            ]
           }

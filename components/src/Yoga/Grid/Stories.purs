@@ -1,9 +1,8 @@
 module Yoga.Grid.Stories where
 
 import Prelude hiding (add)
-import Data.Array (mapWithIndex, replicate, (..))
+import Data.Array ((..))
 import Effect (Effect)
-import Effect.Unsafe (unsafePerformEffect)
 import Justifill (justifill)
 import React.Basic.DOM (css)
 import React.Basic.DOM as R
@@ -15,7 +14,6 @@ import Yoga.Box.Component as Box
 import Yoga.Card.Component (mkCard)
 import Yoga.Centre.Component as Centre
 import Yoga.Grid.Component as Grid
-import Yoga.Stack.Component as Stack
 
 stories ∷ Effect Storybook
 stories = do

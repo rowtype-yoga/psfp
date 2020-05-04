@@ -7,6 +7,7 @@ import Data.Monoid (guard)
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import JSS (jssClasses)
+import Justifill (justifill)
 import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
@@ -129,8 +130,8 @@ mkDragAnimated = do
   component "Draggable Example" \{} -> React.do
     { style, set } <- useSpring $ const { x: 0.0, y: 0.0, config: { mass: 1, tension: 210, friction: 20 } }
     classes <- useStyles {}
-    mkDragProps <-
-      useDrag \{ down, movement: mx /\ my } ->
+    bindDragProps <-
+      useDrag (justifill {}) \{ down, movement: mx /\ my } ->
         set { x: if down then mx else 0.0, y: if down then my else 0.0 }
     pure
       $ animatedDiv
@@ -140,4 +141,4 @@ mkDragAnimated = do
           ]
         }
           `withDragProps`
-            mkDragProps
+            (bindDragProps unit)
