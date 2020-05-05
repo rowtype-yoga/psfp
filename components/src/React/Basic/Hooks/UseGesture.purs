@@ -5,7 +5,6 @@ import Data.Array ((!!))
 import Data.Maybe (Maybe, fromMaybe')
 import Data.Nullable (Nullable)
 import Data.Tuple.Nested ((/\), type (/\))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff.Compat (runEffectFn2)
 import Effect.Uncurried (EffectFn2)
@@ -22,10 +21,10 @@ import Yoga.Helpers ((?||))
 foreign import data UseDrag ∷ Type -> Type -> Type
 
 type DragHandler a
-  = { arg ∷ a, down ∷ Boolean, movement ∷ Number /\ Number } -> Effect Unit
+  = { arg ∷ a, down ∷ Boolean, movement ∷ Number /\ Number, xy ∷ Number /\ Number } -> Effect Unit
 
 type DragHandlerImpl a
-  = { args ∷ Array a, down ∷ Boolean, movement ∷ Array Number } -> Unit
+  = { args ∷ Array a, down ∷ Boolean, movement ∷ Array Number, xy ∷ Array Number } -> Unit
 
 type DragProps
   = { onMouseDown ∷ EventHandler, onTouchStart ∷ EventHandler }
@@ -53,12 +52,14 @@ useDrag dragOptions dragHandler = unsafeHook (runEffectFn2 useDragImpl dragHandl
   dragHandlerImpl ∷ DragHandlerImpl a
   dragHandlerImpl x =
     (unsafePerformEffect <<< dragHandler)
-      { arg, down: x.down, movement: mx /\ my
+      { arg, down: x.down, movement: mx /\ my, xy: xyX /\ xyY
       }
     where
     arg = x.args !! 0 # fromMaybe' (\_ -> unsafeCrashWith "Bollox")
     mx = x.movement !! 0 ?|| 0.0
     my = x.movement !! 1 ?|| 0.0
+    xyX = x.xy !! 0 ?|| 0.0
+    xyY = x.xy !! 1 ?|| 0.0
 
 withDragProps ∷
   ∀ attrs.
