@@ -1,6 +1,7 @@
 module Container.Sidebar where
 
 import Prelude
+import Data.Foldable (intercalate)
 import Data.Monoid (guard)
 import Effect (Effect)
 import JSS (jss, jssClasses)
@@ -28,7 +29,7 @@ mkSidebar = do
           { sidebar:
             jss
               { background: theme.interfaceColourLighter
-              , fontFamily: theme.textFontFamily
+              , fontFamily: intercalate ", " theme.textFontFamily
               , borderRadius: "0 12px 12px 0"
               , color: theme.textColour
               , position: "absolute"
@@ -86,7 +87,7 @@ mkSidebarLink = do
       $ jssClasses \(theme ∷ CSSTheme) ->
           { sidebarEntry:
             jss
-              { fontFamily: theme.headingFontFamily
+              { fontFamily: intercalate ", " theme.headingFontFamily
               , alignSelf: "flex-end"
               , justifyContent: "space-between"
               , alignContent: "stretch"
@@ -106,7 +107,7 @@ mkSidebarLink = do
               }
           , label:
             jss
-              { fontFamily: theme.textFontFamily
+              { fontFamily: intercalate ", " theme.textFontFamily
               , color: theme.textColour
               , paddingLeft: "20px"
               , textTransform: "uppercase"
@@ -121,7 +122,7 @@ mkSidebarLink = do
               , transition: "0.2s ease-in-out"
               , transitionDelay: "0.1s"
               , alignSelf: "flex-end"
-              , fill: theme.textColour <> " !important"
+              , fill: theme.textColour
               }
           }
   component "SidebarLink" \{ name, icon, collapsed } -> React.do

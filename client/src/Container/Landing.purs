@@ -8,6 +8,7 @@ import Effect.Uncurried (runEffectFn1)
 import JSS (jss, jssClasses)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
+import React.Basic.Helpers (jsx)
 import React.Basic.Hooks (ReactComponent, component, element, readRefMaybe, useRef)
 import React.Basic.Hooks as React
 import Unsafe.Coerce (unsafeCoerce)
@@ -82,6 +83,7 @@ mkLandingPage = do
           , landingImage:
             jss
               { position: "absolute"
+              , maxWidth: "none"
               , width: "100%"
               , height: "100%"
               }
@@ -112,21 +114,19 @@ mkLandingPage = do
                   , R.div
                       { className: classes.actionButton
                       , children:
-                        [ element button
-                            { buttonProps:
-                              { onClick:
-                                handler_ do
-                                  maybeNode <- readRefMaybe ref
-                                  for_ (maybeNode >>= HTMLElement.fromNode) \n -> do
-                                    height <- getBoundingClientRect n <#> _.height
-                                    win <- window
-                                    runEffectFn1 ((unsafeCoerce win).scrollTo)
-                                      { top: height, left: 0, behavior: "smooth" }
-                              }
+                        [ jsx button
+                            { onClick:
+                              handler_ do
+                                maybeNode <- readRefMaybe ref
+                                for_ (maybeNode >>= HTMLElement.fromNode) \n -> do
+                                  height <- getBoundingClientRect n <#> _.height
+                                  win <- window
+                                  runEffectFn1 ((unsafeCoerce win).scrollTo)
+                                    { top: height, left: 0, behavior: "smooth" }
                             , buttonType: HighlightedButton
-                            , kids: [ R.text buttonText ]
                             , className: classes.actualActionButton
                             }
+                            [ R.text buttonText ]
                         ]
                       }
                   ]

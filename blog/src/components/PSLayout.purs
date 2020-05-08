@@ -215,7 +215,6 @@ mkMdxProviderComponent compiler = do
         , pre:
           mkFn2 \(props ∷ PreProps) other -> do
             let
-              _ = spy "other" other
 
               childrenQ = Nullable.toMaybe props.children
 

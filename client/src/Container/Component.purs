@@ -13,6 +13,7 @@ import React.Basic.DOM as R
 import React.Basic.Hooks (ReactComponent, component, element, useRef, useState, (/\))
 import React.Basic.Hooks as React
 import Yoga.CompileEditor.Component (mkCompileEditor)
+import Yoga.Compiler.Api (apiCompiler)
 import Yoga.Polyfill.SmoothScrolling (smoothScrollPolyfill)
 import Yoga.SVG.Icon (appendIcon, applyflippedIcon, bindIcon, mapIcon)
 import Yoga.Theme.Provider (mkThemeProvider)
@@ -40,8 +41,7 @@ mkContainerContent = do
       $ jssClasses \(theme ∷ CSSTheme) ->
           { container:
             jss
-              { fontFamily: theme.textFontFamily
-              , color: theme.textColour
+              { color: theme.textColour
               , display: "flex"
               , flexDirection: "column"
               , width: "100%"
@@ -55,13 +55,13 @@ mkContainerContent = do
               , paddingLeft: "100px"
               , zIndex: 0
               }
-          , icon: jss { fill: "theme.textColour" }
+          , icon: jss { fill: theme.textColour }
           }
   landingPage <- mkLandingPage
   sidebar <- mkSidebar
   header <- mkHeader
   sidebarLink <- mkSidebarLink
-  editor <- mkCompileEditor windowFetch
+  editor <- mkCompileEditor (apiCompiler windowFetch)
   component "ContainerContent" \{ kids } -> React.do
     classes <- useStyles {}
     collapsed /\ modifyCollapsed <- useState true

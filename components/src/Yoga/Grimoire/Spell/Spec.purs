@@ -1,4 +1,4 @@
-module Yoga.Grimoire.Spell.Spec where
+module Yoga.Spell.Spec where
 
 import Prelude
 import Justifill (justifill)

@@ -2,10 +2,10 @@ module Container.Stories where
 
 import Prelude hiding (add)
 import Container.Component (mkContainer)
-import Decorator.FullScreen (fullScreenDecorator)
 import Effect (Effect)
 import React.Basic.Hooks (component, element)
 import React.Basic.Hooks as React
+import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
 import Yoga.Theme.Styles (useTheme)
 

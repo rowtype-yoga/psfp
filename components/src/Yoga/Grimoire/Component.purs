@@ -6,18 +6,19 @@ import Data.Array as Array
 import Data.FoldableWithIndex (findWithIndex)
 import Data.Lens (set)
 import Data.Lens.Index (ix)
-import Data.Maybe (Maybe(..), fromMaybe, isJust)
+import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
 import Data.Traversable (for, sequence)
 import Data.Tuple.Nested ((/\), type (/\))
 import Debug.Trace (spy)
 import Effect (Effect)
+import Effect.Aff (Milliseconds(..), delay, launchAff_)
 import Justifill (justifill)
 import React.Basic (ReactComponent)
 import React.Basic.DOM (css)
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (Ref, component, element, readRef, useLayoutEffect, useRef, writeRef)
+import React.Basic.Hooks (Ref, component, element, readRef, useEffect, useRef, writeRef)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Spring (animatedDiv, useSprings)
 import React.Basic.Hooks.UseGesture (useDrag, withDragProps)
@@ -30,6 +31,7 @@ import Yoga.Grid.Component as Grid
 import Yoga.Grimoire.Spell.Component as GrimoireSpell
 import Yoga.Grimoire.Styles (styles)
 import Yoga.Helpers ((?||))
+import Yoga.Resize.Hook (useResize)
 import Yoga.Spell.Types (Spell)
 import Yoga.Theme.Styles (makeStylesJSS, useTheme)
 import Yoga.Theme.Types (CSSTheme)
@@ -83,14 +85,28 @@ makeComponent = do
     nodeRefs <- useRef (props.spells $> (Nullable.null ∷ (_ Node)))
     positionsRef <- useRef ([] ∷ _ DOMRect)
     originalPositionsRef <- useRef ([] ∷ _ DOMRect)
-    useLayoutEffect unit do
-      rects <- getRects nodeRefs
-      writeRef positionsRef (rects <#> fromMaybe emptyDomRect)
-      writeRef originalPositionsRef (rects <#> fromMaybe emptyDomRect)
+    initialisedRef <- useRef false
+    windowSize <- useResize
+    let
+      init = do
+        initialised <- readRef initialisedRef
+        unless initialised do
+          rects <- getRects nodeRefs
+          writeRef positionsRef (rects <#> fromMaybe emptyDomRect)
+          writeRef originalPositionsRef (rects <#> fromMaybe emptyDomRect)
+          writeRef initialisedRef true
+    useEffect windowSize do
+      writeRef initialisedRef false
+      positions <- readRef positionsRef
+      let
+        newOriginalPositions = positions
+      writeRef positionsRef newOriginalPositions
+      init
       mempty
     theme ∷ CSSTheme <- useTheme
     bindDragProps <-
-      useDrag (justifill {}) \{ arg, down, movement: mx /\ my, xy: x /\ y } -> do
+      useDrag (justifill {}) \{ arg, down, movement: mx /\ my } -> do
+        init
         rects <- getRects nodeRefs
         originalPositions <- readRef originalPositionsRef
         positionsBefore <- readRef positionsRef
@@ -101,7 +117,10 @@ makeComponent = do
 
           overlapsOtherBefore = positionsBefore # findWithIndex \i' pos -> i' /= arg && overlaps currentPosDraggedBefore pos
         case down, overlapsOtherBefore of
-          false, Just { index, value } -> writeRef positionsRef (swap arg index positionsBefore ?|| positionsBefore)
+          false, Just { index, value } -> do
+            let
+              swapped = swap arg index positionsBefore ?|| positionsBefore
+            writeRef positionsRef swapped
           _, _ -> mempty
         positions <- readRef positionsRef
         let
@@ -121,9 +140,27 @@ makeComponent = do
             topOffset = if iPos == origIPos then 0.0 else iPos.top - origIPos.top
           case i == arg, down, overlapsOther of
             false, true, Just { index, value }
-              | index == i -> { x: originalPosDragged.left - value.left + leftOffset, y: originalPosDragged.top - value.top + topOffset, zIndex: 0, transform: "scale3d(1.0, 1.0, 1.0)", immediate: const false }
-            true, true, _ -> { x: mx + leftOffset, y: my + topOffset, zIndex: 1, transform: "scale3d(1.1, 1.1, 1.1)", immediate: \n -> n == "x" || n == "y" || n == "zIndex" }
-            _, _, _ -> { x: leftOffset, y: topOffset, zIndex: 0, transform: "scale3d(1.0, 1.0, 1.0)", immediate: const false }
+              | index == i ->
+                { x: originalPosDragged.left - value.left + leftOffset
+                , y: originalPosDragged.top - value.top + topOffset
+                , zIndex: 0
+                , transform: "scale3d(1.0, 1.0, 1.0)"
+                , immediate: const false
+                }
+            true, true, _ ->
+              { x: mx + leftOffset
+              , y: my + topOffset
+              , zIndex: 1
+              , transform: "scale3d(1.1, 1.1, 1.1)"
+              , immediate: \n -> n == "x" || n == "y" || n == "zIndex"
+              }
+            _, _, _ ->
+              { x: leftOffset
+              , y: topOffset
+              , zIndex: 0
+              , transform: "scale3d(1.0, 1.0, 1.0)"
+              , immediate: const false
+              }
     let
       renderSpells =
         mapWithIndex \i (spell /\ style) ->

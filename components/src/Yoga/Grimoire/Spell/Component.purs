@@ -56,7 +56,7 @@ makeComponent = do
               ]
           ]
     pure
-      $ jsx card { divRef: props.cardRef }
+      $ jsx card { divRef: props.cardRef, className: style.card }
           [ jsx box { className: style.container, padding: "var(--s-1)" }
               [ jsx stack { space: "var(--s-3)" }
                   [ headerCluster

@@ -1,11 +1,10 @@
 module Yoga.Grimoire.Spell.Styles where
 
 import Prelude hiding (top)
-import CSS (ColorSpace(..), backgroundColor, border, borderRadius, color, fontFamily, fontSize, fontStyle, height, mix, pct, sansSerif, solid, width)
+import CSS (backgroundColor, color, fontFamily, fontSize, fontStyle, height, pct, sansSerif, width)
 import CSS.FontStyle (italic)
 import CSS.TextAlign (rightTextAlign, textAlign)
 import Data.Array (fromFoldable)
-import Data.NonEmpty (NonEmpty(..))
 import Data.NonEmpty as NonEmpty
 import JSS (JSSClasses, JSSElem, jss, jssClasses)
 import Yoga.Theme.Types (YogaTheme)
@@ -20,13 +19,18 @@ type Classes a
   = ( container ∷ a
     , signature ∷ a
     , description ∷ a
+    , card ∷ a
     , name ∷ a
     )
 
 styles ∷ JSSClasses YogaTheme Props (Classes (JSSElem Props))
 styles =
   jssClasses \theme@{ s0, s1, s4, s5, s_5 } ->
-    { container:
+    { card:
+      do
+        width (100.0 # pct)
+        height (100.0 # pct)
+    , container:
       jss { userSelect: "none" }
         <> jss do
             backgroundColor theme.backgroundColourLighter

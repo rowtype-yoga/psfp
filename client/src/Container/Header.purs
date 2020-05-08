@@ -1,6 +1,7 @@
 module Container.Header where
 
 import Prelude
+import Data.Foldable (intercalate)
 import Data.Int (toNumber)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
@@ -34,7 +35,7 @@ mkHeader = do
             jss
               { backgroundColor: theme.interfaceColour
               , borderBottom: "0"
-              , fontFamily: theme.headingFontFamily
+              , fontFamily: intercalate ", " theme.headingFontFamily
               , gridArea: "header"
               , display: "flex"
               , alignItems: "center"
