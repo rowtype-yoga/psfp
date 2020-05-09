@@ -36,13 +36,13 @@ type GenericOptions r
   = { domTarget ∷ Maybe (Ref (Nullable Node)) | r }
 
 type DragOptions
-  = GenericOptions ()
+  = GenericOptions ( filterTaps ∷ Maybe Boolean )
 
 type DragOptionsImpl
-  = GenericOptionsImpl ()
+  = GenericOptionsImpl ( filterTaps ∷ Boolean )
 
 dragOptionsToImpl ∷ DragOptions -> DragOptionsImpl
-dragOptionsToImpl { domTarget } = { domTarget: domTarget # orUndefined }
+dragOptionsToImpl { domTarget, filterTaps } = { domTarget: domTarget # orUndefined, filterTaps: filterTaps ?|| false }
 
 foreign import useDragImpl ∷ ∀ a. EffectFn2 (DragHandlerImpl a) DragOptionsImpl (a -> DragProps)
 

@@ -1,12 +1,16 @@
 module Yoga.Grimoire.Spell.Styles where
 
 import Prelude hiding (top)
-import CSS (backgroundColor, color, fontFamily, fontSize, fontStyle, height, pct, sansSerif, width)
+import CSS (backgroundColor, black, block, boxShadow, color, display, fontFamily, fontSize, fontStyle, fromString, height, inlineBlock, key, lineHeight, maxHeight, pct, px, sansSerif, textOverflow, textWhitespace, unitless, whitespaceNoWrap, width)
 import CSS.FontStyle (italic)
+import CSS.Overflow (overflow, overflowY)
+import CSS.Overflow as Overflow
+import CSS.Text.Overflow (ellipsis)
 import CSS.TextAlign (rightTextAlign, textAlign)
 import Data.Array (fromFoldable)
 import Data.NonEmpty as NonEmpty
 import JSS (JSSClasses, JSSElem, jss, jssClasses)
+import Text.Parsing.StringParser.CodePoints (whiteSpace)
 import Yoga.Theme.Types (YogaTheme)
 
 type PropsR
@@ -30,11 +34,12 @@ styles =
       do
         width (100.0 # pct)
         height (100.0 # pct)
+        boxShadow (0.0 # unitless) (0.0 # unitless) (0.0 # unitless) black
     , container:
-      jss { userSelect: "none" }
-        <> jss do
-            backgroundColor theme.backgroundColourLighter
-            height (100.0 # pct)
+      jss do
+        backgroundColor theme.backgroundColourLighter
+        (key $ fromString "user-select") "none"
+        height (100.0 # pct)
     , signature:
       do
         color theme.textColour
@@ -48,6 +53,10 @@ styles =
         fontSize s1
     , description:
       do
+        display inlineBlock
         color theme.grey
         fontStyle italic
+        overflow Overflow.hidden
+        textWhitespace whitespaceNoWrap
+        textOverflow ellipsis
     }

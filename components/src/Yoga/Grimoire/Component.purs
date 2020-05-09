@@ -4,24 +4,25 @@ import Prelude
 import Data.Array (mapWithIndex, zip, (!!))
 import Data.Array as Array
 import Data.FoldableWithIndex (findWithIndex)
+import Data.Interpolate as Interp
 import Data.Lens (set)
 import Data.Lens.Index (ix)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
+import Data.Symbol (SProxy(..))
 import Data.Traversable (for, sequence)
 import Data.Tuple.Nested ((/\), type (/\))
-import Debug.Trace (spy)
 import Effect (Effect)
-import Effect.Aff (Milliseconds(..), delay, launchAff_)
 import Justifill (justifill)
 import React.Basic (ReactComponent)
 import React.Basic.DOM (css)
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (Ref, component, element, readRef, useEffect, useRef, writeRef)
+import React.Basic.Hooks (Ref, component, element, readRef, useLayoutEffect, useRef, writeRef)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Spring (animatedDiv, useSprings)
 import React.Basic.Hooks.UseGesture (useDrag, withDragProps)
+import Record as Record
 import Record.Extra (pick)
 import Unsafe.Coerce (unsafeCoerce)
 import Web.DOM (Node)
@@ -81,8 +82,20 @@ makeComponent = do
   useStyles <- makeStylesJSS styles
   component "Grimoire" \(props ∷ Props) -> React.do
     {} <- useStyles (pick props)
-    springs <- useSprings (Array.length props.spells) \_ -> { x: 0.0, y: 0.0, zIndex: 0, immediate: false, transform: "scale3d(1.0,1.0,1.0)" }
-    nodeRefs <- useRef (props.spells $> (Nullable.null ∷ (_ Node)))
+    let
+      defaultSprings = \_ ->
+        { x: 0.0
+        , y: 0.0
+        , height: "100px"
+        , shadow: 2
+        , borderRadius: "var(--s-2)"
+        , zIndex: 0
+        , immediate: const false
+        , transform: "scale3d(1.0,1.0,1.0)"
+        }
+    springs <-
+      useSprings (Array.length props.spells) defaultSprings
+    nodeRefs <- useRef (props.spells $> Nullable.null)
     positionsRef <- useRef ([] ∷ _ DOMRect)
     originalPositionsRef <- useRef ([] ∷ _ DOMRect)
     initialisedRef <- useRef false
@@ -95,19 +108,15 @@ makeComponent = do
           writeRef positionsRef (rects <#> fromMaybe emptyDomRect)
           writeRef originalPositionsRef (rects <#> fromMaybe emptyDomRect)
           writeRef initialisedRef true
-    useEffect windowSize do
+    useLayoutEffect windowSize do
+      springs.stop
       writeRef initialisedRef false
-      positions <- readRef positionsRef
-      let
-        newOriginalPositions = positions
-      writeRef positionsRef newOriginalPositions
-      init
+      springs.set defaultSprings
       mempty
     theme ∷ CSSTheme <- useTheme
     bindDragProps <-
-      useDrag (justifill {}) \{ arg, down, movement: mx /\ my } -> do
+      useDrag (justifill { filterTaps: true }) \{ arg, down, movement: mx /\ my } -> do
         init
-        rects <- getRects nodeRefs
         originalPositions <- readRef originalPositionsRef
         positionsBefore <- readRef positionsRef
         let
@@ -144,7 +153,10 @@ makeComponent = do
                 { x: originalPosDragged.left - value.left + leftOffset
                 , y: originalPosDragged.top - value.top + topOffset
                 , zIndex: 0
+                , shadow: 2
+                , height: "100px"
                 , transform: "scale3d(1.0, 1.0, 1.0)"
+                , borderRadius: "var(--s-2)"
                 , immediate: const false
                 }
             true, true, _ ->
@@ -152,11 +164,17 @@ makeComponent = do
               , y: my + topOffset
               , zIndex: 1
               , transform: "scale3d(1.1, 1.1, 1.1)"
+              , borderRadius: "var(--s-2)"
+              , height: "100px"
+              , shadow: 20
               , immediate: \n -> n == "x" || n == "y" || n == "zIndex"
               }
             _, _, _ ->
               { x: leftOffset
               , y: topOffset
+              , shadow: 2
+              , height: "100px"
+              , borderRadius: "var(--s-2)"
               , zIndex: 0
               , transform: "scale3d(1.0, 1.0, 1.0)"
               , immediate: const false
@@ -165,7 +183,7 @@ makeComponent = do
       renderSpells =
         mapWithIndex \i (spell /\ style) ->
           animatedDiv
-            $ { style: css style
+            $ { style: css (Record.insert (SProxy ∷ _ "boxShadow") ((unsafeCoerce (style.shadow ∷ Int)).interpolate (\s -> Interp.i "rgba(0, 0, 0, 0.15) 0px " s "px " (2 * s) "px 0px" ∷ String)) style)
               , ref: unsafeCoerce (unsafeUpdateRefs nodeRefs i)
               , children:
                 [ element

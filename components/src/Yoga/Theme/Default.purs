@@ -22,7 +22,7 @@ fontFaces = jss (Rubik.fontFamilies <> VictorMono.fontFamilies)
 
 darkTheme ∷ Theme
 darkTheme =
-  { backgroundColour: Color.hsl 238.0 0.18 0.20
+  { backgroundColour: Color.hsl 238.0 0.18 0.30
   , textColour: Color.hsl 225.0 0.28 0.90
   , interfaceColour: Color.hsl 225.0 0.48 0.12
   , highlightColour: Color.hsl 285.0 0.88 0.72

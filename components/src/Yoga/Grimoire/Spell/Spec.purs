@@ -2,7 +2,6 @@ module Yoga.Spell.Spec where
 
 import Prelude
 import Justifill (justifill)
-import React.Basic.DOM as R
 import React.TestingLibrary (describeComponent, renderComponent)
 import Test.Spec (Spec, it)
 import Yoga.Grimoire.Spell.Component as Spell
