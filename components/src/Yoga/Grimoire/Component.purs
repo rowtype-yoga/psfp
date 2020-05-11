@@ -1,24 +1,27 @@
 module Yoga.Grimoire.Component where
 
 import Prelude
-import Data.Array (mapWithIndex, zip, (!!))
+import Data.Array (length, mapWithIndex, zip, (!!), (..))
 import Data.Array as Array
 import Data.FoldableWithIndex (findWithIndex)
 import Data.Interpolate as Interp
 import Data.Lens (set)
 import Data.Lens.Index (ix)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..), fromMaybe, fromMaybe')
 import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
 import Data.Symbol (SProxy(..))
 import Data.Traversable (for, sequence)
 import Data.Tuple.Nested ((/\), type (/\))
+import Debug.Trace (spy)
 import Effect (Effect)
+import Effect.Class.Console (log)
 import Justifill (justifill)
+import Partial.Unsafe (unsafeCrashWith)
 import React.Basic (ReactComponent)
 import React.Basic.DOM (css)
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (Ref, component, element, readRef, useLayoutEffect, useRef, writeRef)
+import React.Basic.Hooks (Ref, component, element, readRef, useLayoutEffect, useRef, useState, writeRef)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Spring (animatedDiv, useSprings)
 import React.Basic.Hooks.UseGesture (useDrag, withDragProps)
@@ -31,7 +34,6 @@ import Web.HTML.HTMLElement as HTMLElement
 import Yoga.Grid.Component as Grid
 import Yoga.Grimoire.Spell.Component as GrimoireSpell
 import Yoga.Grimoire.Styles (styles)
-import Yoga.Helpers ((?||))
 import Yoga.Resize.Hook (useResize)
 import Yoga.Spell.Types (Spell)
 import Yoga.Theme.Styles (makeStylesJSS, useTheme)
@@ -69,11 +71,80 @@ translate (x /\ y) { top, right, bottom, left, width, height } =
   , height
   }
 
-swap ∷ ∀ a. Int -> Int -> Array a -> Maybe (Array a)
-swap i j arr = do
-  valueI <- arr !! i
-  valueJ <- arr !! j
-  pure $ (set (ix i) valueJ <<< set (ix j) valueI) arr
+orDie msg =
+  fromMaybe'
+    (\_ -> unsafeCrashWith msg)
+
+idxOrThrow ∷ ∀ a. Array a -> Int -> a
+idxOrThrow arr i = arr !! i # orDie (Interp.i "Invalid index " i " in array")
+
+infixl 8 idxOrThrow as !!!
+
+swap ∷ ∀ a. Int -> Int -> Array a -> Array a
+swap i j arr = swapped # orDie "Couldn't swap"
+  where
+  swapped = do
+    valueI <- arr !! i
+    valueJ <- arr !! j
+    pure $ (set (ix i) valueJ <<< set (ix j) valueI) arr
+
+springsteen init rectsRef positionsRef arg mx my down springs = do
+  init
+  rects <- readRef rectsRef
+  positionsBefore <- readRef positionsRef
+  let
+    rectDragged = rects !!! (positionsBefore !!! arg)
+    currentPosDragged = rectDragged # translate (mx /\ my)
+    orderedRectsBefore = positionsBefore <#> (rects !!! _)
+    overlapsOtherBefore = orderedRectsBefore # findWithIndex \i rect -> i /= arg && overlaps currentPosDragged rect
+  case down, overlapsOtherBefore of
+    false, Just { index } -> do
+      let
+        newPositions = swap arg index positionsBefore
+      writeRef positionsRef $ spy "new posis" newPositions
+    _, _ -> mempty
+  -- alles gut bis hierher, glaube ich
+  positions <- readRef positionsRef
+  springs.set \i -> do
+    let
+      j = positions !!! i
+      isTheDraggedOne = i == arg
+      originalRect = rects !!! i
+      currentRect = rects !!! j
+      leftOffset = currentRect.left - originalRect.left
+      topOffset = currentRect.top - originalRect.top
+    case isTheDraggedOne, down, overlapsOtherBefore of
+      true, true, _ ->
+        { x: mx + leftOffset
+        , y: my + topOffset
+        , zIndex: 1
+        , transform: "scale3d(1.1, 1.1, 1.1)"
+        , borderRadius: "var(--s-2)"
+        , height: "100px"
+        , shadow: 20
+        , immediate: \n -> n == "x" || n == "y" || n == "zIndex"
+        }
+      false, true, Just { index, value }
+        | index == i ->
+          { x: rectDragged.left - currentRect.left + leftOffset
+          , y: rectDragged.top - currentRect.top + topOffset
+          , zIndex: 0
+          , shadow: 2
+          , height: "100px"
+          , transform: "scale3d(1.0, 1.0, 1.0)"
+          , borderRadius: "var(--s-2)"
+          , immediate: const false
+          }
+      _, _, _ ->
+        { x: leftOffset
+        , y: topOffset
+        , shadow: 2
+        , height: "100px"
+        , borderRadius: "var(--s-2)"
+        , zIndex: 0
+        , transform: "scale3d(1.0, 1.0, 1.0)"
+        , immediate: const false
+        }
 
 makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do
@@ -90,95 +161,45 @@ makeComponent = do
         , shadow: 2
         , borderRadius: "var(--s-2)"
         , zIndex: 0
-        , immediate: const false
+        , immediate: const true
         , transform: "scale3d(1.0,1.0,1.0)"
         }
-    springs <-
-      useSprings (Array.length props.spells) defaultSprings
-    nodeRefs <- useRef (props.spells $> Nullable.null)
-    positionsRef <- useRef ([] ∷ _ DOMRect)
-    originalPositionsRef <- useRef ([] ∷ _ DOMRect)
+    springs <- useSprings (Array.length props.spells) defaultSprings
+    nodeRefs ∷ Ref (Array (Nullable (_))) <- useRef (props.spells $> Nullable.null)
+    spells /\ updateSpells <- useState props.spells
+    positionsRef <- useRef ([] ∷ _ Int)
+    rectsRef <- useRef ([] ∷ _ DOMRect)
     initialisedRef <- useRef false
     windowSize <- useResize
     let
       init = do
         initialised <- readRef initialisedRef
         unless initialised do
-          rects <- getRects nodeRefs
-          writeRef positionsRef (rects <#> fromMaybe emptyDomRect)
-          writeRef originalPositionsRef (rects <#> fromMaybe emptyDomRect)
+          log "initialising"
+          refs <- getRects nodeRefs
+          positions <- readRef positionsRef
+          writeRef positionsRef (0 .. (length props.spells - 1))
+          let
+            rects = refs <#> fromMaybe emptyDomRect
+          writeRef rectsRef rects
           writeRef initialisedRef true
     useLayoutEffect windowSize do
-      springs.stop
-      writeRef initialisedRef false
       springs.set defaultSprings
+      positionsBefore <- readRef positionsRef
+      when (positionsBefore == []) do
+        log "resetting positions"
+        writeRef positionsRef (0 .. (length props.spells - 1))
+      positions <- readRef positionsRef
+      updateSpells (const $ positions <#> (spells !!! _))
+      nodes <- readRef nodeRefs
+      writeRef nodeRefs (positions <#> (nodes !!! _))
+      writeRef initialisedRef false
+      init
       mempty
     theme ∷ CSSTheme <- useTheme
     bindDragProps <-
-      useDrag (justifill { filterTaps: true }) \{ arg, down, movement: mx /\ my } -> do
-        init
-        originalPositions <- readRef originalPositionsRef
-        positionsBefore <- readRef positionsRef
-        let
-          originalPosDraggedBefore = positionsBefore !! arg ?|| emptyDomRect
-
-          currentPosDraggedBefore = originalPosDraggedBefore # translate (mx /\ my)
-
-          overlapsOtherBefore = positionsBefore # findWithIndex \i' pos -> i' /= arg && overlaps currentPosDraggedBefore pos
-        case down, overlapsOtherBefore of
-          false, Just { index, value } -> do
-            let
-              swapped = swap arg index positionsBefore ?|| positionsBefore
-            writeRef positionsRef swapped
-          _, _ -> mempty
-        positions <- readRef positionsRef
-        let
-          originalPosDragged = positions !! arg ?|| emptyDomRect
-
-          currentPosDragged = originalPosDragged # translate (mx /\ my)
-
-          overlapsOther = positions # findWithIndex \i' pos -> i' /= arg && overlaps currentPosDragged pos
-        springs.set \i -> do
-          let
-            iPos = positions !! i ?|| emptyDomRect
-
-            origIPos = originalPositions !! i ?|| emptyDomRect
-
-            leftOffset = if iPos == origIPos then 0.0 else iPos.left - origIPos.left
-
-            topOffset = if iPos == origIPos then 0.0 else iPos.top - origIPos.top
-          case i == arg, down, overlapsOther of
-            false, true, Just { index, value }
-              | index == i ->
-                { x: originalPosDragged.left - value.left + leftOffset
-                , y: originalPosDragged.top - value.top + topOffset
-                , zIndex: 0
-                , shadow: 2
-                , height: "100px"
-                , transform: "scale3d(1.0, 1.0, 1.0)"
-                , borderRadius: "var(--s-2)"
-                , immediate: const false
-                }
-            true, true, _ ->
-              { x: mx + leftOffset
-              , y: my + topOffset
-              , zIndex: 1
-              , transform: "scale3d(1.1, 1.1, 1.1)"
-              , borderRadius: "var(--s-2)"
-              , height: "100px"
-              , shadow: 20
-              , immediate: \n -> n == "x" || n == "y" || n == "zIndex"
-              }
-            _, _, _ ->
-              { x: leftOffset
-              , y: topOffset
-              , shadow: 2
-              , height: "100px"
-              , borderRadius: "var(--s-2)"
-              , zIndex: 0
-              , transform: "scale3d(1.0, 1.0, 1.0)"
-              , immediate: const false
-              }
+      useDrag (justifill { filterTaps: true }) \{ arg, down, movement: mx /\ my } ->
+        springsteen init rectsRef positionsRef arg mx my down springs
     let
       renderSpells =
         mapWithIndex \i (spell /\ style) ->
@@ -196,7 +217,7 @@ makeComponent = do
                 `withDragProps`
                   bindDragProps i
     pure
-      $ jsx grid {} (renderSpells (props.spells `zip` springs.styles))
+      $ jsx grid {} (renderSpells (spells `zip` springs.styles))
 
 foreign import unsafeArraySetAt ∷ ∀ a. Int -> a -> Array a -> Array a
 
