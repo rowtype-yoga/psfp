@@ -21,10 +21,22 @@ import Yoga.Helpers ((?||))
 foreign import data UseDrag ∷ Type -> Type -> Type
 
 type DragHandler a
-  = { arg ∷ a, down ∷ Boolean, movement ∷ Number /\ Number, xy ∷ Number /\ Number } -> Effect Unit
+  = { arg ∷ a
+    , down ∷ Boolean
+    , movement ∷ Number /\ Number
+    , xy ∷ Number /\ Number
+    , tap ∷ Boolean
+    } ->
+    Effect Unit
 
 type DragHandlerImpl a
-  = { args ∷ Array a, down ∷ Boolean, movement ∷ Array Number, xy ∷ Array Number } -> Unit
+  = { args ∷ Array a
+    , down ∷ Boolean
+    , movement ∷ Array Number
+    , xy ∷ Array Number
+    , tap ∷ Boolean
+    } ->
+    Unit
 
 type DragProps
   = { onMouseDown ∷ EventHandler, onTouchStart ∷ EventHandler }
@@ -52,7 +64,7 @@ useDrag dragOptions dragHandler = unsafeHook (runEffectFn2 useDragImpl dragHandl
   dragHandlerImpl ∷ DragHandlerImpl a
   dragHandlerImpl x =
     (unsafePerformEffect <<< dragHandler)
-      { arg, down: x.down, movement: mx /\ my, xy: xyX /\ xyY
+      { arg, down: x.down, tap: x.tap, movement: mx /\ my, xy: xyX /\ xyY
       }
     where
     arg = x.args !! 0 # fromMaybe' (\_ -> unsafeCrashWith "Bollox")

@@ -12,8 +12,8 @@ import React.Basic.Hooks (Hook, UseLayoutEffect, UseRef, UseState, coerceHook, r
 import React.Basic.Hooks as React
 import Unsafe.Coerce (unsafeCoerce)
 import Web.DOM (Node)
-import Web.DOM.Element (clientHeight)
-import Web.HTML (HTMLElement, window)
+import Web.DOM.Element (clientHeight, clientWidth)
+import Web.HTML (window)
 import Web.HTML.HTMLDocument as Document
 import Web.HTML.HTMLElement (DOMRect, focus, getBoundingClientRect)
 import Web.HTML.HTMLElement as HTMLElement
@@ -62,6 +62,26 @@ useViewportHeight =
           modifyViewportHeight (const $ Just ch)
       pure (pure unit)
     pure viewportHeight
+
+newtype UseViewportWidth hooks
+  = UseViewportWidth (UseLayoutEffect Unit (UseState (Maybe Number) hooks))
+
+derive instance ntUseViewportWidth ∷ Newtype (UseViewportWidth hooks) _
+useViewportWidth ∷ Hook UseViewportWidth (Maybe Number)
+useViewportWidth =
+  coerceHook React.do
+    viewportWidth /\ modifyViewportWidth <- useState Nothing
+    useLayoutEffect unit do
+      doc <- window >>= document
+      let
+        maybeElem = Document.toNode doc # HTMLElement.fromNode
+      case maybeElem of
+        Nothing -> pure unit
+        Just elem -> do
+          ch <- clientWidth (HTMLElement.toElement elem)
+          modifyViewportWidth (const $ Just ch)
+      pure (pure unit)
+    pure viewportWidth
 
 newtype UseFocus hooks
   = UseFocus (UseLayoutEffect Unit (UseRef (Nullable Node) (UseState Boolean hooks)))
