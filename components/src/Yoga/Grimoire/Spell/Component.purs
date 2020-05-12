@@ -3,16 +3,13 @@ module Yoga.Grimoire.Spell.Component where
 import Prelude
 import CSS (AlignItemsValue, JustifyContentValue, spaceBetween)
 import CSS.Common (baseline)
-import Data.Maybe (Maybe)
-import Data.Nullable (Nullable)
 import Effect (Effect)
 import React.Basic (ReactComponent)
 import React.Basic.DOM as R
 import React.Basic.Helpers (classSpan, jsx)
-import React.Basic.Hooks (Ref, component)
+import React.Basic.Hooks (component)
 import React.Basic.Hooks as React
 import Record.Extra (pick)
-import Web.DOM (Node)
 import Yoga.Box.Component as Box
 import Yoga.Card.Component (mkCard)
 import Yoga.Centre.Component as Centre
@@ -27,7 +24,6 @@ import Yoga.Theme.Types (CSSTheme)
 
 type Props
   = { spell ∷ Spell
-    , cardRef ∷ Maybe (Ref (Nullable Node))
     | Style.PropsR
     }
 
@@ -56,7 +52,7 @@ makeComponent = do
               ]
           ]
     pure
-      $ jsx card { divRef: props.cardRef, className: style.card }
+      $ jsx card { className: style.card }
           [ jsx box { className: style.container, padding: "var(--s-1)" }
               [ jsx stack { space: "var(--s-3)" }
                   [ headerCluster

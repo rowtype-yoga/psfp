@@ -13,7 +13,6 @@ import Data.Nullable as Nullable
 import Data.Symbol (SProxy(..))
 import Data.Traversable (for, sequence)
 import Data.Tuple.Nested ((/\), type (/\))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class.Console (log)
 import Justifill (justifill)
@@ -88,6 +87,19 @@ swap i j arr = swapped # orDie "Couldn't swap"
     valueJ <- arr !! j
     pure $ (set (ix i) valueJ <<< set (ix j) valueI) arr
 
+regularScale = "scale3d(1.0, 1.0, 1.0)"
+
+scaledUp = "scale3d(1.1, 1.1, 1.1)"
+
+defaultSprings =
+  { x: 0.0
+  , y: 0.0
+  , shadow: 5
+  , zIndex: 0
+  , immediate: const true
+  , transform: "scale3d(1.0,1.0,1.0)"
+  }
+
 springsteen init rectsRef positionsRef arg mx my down springs = do
   init
   rects <- readRef rectsRef
@@ -96,55 +108,43 @@ springsteen init rectsRef positionsRef arg mx my down springs = do
     rectDragged = rects !!! (positionsBefore !!! arg)
     currentPosDragged = rectDragged # translate (mx /\ my)
     orderedRectsBefore = positionsBefore <#> (rects !!! _)
-    overlapsOtherBefore = orderedRectsBefore # findWithIndex \i rect -> i /= arg && overlaps currentPosDragged rect
-  case down, overlapsOtherBefore of
+    overlapsOther = orderedRectsBefore # findWithIndex \i rect -> i /= arg && overlaps currentPosDragged rect
+  case down, overlapsOther of
     false, Just { index } -> do
       let
         newPositions = swap arg index positionsBefore
-      writeRef positionsRef $ spy "new posis" newPositions
+      writeRef positionsRef newPositions
     _, _ -> mempty
-  -- alles gut bis hierher, glaube ich
   positions <- readRef positionsRef
   springs.set \i -> do
     let
-      j = positions !!! i
-      isTheDraggedOne = i == arg
       originalRect = rects !!! i
-      currentRect = rects !!! j
+      currentRect = rects !!! (positions !!! i)
       leftOffset = currentRect.left - originalRect.left
       topOffset = currentRect.top - originalRect.top
-    case isTheDraggedOne, down, overlapsOtherBefore of
+    case i == arg, down, overlapsOther of
       true, true, _ ->
-        { x: mx + leftOffset
-        , y: my + topOffset
-        , zIndex: 1
-        , transform: "scale3d(1.1, 1.1, 1.1)"
-        , borderRadius: "var(--s-2)"
-        , height: "100px"
-        , shadow: 20
-        , immediate: \n -> n == "x" || n == "y" || n == "zIndex"
-        }
+        defaultSprings
+          { x = mx + leftOffset
+          , y = my + topOffset
+          , zIndex = 1
+          , transform = scaledUp
+          , shadow = 20
+          , immediate = \n -> n == "x" || n == "y" || n == "zIndex"
+          }
       false, true, Just { index, value }
         | index == i ->
-          { x: rectDragged.left - currentRect.left + leftOffset
-          , y: rectDragged.top - currentRect.top + topOffset
-          , zIndex: 0
-          , shadow: 2
-          , height: "100px"
-          , transform: "scale3d(1.0, 1.0, 1.0)"
-          , borderRadius: "var(--s-2)"
-          , immediate: const false
-          }
+          defaultSprings
+            { x = rectDragged.left - currentRect.left + leftOffset
+            , y = rectDragged.top - currentRect.top + topOffset
+            , immediate = const false
+            }
       _, _, _ ->
-        { x: leftOffset
-        , y: topOffset
-        , shadow: 2
-        , height: "100px"
-        , borderRadius: "var(--s-2)"
-        , zIndex: 0
-        , transform: "scale3d(1.0, 1.0, 1.0)"
-        , immediate: const false
-        }
+        defaultSprings
+          { x = leftOffset
+          , y = topOffset
+          , immediate = const false
+          }
 
 makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do
@@ -152,19 +152,8 @@ makeComponent = do
   spellComponent <- GrimoireSpell.makeComponent
   useStyles <- makeStylesJSS styles
   component "Grimoire" \(props ∷ Props) -> React.do
-    {} <- useStyles (pick props)
-    let
-      defaultSprings = \_ ->
-        { x: 0.0
-        , y: 0.0
-        , height: "100px"
-        , shadow: 2
-        , borderRadius: "var(--s-2)"
-        , zIndex: 0
-        , immediate: const true
-        , transform: "scale3d(1.0,1.0,1.0)"
-        }
-    springs <- useSprings (Array.length props.spells) defaultSprings
+    classes <- useStyles (pick props)
+    springs <- useSprings (Array.length props.spells) (const defaultSprings)
     nodeRefs ∷ Ref (Array (Nullable (_))) <- useRef (props.spells $> Nullable.null)
     spells /\ updateSpells <- useState props.spells
     positionsRef <- useRef ([] ∷ _ Int)
@@ -184,7 +173,7 @@ makeComponent = do
           writeRef rectsRef rects
           writeRef initialisedRef true
     useLayoutEffect windowSize do
-      springs.set defaultSprings
+      springs.set (const defaultSprings)
       positionsBefore <- readRef positionsRef
       when (positionsBefore == []) do
         log "resetting positions"
@@ -204,15 +193,14 @@ makeComponent = do
       renderSpells =
         mapWithIndex \i (spell /\ style) ->
           animatedDiv
-            $ { style: css (Record.insert (SProxy ∷ _ "boxShadow") ((unsafeCoerce (style.shadow ∷ Int)).interpolate (\s -> Interp.i "rgba(0, 0, 0, 0.15) 0px " s "px " (2 * s) "px 0px" ∷ String)) style)
+            $ { style:
+                css
+                  $ Record.insert (SProxy ∷ _ "boxShadow")
+                      ((unsafeCoerce (style.shadow ∷ Int)).interpolate (\s -> Interp.i "rgba(0, 0, 0, 0.15) 0px " s "px " (2 * s) "px 0px" ∷ String))
+                      style
+              , className: classes.container
               , ref: unsafeCoerce (unsafeUpdateRefs nodeRefs i)
-              , children:
-                [ element
-                    spellComponent
-                    { spell
-                    , cardRef: Nothing
-                    }
-                ]
+              , children: [ element spellComponent { spell } ]
               }
                 `withDragProps`
                   bindDragProps i

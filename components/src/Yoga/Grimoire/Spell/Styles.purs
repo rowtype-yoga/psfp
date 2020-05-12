@@ -1,9 +1,9 @@
 module Yoga.Grimoire.Spell.Styles where
 
 import Prelude hiding (top)
-import CSS (backgroundColor, black, block, boxShadow, color, display, fontFamily, fontSize, fontStyle, fromString, height, inlineBlock, key, lineHeight, maxHeight, pct, px, sansSerif, textOverflow, textWhitespace, unitless, whitespaceNoWrap, width)
+import CSS (backgroundColor, black, boxShadow, color, darken, display, fontFamily, fontSize, fontStyle, fromString, height, inlineBlock, key, pct, rgba, sansSerif, textOverflow, textWhitespace, unitless, white, whitespaceNoWrap, width)
 import CSS.FontStyle (italic)
-import CSS.Overflow (overflow, overflowY)
+import CSS.Overflow (overflow)
 import CSS.Overflow as Overflow
 import CSS.Text.Overflow (ellipsis)
 import CSS.TextAlign (rightTextAlign, textAlign)
@@ -34,10 +34,12 @@ styles =
       do
         width (100.0 # pct)
         height (100.0 # pct)
-        boxShadow (0.0 # unitless) (0.0 # unitless) (0.0 # unitless) black
+        boxShadow (0.0 # unitless) (0.0 # unitless) (0.0 # unitless) white
+        backgroundColor $ rgba 0 0 0 0.0
     , container:
       jss do
-        backgroundColor theme.backgroundColourLighter
+        backgroundColor $ rgba 0 0 0 0.0
+        width (100.0 # pct)
         (key $ fromString "user-select") "none"
         height (100.0 # pct)
     , signature:

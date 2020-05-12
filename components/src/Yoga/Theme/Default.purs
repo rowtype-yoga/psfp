@@ -24,7 +24,7 @@ darkTheme ∷ Theme
 darkTheme =
   { backgroundColour: Color.hsl 238.0 0.18 0.30
   , textColour: Color.hsl 225.0 0.28 0.90
-  , interfaceColour: Color.hsl 225.0 0.48 0.12
+  , interfaceColour: Color.hsl 235.0 0.22 0.28
   , highlightColour: Color.hsl 285.0 0.88 0.72
   , altHighlightColour: Color.hsl 84.0 0.617 0.631
   , textFontFamily: cons' "Rubik" systemFontStack
@@ -47,8 +47,8 @@ lightTheme ∷ Theme
 lightTheme =
   darkTheme
     { textColour = Color.hsl 220.0 0.18 0.30
-    , backgroundColour = Color.hsl 30.0 0.50 0.96
-    , interfaceColour = Color.hsl 210.0 0.10 0.89
+    , backgroundColour = Color.hsl 30.0 0.50 0.97
+    , interfaceColour = Color.hsl 350.0 0.40 0.97
     , highlightColour = Color.hsl 350.0 0.93 0.67
     , altHighlightColour = Color.hsl 84.0 0.617 0.631
     , green = Color.hsl 170.0 0.39 0.40
