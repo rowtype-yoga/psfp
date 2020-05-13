@@ -32,10 +32,12 @@ styles =
       \props ->
         { borderRadius: "var(--s-2)"
         , overflow: "hidden"
+        , borderTop: "1px solid rgba(255,255,255,0.1)"
+        , borderBottom: "1px solid rgba(0,0,0,0.1)"
         , boxShadow:
           i -- bottom right
             "var(--s-5) var(--s-3) var(--s-3) "
-            (cssStringRGBA $ withAlpha 0.13 Color.black)
+            (cssStringRGBA $ withAlpha 0.1 Color.black)
             ", calc(var(--s-5) * -1) calc(-1 * var(--s-5)) var(--s-2) "
             (cssStringRGBA $ withAlpha 0.1 Color.black) ∷
             String

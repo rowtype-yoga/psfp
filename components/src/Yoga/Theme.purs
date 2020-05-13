@@ -50,9 +50,9 @@ fromTheme theme =
         >>> RB.insert (f ∷ _ "backgroundColourLightest")
             (theme.backgroundColour # lighter # lighter)
         >>> RB.insert (f ∷ _ "backgroundColourDarker")
-            (theme.backgroundColour # darker)
+            (theme.backgroundColour # darkerBackground)
         >>> RB.insert (f ∷ _ "backgroundColourDarkest")
-            (theme.backgroundColour # darker # darker)
+            (theme.backgroundColour # darkerBackground # darkerBackground)
         >>> RB.insert (f ∷ _ "interfaceColourLighter")
             (theme.interfaceColour # lighter)
         >>> RB.insert (f ∷ _ "interfaceColourLightest")
@@ -137,6 +137,8 @@ fromTheme theme =
   s_5 = variable "s-5" (reference s_4 !/ reference ratio)
   isLightTheme = isLight theme.backgroundColour
   lighter ∷ Color -> Color
-  lighter = if isLightTheme then lighten 0.04 else lighten 0.02
+  lighter = if isLightTheme then lighten 0.04 else lighten 0.04
   darker ∷ Color -> Color
-  darker = if isLightTheme then darken 0.01 else darken 0.01
+  darker = darken 0.05
+  darkerBackground ∷ Color -> Color
+  darkerBackground = if isLightTheme then desaturate (0.05) <<< darken 0.03 else darken 0.05

@@ -5,13 +5,14 @@ import Data.Foldable (fold, intercalate)
 import Data.Maybe (Maybe(..))
 import Data.Time.Duration (Milliseconds(..))
 import Data.Tuple.Nested ((/\))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (delay)
 import Effect.Class (liftEffect)
 import Foreign.Object as Obj
 import Literals.Undefined (undefined)
 import React.Basic.DOM as R
-import React.Basic.DOM.Events (targetValue)
+import React.Basic.DOM.Events (preventDefault, targetValue)
 import React.Basic.Events (handler)
 import React.Basic.Hooks (ReactComponent, component, useState)
 import React.Basic.Hooks as React
@@ -62,13 +63,12 @@ makeComponent = do
                 , readOnly: props.readOnly ?|| false
                 , disabled: props.readOnly ?|| false
                 , spellCheck: false
+                , onDragOver: handler preventDefault (\e -> spy "e" mempty)
                 , autoComplete: unsafeCoerce "false"
                 , autoCorrect: "off"
                 , autoCapitalize: "off"
                 , onChange:
-                  handler targetValue
-                    ( \v -> modifyValue $ const (v ?|| "")
-                    )
+                  handler targetValue \v -> modifyValue (const (v ?|| ""))
                 , _data: Obj.singleton "testid" "inline-code"
                 }
             ]

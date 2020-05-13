@@ -22,4 +22,31 @@ spells =
   , { name: "take", signature: "Int -> String -> String", description: "Takes the first characters of a string" }
   , { name: "append", signature: "a -> a -> a", description: "Takes two values and produces one" }
   , { name: "drop", signature: "Int -> String -> String", description: "Removes the first characters of a string wow man this is a really long description I bet it produces a much longer card than the others if I keep writing like a crazy person" }
+  , { name: "take", signature: "Int -> String -> String", description: "Takes the first characters of a string" }
+  , { name: "take", signature: "Int -> String -> String", description: "Takes the first characters of a string" }
+  , { name: "take", signature: "Int -> String -> String", description: "Takes the first characters of a string" }
+  , { name: "take", signature: "Int -> String -> String", description: "Takes the first characters of a string" }
+  , { name: "take", signature: "Int -> String -> String", description: "Takes the first characters of a string" }
+  , { name: "take", signature: "Int -> String -> String", description: "Takes the first characters of a string" }
+  , { name: "take", signature: "Int -> String -> String", description: "Takes the first characters of a string" }
+  , { name: "take", signature: "Int -> String -> String", description: "Takes the first characters of a string" }
+  , { name: "take", signature: "Int -> String -> String", description: "Takes the first characters of a string" }
+  , { name: "append", signature: "a -> a -> a", description: "Takes two values and produces one" }
+  , { name: "drop", signature: "Int -> String -> String", description: "Removes the first characters of a string wow man this is a really long description I bet it produces a much longer card than the others if I keep writing like a crazy person" }
+  , { name: "append", signature: "a -> a -> a", description: "Takes two values and produces one" }
+  , { name: "drop", signature: "Int -> String -> String", description: "Removes the first characters of a string wow man this is a really long description I bet it produces a much longer card than the others if I keep writing like a crazy person" }
+  , { name: "append", signature: "a -> a -> a", description: "Takes two values and produces one" }
+  , { name: "drop", signature: "Int -> String -> String", description: "Removes the first characters of a string wow man this is a really long description I bet it produces a much longer card than the others if I keep writing like a crazy person" }
+  , { name: "append", signature: "a -> a -> a", description: "Takes two values and produces one" }
+  , { name: "drop", signature: "Int -> String -> String", description: "Removes the first characters of a string wow man this is a really long description I bet it produces a much longer card than the others if I keep writing like a crazy person" }
+  , { name: "append", signature: "a -> a -> a", description: "Takes two values and produces one" }
+  , { name: "drop", signature: "Int -> String -> String", description: "Removes the first characters of a string wow man this is a really long description I bet it produces a much longer card than the others if I keep writing like a crazy person" }
+  , { name: "append", signature: "a -> a -> a", description: "Takes two values and produces one" }
+  , { name: "drop", signature: "Int -> String -> String", description: "Removes the first characters of a string wow man this is a really long description I bet it produces a much longer card than the others if I keep writing like a crazy person" }
+  , { name: "append", signature: "a -> a -> a", description: "Takes two values and produces one" }
+  , { name: "drop", signature: "Int -> String -> String", description: "Removes the first characters of a string wow man this is a really long description I bet it produces a much longer card than the others if I keep writing like a crazy person" }
+  , { name: "append", signature: "a -> a -> a", description: "Takes two values and produces one" }
+  , { name: "drop", signature: "Int -> String -> String", description: "Removes the first characters of a string wow man this is a really long description I bet it produces a much longer card than the others if I keep writing like a crazy person" }
+  , { name: "append", signature: "a -> a -> a", description: "Takes two values and produces one" }
+  , { name: "drop", signature: "Int -> String -> String", description: "Removes the first characters of a string wow man this is a really long description I bet it produces a much longer card than the others if I keep writing like a crazy person" }
   ]

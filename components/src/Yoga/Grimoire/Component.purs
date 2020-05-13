@@ -13,17 +13,20 @@ import Data.Nullable as Nullable
 import Data.Symbol (SProxy(..))
 import Data.Traversable (for, sequence)
 import Data.Tuple.Nested ((/\), type (/\))
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class.Console (log)
 import Justifill (justifill)
 import Partial.Unsafe (unsafeCrashWith)
 import React.Basic (ReactComponent)
 import React.Basic.DOM (css)
+import React.Basic.DOM as R
 import React.Basic.Helpers (jsx)
 import React.Basic.Hooks (Ref, component, element, readRef, useLayoutEffect, useRef, useState, writeRef)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Spring (animatedDiv, useSprings)
 import React.Basic.Hooks.UseGesture (useDrag, withDragProps)
+import Record (disjointUnion)
 import Record as Record
 import Record.Extra (pick)
 import Unsafe.Coerce (unsafeCoerce)
@@ -96,13 +99,13 @@ scaledCompletely = "scale3d(2.0, 2.0, 2.0)"
 defaultSprings =
   { x: 0.0
   , y: 0.0
-  , shadow: 5
+  , shadow: 1
   , zIndex: 0
   , immediate: const true
   , transform: "scale3d(1.0,1.0,1.0)"
   }
 
-springsteen init windowSize rectsRef positionsRef arg mx my down tap springs = do
+springsteen springs init windowSize rectsRef positionsRef { arg, movement: mx /\ my, down, tap } = do
   init
   rects <- readRef rectsRef
   positionsBefore <- readRef positionsRef
@@ -132,7 +135,7 @@ springsteen init windowSize rectsRef positionsRef arg mx my down tap springs = d
             , y = my + topOffset
             , zIndex = 1
             , transform = scaledUp
-            , shadow = 20
+            , shadow = 10
             , immediate = \n -> n == "x" || n == "y" || n == "zIndex"
             }
       true, Just { index, value }
@@ -140,7 +143,7 @@ springsteen init windowSize rectsRef positionsRef arg mx my down tap springs = d
           defaultSprings
             { x = rectDragged.left - currentRect.left + leftOffset
             , y = rectDragged.top - currentRect.top + topOffset
-            , immediate = const false
+            , immediate = \n -> n == "zIndex"
             }
       _, _ ->
         defaultSprings
@@ -190,23 +193,30 @@ makeComponent = do
       mempty
     theme ∷ CSSTheme <- useTheme
     bindDragProps <-
-      useDrag (justifill { filterTaps: true }) \{ arg, down, movement: mx /\ my, tap } ->
-        springsteen init windowSize rectsRef positionsRef arg mx my down tap springs
+      useDrag (justifill { filterTaps: true }) \input ->
+        springsteen springs init windowSize rectsRef positionsRef input
     let
       renderSpells =
         mapWithIndex \i (spell /\ style) ->
-          animatedDiv
-            $ { style:
-                css
-                  $ Record.insert (SProxy ∷ _ "boxShadow")
-                      ((unsafeCoerce (style.shadow ∷ Int)).interpolate (\s -> Interp.i "rgba(0, 0, 0, 0.15) 0px " s "px " (2 * s) "px 0px" ∷ String))
-                      style
-              , className: classes.container
-              , ref: unsafeCoerce (unsafeUpdateRefs nodeRefs i)
-              , children: [ element spellComponent { spell } ]
-              }
-                `withDragProps`
-                  bindDragProps i
+          R.div
+            { style: css { height: "100px", overflow: "visible" }
+            , children:
+              [ animatedDiv
+                  $ { style:
+                      css
+                        $ disjointUnion
+                            { boxShadow: ((unsafeCoerce (style.shadow ∷ Int)).interpolate \s -> Interp.i "rgba(0, 0, 0, 0.15) 0px " s "px " (2 * s) "px 0px" ∷ String)
+                            , position: "relative"
+                            }
+                            style
+                    , className: classes.container
+                    , ref: unsafeCoerce (unsafeUpdateRefs nodeRefs i)
+                    , children: [ element spellComponent { spell } ]
+                    }
+                      `withDragProps`
+                        bindDragProps i
+              ]
+            }
     pure
       $ jsx grid {}
       $ renderSpells (spells `zip` springs.styles)

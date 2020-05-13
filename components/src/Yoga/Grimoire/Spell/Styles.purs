@@ -59,6 +59,4 @@ styles =
         color theme.grey
         fontStyle italic
         overflow Overflow.hidden
-        textWhitespace whitespaceNoWrap
-        textOverflow ellipsis
     }
