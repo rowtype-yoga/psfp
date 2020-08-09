@@ -2,5 +2,5 @@ module Main where
 
 import Grimoire
 
-incantation :: Effect Unit
-incantation = cast "Abracadabra"
+main :: Effect Unit
+main = log "Abracadabra"

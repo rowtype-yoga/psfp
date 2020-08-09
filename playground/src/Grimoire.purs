@@ -89,6 +89,7 @@ module Grimoire
   , module Type.Proxy
   , module Unsafe.Coerce
   , module Simple.JSON
+  , module Effect.Console
   ) where
 
 import Effect.Console (log, logShow)
@@ -1072,9 +1073,3 @@ import Type.Proxy
 import Unsafe.Coerce
   ( unsafeCoerce
   )
-
-cast :: String -> Effect Unit
-cast = log
-
-summon :: forall a. Show a => a -> Effect Unit
-summon = logShow
