@@ -1,9 +1,10 @@
 module Main where
 
 import Prelude
-
+import Auth.Handler (authHandler, readAllowedTokens)
+import Auth.Types (Token(..))
 import Control.Parallel (parOneOf, parTraverse)
-import Data.Array ((..))
+import Data.Array (elem, (..))
 import Data.Bifunctor (lmap)
 import Data.Either (Either(..))
 import Data.Int (fromString)
@@ -25,10 +26,10 @@ import Node.ChildProcess (ExecResult)
 import Node.Encoding (Encoding(..))
 import Node.Express.App (App, listenHttp, listenHttps, use, useExternal)
 import Node.Express.App as E
-import Node.Express.Handler (HandlerM(..), Handler)
+import Node.Express.Handler (Handler, HandlerM(..), next)
 import Node.Express.Middleware.Static (static)
-import Node.Express.Request (getBody')
-import Node.Express.Response (setStatus)
+import Node.Express.Request (getBody', getRequestHeader)
+import Node.Express.Response (end, setStatus)
 import Node.Express.Response as Response
 import Node.Express.Types (Request, Response)
 import Node.FS.Aff (readTextFile)
@@ -48,40 +49,41 @@ toBody result =
     $ ado
         stdout <- Buffer.toString UTF8 result.stdout
         stderr <- Buffer.toString UTF8 result.stderr
-        let
-          (code ∷ Maybe Int) = asErrorWithCode result >>= _.code
+        let (code ∷ Maybe Int) = asErrorWithCode result >>= _.code
         in { code, stdout, stderr } ∷ RunResult
 
-type ErrorWithCode
-  = { code ∷ Maybe Int }
+type ErrorWithCode =
+  { code ∷ Maybe Int }
 
 asErrorWithCode ∷ ∀ a. a -> Maybe ErrorWithCode
 asErrorWithCode = read_ <<< unsafeToForeign
 
 runCode ∷ ∀ d. Duration d => d -> Folder -> Aff (Maybe ExecResult)
-runCode timeout folder = parOneOf
-   [ Just <$> execCommand folder "exec node run.js"
-   , Nothing <$ delay (timeout # fromDuration)
-   ]
+runCode timeout folder =
+  parOneOf
+    [ Just <$> execCommand folder "exec node run.js"
+    , Nothing <$ delay (timeout # fromDuration)
+    ]
 
 compileAndRunJob ∷ CompileRequest -> (Handler -> Aff Unit) -> NewJob PscIdeConnection
 compileAndRunJob json handle =
   NewJob \jobId conn -> do
     stringOrErr <- attempt $ compileCode json.code conn
-    case ((readJSON <$> stringOrErr) ∷ _ _ (_ _ CompileResult)) of 
+    case ((readJSON <$> stringOrErr) ∷ _ _ (_ _ CompileResult)) of
       Left e -> do
         handle $ setStatus 500
         log $ "Aff failed with " <> message e
         handle $ Response.send $ write {}
-      Right (Right res) | res.resultType == "error" -> do
-        handle $ setStatus 422
-        handle $ Response.send $ write res
+      Right (Right res)
+        | res.resultType == "error" -> do
+          handle $ setStatus 422
+          handle $ Response.send $ write res
       Right (Right res) -> do
-        runResult <- runCode timeout (getFolder conn) 
+        runResult <- runCode timeout (getFolder conn)
         case runResult of
           Nothing -> do
             handle $ setStatus 408
-            handle $ Response.send $ write { error: "Timed out after running for " <> show timeout}
+            handle $ Response.send $ write { error: "Timed out after running for " <> show timeout }
           Just rr -> do
             resultBody <- toBody rr
             handle $ Response.send $ write (resultBody ∷ Body.RunResult)
@@ -89,8 +91,8 @@ compileAndRunJob json handle =
         handle $ setStatus 500
         log $ "Could not decode: " <> show (lmap (const "no way") stringOrErr) <> "\nErrors: " <> show errs
         handle $ Response.send $ write {}
-    where
-      timeout = 1.0 # Seconds
+  where
+    timeout = 1.0 # Seconds
 
 compileAndRunHandler ∷ Queue PscIdeConnection -> Handler
 compileAndRunHandler queue = do
@@ -99,7 +101,6 @@ compileAndRunHandler queue = do
   HandlerM \req res next -> do
     let
       handle = unHandler req res next
-
       runJob = compileAndRunJob json handle
     queueRes <- Q.enqueue runJob queue # liftEffect
     case queueRes of
@@ -121,19 +122,20 @@ destFolder = "../playgrounds/"
 main ∷ Effect Unit
 main = do
   launchAff_ do
+    tokens <- readAllowedTokens
     cpus <- numCpus # liftEffect
     let
       poolSize = max 2 (cpus / 2) -- use at least 2
-
       mkFolder = Folder <<< (destFolder <> _) <<< show
-
-    connections <- (1 .. poolSize) # parTraverse \n -> do
-      let folder = mkFolder n
-          port = 14100 + n
-      log $ "Copying to folder " <> (un Folder folder) 
-      copy srcFolder (un Folder folder)
-      mkConnection folder port
-
+    connections <-
+      (1 .. poolSize)
+        # parTraverse \n -> do
+            let
+              folder = mkFolder n
+              port = 14100 + n
+            log $ "Copying to folder " <> (un Folder folder)
+            copy srcFolder (un Folder folder)
+            mkConnection folder port
     let pool = ResourcePool connections
     q <-
       Q.mkQueue
@@ -141,38 +143,22 @@ main = do
         , timeout: 10.0 # Seconds # fromDuration
         }
         pool
-    serverSetup (makeApp q)
+    serverSetup (makeApp tokens q)
 
-makeApp ∷ Queue PscIdeConnection -> App
-makeApp q = do
+makeApp ∷ Array Token -> Queue PscIdeConnection -> App
+makeApp tokens q = do
   use $ static "assets"
   useExternal jsonBodyParser
+  use (authHandler tokens)
   E.post "/compileAndRun" (compileAndRunHandler q)
-
-data CertificatesToUse
-  = UseLocalCertificates
-  | DoNotUseLocalCertificates
-
-parseCertificatesToUse ∷ String -> CertificatesToUse
-parseCertificatesToUse = case _ of
-  "LOCAL" -> UseLocalCertificates
-  _ -> DoNotUseLocalCertificates
 
 serverSetup ∷ App -> Aff Server
 serverSetup app = do
   maybePortString <- lookupEnv "PORT" # liftEffect
-  let
-    port = maybePortString >>= fromString # fromMaybe 14188
-  useLocalCertificates <- fromMaybe DoNotUseLocalCertificates <<< map parseCertificatesToUse <$> lookupEnv "CERTS" # liftEffect
-  listen <- case useLocalCertificates of
-    UseLocalCertificates -> do
-      httpsOptions <- makeHttpsOptions
-      pure $ listenHttps app (port ∷ Int) httpsOptions
-    DoNotUseLocalCertificates -> pure $ listenHttp app port
-  liftEffect $ listen \_ -> info $ "psfp server started on port " <> show port
+  let port = maybePortString >>= fromString # fromMaybe 14188
+  liftEffect $ (listenHttp app port) \_ -> info $ "psfp server started on port " <> show port
   where
-  makeHttpsOptions = do
-    key <- readTextFile UTF8 "server.key"
-    cert <- readTextFile UTF8 "server.cert"
-    pure { key, cert }
-
+    makeHttpsOptions = do
+      key <- readTextFile UTF8 "server.key"
+      cert <- readTextFile UTF8 "server.cert"
+      pure { key, cert }

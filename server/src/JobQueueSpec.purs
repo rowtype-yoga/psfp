@@ -1,7 +1,6 @@
 module JobQueueSpec where
 
 import Prelude
-
 import Data.Time.Duration (class Duration, Seconds(..), fromDuration)
 import Effect.Aff (Milliseconds(..), delay)
 import Effect.Class (liftEffect)
@@ -36,14 +35,14 @@ writeRefJob ref a d =
     delay millis
     Ref.write a ref # liftEffect
 
-pool :: ResourcePool Unit
-pool = ResourcePool [unit, unit, unit]
+pool ∷ ResourcePool Unit
+pool = ResourcePool [ unit, unit, unit ]
 
 spec ∷ Spec Unit
 spec = do
   describe "The Queue" do
     it "can't enqueue if maxSize is 0" do
-      q <- mkQueue (params { maxSize = 0 }) pool 
+      q <- mkQueue (params { maxSize = 0 }) pool
       r <- Q.enqueue job1 q # liftEffect
       r `shouldEqual` QueueFull
     it "can enqueue if maxSize is 1" do
@@ -67,10 +66,9 @@ spec = do
       delay (9.0 # Milliseconds)
       res `shouldEqual` false
     it "runs multiple jobs" do
-      q <- mkQueue (params { maxSize = 3, timeout = (2.0 # Seconds # fromDuration) }) (ResourcePool [unit])
+      q <- mkQueue (params { maxSize = 3, timeout = (2.0 # Seconds # fromDuration) }) (ResourcePool [ unit ])
       ref <- Ref.new 0 # liftEffect
-      let
-        enq n delay = Q.enqueue (writeRefJob ref n delay) q # liftEffect
+      let enq n delay = Q.enqueue (writeRefJob ref n delay) q # liftEffect
       r₁ <- enq 1 (0.1 # Seconds)
       r₁ `shouldNotEqual` QueueFull
       r₂ <- enq 2 (0.2 # Seconds)
@@ -85,10 +83,9 @@ spec = do
       delay (0.3 # Seconds # fromDuration)
       Ref.read ref # liftEffect >>= shouldEqual 3 -- ~350ms
     it "respects pool size" do
-      q <- mkQueue (params { maxSize = 3, timeout = (2.0 # Seconds # fromDuration) }) (ResourcePool [unit])
+      q <- mkQueue (params { maxSize = 3, timeout = (2.0 # Seconds # fromDuration) }) (ResourcePool [ unit ])
       ref <- Ref.new 0 # liftEffect
-      let
-        enq n delay = Q.enqueue (writeRefJob ref n delay) q # liftEffect
+      let enq n delay = Q.enqueue (writeRefJob ref n delay) q # liftEffect
       r₁ <- enq 1 (0.1 # Seconds)
       r₁ `shouldNotEqual` QueueFull
       r₂ <- enq 2 (0.1 # Seconds)
@@ -103,10 +100,9 @@ spec = do
       delay (0.3 # Seconds # fromDuration)
       Ref.read ref # liftEffect >>= shouldEqual 3 -- ~350ms
     it "respects pool size (2)" do
-      q <- mkQueue (params { maxSize = 3, timeout = (2.0 # Seconds # fromDuration) }) (ResourcePool [unit, unit, unit])
+      q <- mkQueue (params { maxSize = 3, timeout = (2.0 # Seconds # fromDuration) }) (ResourcePool [ unit, unit, unit ])
       ref <- Ref.new 0 # liftEffect
-      let
-        enq n delay = Q.enqueue (writeRefJob ref n delay) q # liftEffect
+      let enq n delay = Q.enqueue (writeRefJob ref n delay) q # liftEffect
       r₁ <- enq 1 (0.1 # Seconds)
       r₂ <- enq 2 (0.1 # Seconds)
       r₃ <- enq 3 (0.1 # Seconds)
@@ -117,7 +113,7 @@ spec = do
       delay (0.15 # Seconds # fromDuration)
       Ref.read ref # liftEffect >>= shouldEqual 3 -- ~150ms
     it "can kill processes" do
-      q <- mkQueue (params { maxSize = 1, timeout = (1.0 # Seconds # fromDuration) }) (ResourcePool [unit])
+      q <- mkQueue (params { maxSize = 1, timeout = (1.0 # Seconds # fromDuration) }) (ResourcePool [ unit ])
       resultRef <- Ref.new false # liftEffect
       let
         job =

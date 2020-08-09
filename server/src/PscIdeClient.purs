@@ -1,7 +1,6 @@
 module PscIdeClient where
 
 import Prelude
-
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, un, unwrap)
@@ -22,12 +21,12 @@ import Node.Net.Socket as Socket
 import Playground.Playground (Folder(..))
 import Simple.JSON (writeJSON)
 
-type BuildCommand
-  = { command ∷ String
-    , params ∷
-      { file ∷ String
-      }
+type BuildCommand =
+  { command ∷ String
+  , params ∷
+    { file ∷ String
     }
+  }
 
 loadCommand ∷
   { command ∷ String
@@ -63,17 +62,16 @@ startIdeServer folder port = do
   loadPscIde folder port
   pure cp
   where
-  infoString =
-    " in folder "
-      <> un Folder folder
-      <> " on port "
-      <> show port
+    infoString =
+      " in folder "
+        <> un Folder folder
+        <> " on port "
+        <> show port
 
 execCommand ∷ Folder -> String -> Aff CP.ExecResult
 execCommand folder command =
   makeAff \callback -> do
-    let
-      options = CP.defaultExecOptions { cwd = Just (un Folder folder) }
+    let options = CP.defaultExecOptions { cwd = Just (un Folder folder) }
     childProcess <- CP.exec command options (callback <<< Right)
     pure $ effectCanceler ((log $ "Killing " <> show (CP.pid childProcess)) *> CP.kill SIGKILL childProcess)
 
@@ -87,22 +85,21 @@ restartIdeServer folder port processRef = do
 spawnProcess ∷ Folder -> String -> Array String -> Aff ChildProcess
 spawnProcess folder command args =
   makeAff \callback -> do
-    let
-      options = CP.defaultSpawnOptions { cwd = Just (un Folder folder), stdio = Just <$> [Ignore, Ignore, Ignore] }
+    let options = CP.defaultSpawnOptions { cwd = Just (un Folder folder), stdio = Just <$> [ Ignore, Ignore, Ignore ] }
     childProcess <- CP.spawn command args options
     callback (Right childProcess)
     pure $ effectCanceler
       $ (log $ "Killing " <> show (CP.pid childProcess))
       *> CP.kill SIGKILL childProcess
 
-newtype PscIdeConnection
-  = PscIdeConnection
+newtype PscIdeConnection = PscIdeConnection
   { serverProcessRef ∷ Ref ChildProcess
   , port ∷ Int
   , folder ∷ Folder
   }
 
 derive instance ntPscIdeConnection ∷ Newtype PscIdeConnection _
+
 instance eqPscIdeConnection ∷ Eq PscIdeConnection where
   eq c1 c2 = (unwrap c1).port == (unwrap c2).port
 
@@ -125,8 +122,7 @@ loadPscIde folder port = do
           true -> mempty -- should be covered in onError
           false -> do
             affCb (Right unit)
-    let
-      command = writeJSON buildCommand <> "\n"
+    let command = writeJSON buildCommand <> "\n"
     Socket.onReady socket (void $ Socket.writeString socket command UTF8 mempty)
     pure (closeSocketCanceller socket)
 
@@ -147,8 +143,7 @@ compileCode code (PscIdeConnection { port, folder, serverProcessRef }) = do
         log $ "Enough data on " <> show port <> " ending socket\n"
         void $ Socket.endString socket "" UTF8 mempty
         affCb (Right newStr)
-    let
-      command = writeJSON buildCommand
+    let command = writeJSON buildCommand
     Socket.onReady socket do
       log $ "Socket " <> show port <> " ready"
       void $ Socket.writeString socket (command <> "\n") UTF8 mempty

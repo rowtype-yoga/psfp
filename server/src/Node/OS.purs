@@ -2,4 +2,4 @@ module Node.OS where
 
 import Effect (Effect)
 
-foreign import numCpus :: Effect Int
+foreign import numCpus ∷ Effect Int

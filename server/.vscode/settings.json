@@ -1,5 +1,5 @@
 {
-  "editor.formatOnSave": false,
+  "editor.formatOnSave": true,
   "regreplace.commands": [
     {
         "name": "replace double colon with unicode version",
