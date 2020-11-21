@@ -32,16 +32,15 @@ mkH = do
             , fontFamily: NEA.head theme.headingFontFamily
             }
           , h1:
-            { textTransform: "uppercase"
-            -- , fontSize: "3.6em"
-            , letterSpacing: "0.07em"
+            { -- textTransform: "uppercase"
+            fontWeight: "bold"
             , margin: 0
             , padding: 0
             }
           , h2:
-            { textTransform: "uppercase"
+            { -- textTransform: "uppercase"
             -- , fontSize: "3em"
-            , letterSpacing: "0.05em"
+             letterSpacing: "0.05em"
             , margin: 0
             , padding: 0
             }
