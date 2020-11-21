@@ -15,7 +15,7 @@ import Yoga.Card.Component (mkCard)
 import Yoga.Centre.Component as Centre
 import Yoga.Grid.Component as Grid
 
-stories ∷ Effect Storybook
+stories ∷ _ -> Effect Storybook
 stories = do
   storiesOf "Grid" do
     addDecorator fullScreenDecorator

@@ -4,6 +4,8 @@ module Storybook.React
   , add
   , add_
   , addDecorator
+  , NodeModule
+  , Stories
   ) where
 
 import Prelude hiding (add)
@@ -13,7 +15,9 @@ import React.Basic (JSX, ReactComponent, element, fragment)
 
 foreign import data Storybook ∷ Type
 
-foreign import storiesOfImpl ∷ String -> Storybook
+foreign import data NodeModule ∷ Type
+
+foreign import storiesOfImpl ∷ String -> NodeModule -> Storybook
 
 foreign import addImpl ∷ Storybook -> Effect JSX -> String -> Effect Storybook
 
@@ -46,5 +50,9 @@ addDecorator decorate = do
       $ addDecoratorImpl sb decorate
   local (const newBook) (pure unit)
 
-storiesOf ∷ ∀ a. String -> ReaderT Storybook Effect a -> Effect Storybook
-storiesOf name program = runReaderT (program *> ask) (storiesOfImpl name)
+type Stories
+  = NodeModule -> Effect Storybook
+
+storiesOf ∷ ∀ a. String -> ReaderT Storybook Effect a -> Stories
+storiesOf name program module' = do
+  runReaderT (program *> ask) (storiesOfImpl name module')

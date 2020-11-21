@@ -16,7 +16,7 @@ import Yoga.Helpers (ifJustTrue)
 import Yoga.Imposter.Component as Imposter
 import Yoga.Theme.Styles (makeStylesJSS)
 
-stories ∷ Effect Storybook
+stories ∷ _ -> Effect Storybook
 stories = do
   storiesOf "Imposter" do
     addDecorator fullScreenDecorator

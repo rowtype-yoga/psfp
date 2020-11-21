@@ -13,10 +13,10 @@ import SEO from '../components/seo'
 module Main where
 import Grimoire
 
-incantation :: Effect Unit
-incantation =
+main :: Effect Unit
+main =
 --start here
-  cast "pocus"
+  log "pocus"
 --end here
 ```
 
@@ -26,10 +26,10 @@ incantation =
 module Main where
 import Grimoire
 
-incantation :: Effect Unit
-incantation = 
+main :: Effect Unit
+main = 
   --start here
-  {-cast-} "kazam"
+  {-log-} "kazam"
 --end here
 ```
 
@@ -39,10 +39,10 @@ incantation =
 module Main where
 import Grimoire
 
-incantation :: Effect Unit
-incantation = 
+main :: Effect Unit
+main = 
   --start here
-  {-cast-} "{-cadabra-}"
+  {-log-} "{-cadabra-}"
 --end here
 ```
 
@@ -53,12 +53,12 @@ module Main where
 import Grimoire
 import Prelude (discard)
 
-incantation :: Effect Unit
-incantation = 
+main :: Effect Unit
+main = 
   --start here
   do
-  {-cast-} "{-abra-}"
-  {-cast-} "{-cadabra-}"
+  {-log-} "{-abra-}"
+  {-log-} "{-cadabra-}"
 --end here
 ```
 

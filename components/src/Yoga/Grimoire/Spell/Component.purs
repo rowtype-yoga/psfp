@@ -57,6 +57,7 @@ makeComponent = do
               [ jsx stack { space: "var(--s-3)" }
                   [ headerCluster
                   , classSpan style.description [ R.text spell.description ]
+                  , R.text "gogo"
                   ]
               ]
           ]

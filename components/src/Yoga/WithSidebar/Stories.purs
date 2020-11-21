@@ -10,7 +10,7 @@ import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
 import Yoga.WithSidebar.Component as WithSidebar
 
-stories ∷ Effect Storybook
+stories ∷ _ -> Effect Storybook
 stories = do
   storiesOf "WithSidebar" do
     addDecorator fullScreenDecorator

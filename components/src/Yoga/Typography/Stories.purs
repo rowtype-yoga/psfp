@@ -7,7 +7,7 @@ import Effect (Effect)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
 import Yoga.Typography.Header (HeadingLevel(..), mkH)
 
-stories ∷ Effect Storybook
+stories ∷ _ -> Effect Storybook
 stories = do
   storiesOf "Typography" do
     addDecorator fullScreenDecorator

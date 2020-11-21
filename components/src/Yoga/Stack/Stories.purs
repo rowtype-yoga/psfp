@@ -8,7 +8,7 @@ import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
 import Yoga.Stack.Component as Stack
 
-stories ∷ Effect Storybook
+stories ∷ _ -> Effect Storybook
 stories = do
   storiesOf "Stack" do
     addDecorator fullScreenDecorator

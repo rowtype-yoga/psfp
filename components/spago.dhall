@@ -20,6 +20,7 @@ You can edit this file as you like.
   , "react-testing-library"
   , "record-extra"
   , "refs"
+  , "simple-json"
   , "spec-discovery"
   , "string-parsers"
   , "web-html"

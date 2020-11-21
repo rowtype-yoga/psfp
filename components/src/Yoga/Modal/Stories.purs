@@ -20,7 +20,7 @@ import Yoga.Centre.Component as Centre
 import Yoga.CloseIcon.Component as CloseIcon
 import Yoga.Modal.Component as Modal
 
-stories ∷ Effect Storybook
+stories ∷ _ -> Effect Storybook
 stories = do
   storiesOf "Modal" do
     addDecorator fullScreenDecorator
@@ -69,36 +69,36 @@ mkAnimatedExample = do
   button <- mkButton
   component "ModalStoryAnimated" \{} -> React.do
     state /\ modState <- useState { open: true }
-    transitions <-
-      useTransition [ state.open ] (Just $ show)
-        $ css
-            { from: { opacity: 0.0, transform: "translate3d(-50%, -50%, 0) scale3d(0.3, 0.3, 1.0)" }
-            , enter: { opacity: 1.0, transform: "translate3d(-50%, -50%, 0) scale3d(1.0, 1.0, 1.0)" }
-            , leave: { opacity: 0.0, transform: "translate3d(-50%, -50%, 0) scale3d(0.3, 0.3, 1.0)" }
-            , config: { mass: 1.0, tension: 170, friction: 20 }
-            }
+    transitionFn <-
+      useTransition [ state.open ]
+        { from: { opacity: 0.0, transform: "translate3d(-50%, -50%, 0) scale3d(0.3, 0.3, 1.0)" }
+        , enter: { opacity: 1.0, transform: "translate3d(-50%, -50%, 0) scale3d(1.0, 1.0, 1.0)" }
+        , leave: { opacity: 0.0, transform: "translate3d(-50%, -50%, 0) scale3d(0.3, 0.3, 1.0)" }
+        , config: { mass: 1.0, tension: 170, friction: 20 }
+        }
+    let
+      transitionsFragment =
+        transitionFn \props item _ _ ->
+          guard (item == true)
+            $ jsx modal
+                { title: "Warning"
+                , icon:
+                  element closeIcon
+                    $ justifill
+                        { onClick: modState _ { open = false }
+                        }
+                , style: css props
+                }
+                [ R.text "This is more interactive"
+                ]
     pure
       $ fragment
-      $ [ jsx centre {}
-            [ jsx button
-                { onClick: handler_ $ modState _ { open = true }
-                }
-                [ R.text "Open Modal" ]
-            ]
-        , R.p_ [ R.text "Here's some text to see what happens when there's actual content" ]
-        ]
-      <> ( transitions
-            <#> \{ item, key, props } ->
-                guard (item == Just true)
-                  $ jsx modal
-                      { title: "Warning"
-                      , icon:
-                        element closeIcon
-                          $ justifill
-                              { onClick: modState _ { open = false }
-                              }
-                      , style: Just props
-                      }
-                      [ R.text "This is more interactive"
-                      ]
-        )
+          [ jsx centre {}
+              [ jsx button
+                  { onClick: handler_ $ modState _ { open = true }
+                  }
+                  [ R.text "Open Modal" ]
+              ]
+          , R.p_ [ R.text "Here's some text to see what happens when there's actual content" ]
+          ]
+      <> transitionsFragment

@@ -29,7 +29,7 @@ styles =
         , "--colour-light": theme.backgroundColour # toHexString
         , "--colour-dark": theme.textColour # toHexString
         , color: "var(--colour-dark)"
-        , backgroundColor: "var(--colour-light)"
+        , backgroundColor: "transparent"
         , border: props.border ?|| "0 solid"
         , outline: theme.borderThin <> " solid transparent"
         , outlineOffset: "-" <> theme.borderThin

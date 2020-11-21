@@ -27,8 +27,8 @@ darkTheme =
   , interfaceColour: Color.hsl 235.0 0.22 0.28
   , highlightColour: Color.hsl 285.0 0.88 0.72
   , altHighlightColour: Color.hsl 84.0 0.617 0.631
-  , textFontFamily: cons' "Rubik" systemFontStack
-  , headingFontFamily: cons' "Rubik" systemFontStack
+  , textFontFamily: cons' "Inter" systemFontStack
+  , headingFontFamily: cons' "Inter" systemFontStack
   , codeFontFamily: cons' "VictorMono" []
   , yellow: Color.hsl 36.0 0.82 0.76
   , green: Color.hsl 84.0 0.617 0.631

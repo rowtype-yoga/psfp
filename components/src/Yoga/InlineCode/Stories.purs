@@ -24,7 +24,7 @@ import Yoga.Compiler.Api (apiCompiler)
 import Yoga.InlineCode.Component as InlineCode
 import Yoga.Modal.Component as Modal
 
-stories ∷ Effect Storybook
+stories ∷ _ -> Effect Storybook
 stories = do
   storiesOf "InlineCode" do
     addDecorator fullScreenDecorator

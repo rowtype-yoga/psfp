@@ -8,7 +8,7 @@ import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
 import Yoga.Grimoire.Spell.Component as Spell
 
-stories ∷ Effect Storybook
+stories ∷ _ -> Effect Storybook
 stories = do
   storiesOf "Spell" do
     addDecorator fullScreenDecorator

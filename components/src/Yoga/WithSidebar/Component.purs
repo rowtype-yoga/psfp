@@ -32,13 +32,15 @@ type OptionalProps r
 makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do
   useStyles <- makeStylesJSS WithSidebar.styles
-  component "WithSidebar" \{ sidebarChildren
-  , notSidebarChildren
-  , className
-  , sidebarClassName
-  , notSidebarClassName
-  , sidebarRight
-  } -> React.do
+  component "WithSidebar" \( { sidebarChildren
+    , notSidebarChildren
+    , className
+    , sidebarClassName
+    , notSidebarClassName
+    , sidebarRight
+    } ∷
+      Props
+  ) -> React.do
     classes <- useStyles {}
     pure
       $ R.div

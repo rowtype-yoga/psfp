@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="90px" height="90px" viewBox="0 0 90 90" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 62 (91390) - https://sketch.com -->
+    <title>Play</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="0%" y1="0%" x2="100%" y2="100%" id="linearGradient-1">
+            <stop stop-color="#413F4E" stop-opacity="0.5" offset="0%"></stop>
+            <stop stop-color="#101215" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="0%" y1="0%" x2="100%" y2="100%" id="linearGradient-2">
+            <stop stop-color="#EF5BFF" offset="0%"></stop>
+            <stop stop-color="#DB2FFF" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="10.8727811%" y1="0%" x2="89.1272189%" y2="100%" id="linearGradient-3">
+            <stop stop-color="#EF5BFF" offset="0%"></stop>
+            <stop stop-color="#DB2FFF" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Background" fill="#1F2228" x="-1064" y="-666" width="1600" height="2000"></rect>
+        <rect id="Rectangle" fill="#14161A" x="-650" y="-28" width="888" height="549" rx="36"></rect>
+        <g id="Play" stroke-width="3">
+            <circle id="Oval" stroke="url(#linearGradient-2)" fill="url(#linearGradient-1)" cx="45" cy="45" r="43.5"></circle>
+            <polygon id="Path" stroke="url(#linearGradient-3)" points="37 32 37 58 60 45"></polygon>
+        </g>
+    </g>
+</svg>

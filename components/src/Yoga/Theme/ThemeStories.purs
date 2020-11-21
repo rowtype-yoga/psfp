@@ -10,7 +10,7 @@ import Storybook.React (Storybook, add, storiesOf)
 import Yoga.Theme (fromTheme)
 import Yoga.Theme.Default (darkTheme, lightTheme)
 
-stories ∷ Effect Storybook
+stories ∷ _ -> Effect Storybook
 stories = do
   storiesOf "Theme" do
     add "The swatches in the themes" mkExample
@@ -23,7 +23,6 @@ stories = do
     component "ExampleSwatches" \{ theme, themeName } -> React.do
       let
         cssTheme = fromTheme theme
-
         sw name colour = element swatch { name, colour, fontFamily: cssTheme.textFontFamily }
       pure
         $ R.div

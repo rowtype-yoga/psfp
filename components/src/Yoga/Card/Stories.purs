@@ -10,7 +10,7 @@ import Storybook.React (Storybook, add, addDecorator, storiesOf)
 import Yoga.Box.Component as Box
 import Yoga.Card.Component (mkCard)
 
-stories ∷ Effect Storybook
+stories ∷ _ -> Effect Storybook
 stories = do
   storiesOf "Card" do
     addDecorator fullScreenDecorator

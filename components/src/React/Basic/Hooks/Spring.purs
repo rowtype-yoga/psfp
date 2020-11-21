@@ -1,11 +1,11 @@
 module React.Basic.Hooks.Spring where
 
 import Prelude
-import Data.Maybe (Maybe)
-import Data.Nullable (Nullable, toNullable)
-import Data.Nullable as Nullable
+import Data.Function.Uncurried (Fn4, mkFn4)
 import Effect (Effect)
-import Effect.Uncurried (EffectFn1, EffectFn3, runEffectFn1, runEffectFn3)
+import Effect.Aff.Compat (runEffectFn2)
+import Effect.Uncurried (EffectFn1, EffectFn2, runEffectFn1)
+import Partial.Unsafe (unsafePartial)
 import Prim.Row (class Union)
 import React.Basic (JSX, ReactComponent, element)
 import React.Basic.DOM (CSS, Props_div, Props_span)
@@ -55,21 +55,53 @@ useSprings n f = React.do
 
 foreign import data UseTransition ∷ Type -> Type -> Type
 
-foreign import useTransitionImpl ∷ ∀ a. EffectFn3 (Array a) (Nullable (a -> String)) CSS (Array { item ∷ Nullable a, key ∷ Nullable String, props ∷ CSS })
+type TransitionFnImpl a props
+  = (Fn4 { | props } a (TransitionObjectImpl a) Int JSX) -> JSX
+
+foreign import data Controller ∷ Type
+
+type TransitionObjectImpl a
+  = { key ∷ String, item ∷ a, phase ∷ String, ctrl ∷ Controller }
+
+type TransitionObject a
+  = { key ∷ String, item ∷ a, phase ∷ TransitionPhase, ctrl ∷ Controller }
+
+type TransitionFn a props
+  = ({ | props } -> a -> TransitionObject a -> Int -> JSX) -> JSX
+
+data TransitionPhase
+  = MountPhase
+  | EnterPhase
+  | UpdatePhase
+  | LeavePhase
+
+transitionPhaseFromString ∷ String -> TransitionPhase
+transitionPhaseFromString string =
+  unsafePartial case string of
+    "mount" -> MountPhase
+    "enter" -> EnterPhase
+    "update" -> UpdatePhase
+    "leave" -> LeavePhase
+
+foreign import useTransitionImpl ∷ ∀ a props. EffectFn2 (Array a) { | props } (TransitionFnImpl a props)
 
 useTransition ∷
-  ∀ item.
+  ∀ item props.
   Array item ->
-  Maybe (item -> String) ->
-  CSS ->
-  Hook (UseTransition item) (Array { item ∷ Maybe item, key ∷ Maybe String, props ∷ CSS })
-useTransition items toKey transition =
-  unsafeHook $ runEffectFn3 useTransitionImpl items (toNullable toKey) transition
-    <#> map \x@{ item, key } ->
-        x
-          { item = item # Nullable.toMaybe
-          , key = key # Nullable.toMaybe
-          }
+  { | props } ->
+  Hook (UseTransition item) (TransitionFn item props)
+useTransition items props = unsafeHook $ transitionFn
+  where
+  transitionFn ∷ Effect (TransitionFn item props)
+  transitionFn = ado
+    transitionFnImpl <- runEffectFn2 useTransitionImpl items props
+    in \f -> mkFn4 (transitionFnToTransitionFnImpl f) # transitionFnImpl
+
+transitionFnToTransitionFnImpl ∷
+  ∀ item props.
+  (_ -> _ -> TransitionObject item -> _ -> JSX) ->
+  _ -> _ -> TransitionObjectImpl item -> _ -> JSX
+transitionFnToTransitionFnImpl f = \a b c -> f a b (c { phase = transitionPhaseFromString c.phase })
 
 foreign import animatedImpl ∷ ∀ attrs. String -> ReactComponent { | attrs }
 

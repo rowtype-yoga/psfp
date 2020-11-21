@@ -1,6 +1,5 @@
 const path = require("path");
 var proxy = require("http-proxy-middleware");
-
 module.exports = {
   siteMetadata: {
     title: "Rowtype Yoga",
@@ -12,10 +11,8 @@ module.exports = {
     app.use(
       "/api",
       proxy({
-        target: "http://127.0.0.1:14188",
-        pathRewrite: {
-          "/api": ""
-        }
+        target: "https://rowtype.yoga",
+        changeOrigin: true,
       })
     );
   },

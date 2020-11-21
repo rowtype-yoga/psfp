@@ -14,10 +14,10 @@ module Main where
 import Grimoire
 import Data.String (take)
 
-incantation :: Effect Unit
-incantation =
+main :: Effect Unit
+main =
 --start here
-  cast (take 4 "pocus")
+  log (take 4 "pocus")
 --end here
 ```
 
@@ -29,10 +29,10 @@ module Main where
 import Grimoire
 import Data.String (take)
 
-incantation :: Effect Unit
-incantation =
+main :: Effect Unit
+main =
 --start here
-  {-cast-} (take 3 "pocus")
+  {-log-} (take 3 "pocus")
 --end here
 ```
 
@@ -44,10 +44,10 @@ module Main where
 import Grimoire
 import Data.String (take)
 
-incantation :: Effect Unit
-incantation =
+main :: Effect Unit
+main =
 --start here
-  cast (take {-1-} "pocus")
+  log (take {-1-} "pocus")
 --end here
 ```
 
@@ -58,10 +58,10 @@ module Main where
 import Grimoire
 import Data.String (take)
 
-incantation :: Effect Unit
-incantation =
+main :: Effect Unit
+main =
 --start here
-  {-cast-} ({-take-} 200 "pocus")
+  {-log-} ({-take-} 200 "pocus")
 --end here
 ```
 
@@ -72,10 +72,10 @@ module Main where
 import Grimoire
 import Data.String (take)
 
-incantation :: Effect Unit
-incantation = 
+main :: Effect Unit
+main = 
   --start here
-  {-cast-} ({-take-} 5 "cadabra")
+  {-log-} ({-take-} 5 "cadabra")
 --end here
 ```
 
@@ -86,10 +86,10 @@ module Main where
 import Grimoire
 import Data.String (take)
 
-incantation :: Effect Unit
-incantation = 
+main :: Effect Unit
+main = 
   --start here
-  cast (take {-4-} "echo")
+  log (take {-4-} "echo")
 --end here
 ```
 
@@ -100,10 +100,10 @@ module Main where
 import Grimoire
 import Data.String (take)
 
-incantation :: Effect Unit
-incantation = 
+main :: Effect Unit
+main = 
   --start here
-  cast (take {-0-} "noise")
+  log (take {-0-} "noise")
 --end here
 ```
 

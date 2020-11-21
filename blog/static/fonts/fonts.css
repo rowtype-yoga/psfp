@@ -1,6 +1,5 @@
-@font-face {
-  font-family: "Rubik";
-  src: url("Rubik-Regular.woff2") format("woff2");
-  font-weight: normal;
-  font-style: normal;
+@import url('https://rsms.me/inter/inter.css');
+html { font-family: 'Inter', sans-serif; }
+@supports (font-variation-settings: normal) {
+  html { font-family: 'Inter var', sans-serif; }
 }

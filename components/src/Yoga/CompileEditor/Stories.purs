@@ -13,7 +13,7 @@ compiler = { compileAndRun }
   where
   compileAndRun { code } = pure (pure { code: Nothing, stderr: "", stdout: "" })
 
-stories ∷ Effect Storybook
+stories ∷ _ -> Effect Storybook
 stories = do
   storiesOf "Editor" do
     addDecorator fullScreenDecorator

@@ -15,7 +15,7 @@ import Yoga.Box.Component as Box
 import Yoga.Button.Component (ButtonType(..))
 import Yoga.Button.Component as Button
 
-stories ∷ Effect Storybook
+stories ∷ _ -> Effect Storybook
 stories =
   storiesOf "Button" do
     addDecorator fullScreenDecorator

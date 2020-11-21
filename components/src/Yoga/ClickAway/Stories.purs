@@ -17,7 +17,7 @@ import Yoga.Button.Component (mkButton)
 import Yoga.Centre.Component as Centre
 import Yoga.ClickAway.Component as ClickAway
 
-stories ∷ Effect Storybook
+stories ∷ _ -> Effect Storybook
 stories = do
   storiesOf "ClickAway" do
     addDecorator fullScreenDecorator

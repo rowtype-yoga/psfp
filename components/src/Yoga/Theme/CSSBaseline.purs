@@ -67,7 +67,7 @@ styles fontFaces =
           , padding: 0
           }
         , "strong, b": { fontWeight: theme.fontWeightBold }
-        , "html, body, button, div, header, nav, main, footer":
+        , "html, body, button, div, header, nav, main, footer, img, picture":
           { maxWidth: "none"
           }
         , body:

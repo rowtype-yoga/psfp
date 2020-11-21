@@ -8,7 +8,7 @@ import React.Basic.DOM as R
 import Storybook.React (Storybook, add, addDecorator, storiesOf)
 
 -- What's about
-stories ∷ Effect Storybook
+stories ∷ _ -> Effect Storybook
 stories = do
   storiesOf "Header" do
     addDecorator fullScreenDecorator

@@ -205,7 +205,7 @@ makeComponent = do
                   $ { style:
                       css
                         $ disjointUnion
-                            { boxShadow: ((unsafeCoerce (style.shadow ∷ Int)).interpolate \s -> Interp.i "rgba(0, 0, 0, 0.15) 0px " s "px " (2 * s) "px 0px" ∷ String)
+                            { boxShadow: ((unsafeCoerce (style.shadow ∷ Int)).to \s -> Interp.i "rgba(0, 0, 0, 0.15) 0px " s "px " (2 * s) "px 0px" ∷ String)
                             , position: "relative"
                             }
                             style

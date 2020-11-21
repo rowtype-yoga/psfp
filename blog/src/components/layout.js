@@ -5,24 +5,31 @@ import { preToCodeBlock } from "mdx-utils";
 const psLayout = require("../../output/PSLayout/index.js"); // [FIXME] use the next line
 // const psLayout = require("./PSLayout.purs");
 const fetch = typeof window !== "undefined" && window.fetch;
+import Img from "gatsby-image";
 
 const PSLayout = psLayout.mkLayout(fetch)();
 
-const Layout = ({ children }) => {
-  const siteInfo = useStaticQuery(graphql`
-    query SiteTitleQuery {
-      site {
-        siteMetadata {
-          title
-          menuLinks {
-            name
-            link
-          }
+const query = graphql`
+  query {
+    site {
+      siteMetadata {
+        title
+        menuLinks {
+          name
+          link
         }
       }
     }
-  `);
-  return <PSLayout siteInfo={siteInfo}>{children}</PSLayout>;
+  }
+`;
+
+const Layout = ({ children }) => {
+  const q = useStaticQuery(query);
+  return (
+    <PSLayout siteInfo={q.site}>
+      {children}
+    </PSLayout>
+  );
 };
 
 export default Layout;

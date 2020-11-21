@@ -27,7 +27,6 @@ fullScreenDecorator ∷ Effect JSX -> Effect JSX
 fullScreenDecorator mkChild = do
   let
     dark = fromTheme darkTheme
-
     light = fromTheme lightTheme
   child <- mkChild
   themeSwitcher <- mkThemeSwitcher
@@ -94,7 +93,6 @@ mkThemeSwitcher = do
         traverse_ (modTheme <<< const) do
           value <- maybeValue
           find (\x -> x.name == value) themes
-
       themeSelect =
         R.select
           { onChange: handler targetValue handleClicked
