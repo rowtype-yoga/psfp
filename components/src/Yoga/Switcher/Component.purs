@@ -6,7 +6,7 @@ import Data.Maybe (Maybe)
 import Effect (Effect)
 import React.Basic (JSX)
 import React.Basic.DOM as R
-import React.Basic.Hooks (ReactComponent, component)
+import React.Basic.Hooks (ReactComponent, reactComponent)
 import React.Basic.Hooks as React
 import Record.Extra (pick)
 import Yoga.Switcher.Styles as Style
@@ -27,7 +27,7 @@ type OptionalProps r
 makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do
   useStyles <- makeStylesJSS Style.styles
-  component "Switcher" \props@{ kids, className } -> React.do
+  reactComponent "Switcher" \props@{ kids, className } -> React.do
     classes <- useStyles (pick props)
     pure
       $ R.div

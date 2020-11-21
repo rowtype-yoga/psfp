@@ -1,6 +1,7 @@
 module Yoga.Imposter.Stories where
 
 import Prelude hiding (add)
+
 import CSS (backgroundColor, backgroundImage, height, hotpink, peachpuff, position, relative, rgba, vGradient, vh, vw, width)
 import Data.Maybe (Maybe(..))
 import Data.Monoid (power)
@@ -8,15 +9,15 @@ import Effect (Effect)
 import JSS (jssClasses)
 import Justifill (justifill)
 import React.Basic.DOM as R
-import React.Basic.Hooks (ReactComponent, component, element)
+import React.Basic.Hooks (ReactComponent, element, reactComponent)
 import React.Basic.Hooks as React
 import Storybook.Decorator.FullScreen (fullScreenDecorator)
-import Storybook.React (Storybook, add, addDecorator, storiesOf)
+import Storybook.React (NodeModule, Storybook, add, addDecorator, storiesOf)
 import Yoga.Helpers (ifJustTrue)
 import Yoga.Imposter.Component as Imposter
 import Yoga.Theme.Styles (makeStylesJSS)
 
-stories ∷ _ -> Effect Storybook
+stories ∷ NodeModule -> Effect Storybook
 stories = do
   storiesOf "Imposter" do
     addDecorator fullScreenDecorator
@@ -87,7 +88,7 @@ mkExample = do
               backgroundImage $ vGradient hotpink peachpuff
           }
   imposter <- Imposter.makeComponent
-  component "ImposterExample" \{ imposterProps, higherThanView } -> React.do
+  reactComponent "ImposterExample" \{ imposterProps, higherThanView } -> React.do
     pure $ R.div {}
     -- element_ props
     classes <- useStyles {}

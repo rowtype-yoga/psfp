@@ -1,6 +1,7 @@
 module Yoga.Grimoire.Component where
 
 import Prelude
+
 import Data.Array (length, mapWithIndex, zip, (!!), (..))
 import Data.Array as Array
 import Data.FoldableWithIndex (findWithIndex)
@@ -10,10 +11,8 @@ import Data.Lens.Index (ix)
 import Data.Maybe (Maybe(..), fromMaybe, fromMaybe')
 import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
-import Data.Symbol (SProxy(..))
 import Data.Traversable (for, sequence)
 import Data.Tuple.Nested ((/\), type (/\))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Class.Console (log)
 import Justifill (justifill)
@@ -22,12 +21,11 @@ import React.Basic (ReactComponent)
 import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (Ref, component, element, readRef, useLayoutEffect, useRef, useState, writeRef)
+import React.Basic.Hooks (Ref, element, reactComponent, readRef, useLayoutEffect, useRef, useState, writeRef)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Spring (animatedDiv, useSprings)
 import React.Basic.Hooks.UseGesture (useDrag, withDragProps)
 import Record (disjointUnion)
-import Record as Record
 import Record.Extra (pick)
 import Unsafe.Coerce (unsafeCoerce)
 import Web.DOM (Node)
@@ -45,6 +43,19 @@ type Props
   = { spells ∷ Array Spell
     }
 
+getRects :: Ref (Array (Nullable Node))
+                     -> Effect
+                          (Array
+                             (Maybe
+                                { bottom :: Number
+                                , height :: Number
+                                , left :: Number
+                                , right :: Number
+                                , top :: Number
+                                , width :: Number
+                                }
+                             )
+                          )
 getRects ref = do
   refNodes <- readRef ref
   for
@@ -73,6 +84,7 @@ translate (x /\ y) { top, right, bottom, left, width, height } =
   , height
   }
 
+orDie :: forall t23. String -> Maybe t23 -> t23
 orDie msg =
   fromMaybe'
     (\_ -> unsafeCrashWith msg)
@@ -90,12 +102,23 @@ swap i j arr = swapped # orDie "Couldn't swap"
     valueJ <- arr !! j
     pure $ (set (ix i) valueJ <<< set (ix j) valueI) arr
 
+regularScale :: String
 regularScale = "scale3d(1.0, 1.0, 1.0)"
 
+scaledUp :: String
 scaledUp = "scale3d(1.1, 1.1, 1.1)"
 
+scaledCompletely :: String
 scaledCompletely = "scale3d(2.0, 2.0, 2.0)"
 
+defaultSprings :: forall t84.
+  { immediate :: t84 -> Boolean
+  , shadow :: Int
+  , transform :: String
+  , x :: Number
+  , y :: Number
+  , zIndex :: Int
+  }
 defaultSprings =
   { x: 0.0
   , y: 0.0
@@ -105,6 +128,39 @@ defaultSprings =
   , transform: "scale3d(1.0,1.0,1.0)"
   }
 
+springsteen :: forall t111 t117 t123 t124 t125 t172.
+  Discard t124 => { set :: (Int
+                            -> { immediate :: String -> Boolean
+                               , shadow :: Int
+                               , transform :: String
+                               , x :: Number
+                               , y :: Number
+                               , zIndex :: Int
+                               }
+                           )
+                           -> Effect t125
+                  | t172
+                  }
+                  -> Effect t124
+                     -> t111
+                        -> Ref
+                             (Array
+                                { bottom :: Number
+                                , height :: Number
+                                , left :: Number
+                                , right :: Number
+                                , top :: Number
+                                , width :: Number
+                                }
+                             )
+                           -> Ref (Array Int)
+                              -> { arg :: Int
+                                 , down :: Boolean
+                                 , movement :: Number /\ Number
+                                 , tap :: t123
+                                 | t117
+                                 }
+                                 -> Effect t125
 springsteen springs init windowSize rectsRef positionsRef { arg, movement: mx /\ my, down, tap } = do
   init
   rects <- readRef rectsRef
@@ -157,7 +213,7 @@ makeComponent = do
   grid <- Grid.makeComponent
   spellComponent <- GrimoireSpell.makeComponent
   useStyles <- makeStylesJSS styles
-  component "Grimoire" \(props ∷ Props) -> React.do
+  reactComponent "Grimoire" \(props ∷ Props) -> React.do
     classes <- useStyles (pick props)
     springs <- useSprings (Array.length props.spells) (const defaultSprings)
     nodeRefs ∷ Ref (Array (Nullable (_))) <- useRef (props.spells $> Nullable.null)

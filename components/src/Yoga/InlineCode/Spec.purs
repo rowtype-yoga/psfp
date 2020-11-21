@@ -1,6 +1,7 @@
 module Yoga.InlineCode.Spec where
 
 import Prelude
+
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
@@ -10,7 +11,7 @@ import Effect.Ref (Ref)
 import Effect.Ref as Ref
 import Justifill (justifill)
 import React.Basic.Extra.Hooks.UseAffReducer (useAffReducer)
-import React.Basic.Hooks (ReactComponent, component, element, useEffect)
+import React.Basic.Hooks (ReactComponent, element, reactComponent, useEffect)
 import React.Basic.Hooks as React
 import React.TestingLibrary (describeComponent, renderComponent)
 import Test.Spec (Spec, it)
@@ -52,7 +53,7 @@ mkReducer ref state = case _ of
 mkWrapper ∷ Effect (ReactComponent { strRef ∷ Ref String })
 mkWrapper = do
   inlineCode <- InlineCode.makeComponent
-  component "Wrapper" \{ strRef } -> React.do
+  reactComponent "Wrapper" \{ strRef } -> React.do
     state /\ dispatch <- useAffReducer Nothing (mkReducer strRef)
     useEffect state mempty
     pure

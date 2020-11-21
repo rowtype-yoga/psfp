@@ -1,16 +1,17 @@
 module Yoga.Cluster.Stories where
 
 import Prelude hiding (add)
+
 import Effect (Effect)
 import Justifill (justifill)
 import React.Basic (JSX)
 import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import Storybook.Decorator.FullScreen (fullScreenDecorator)
-import Storybook.React (Storybook, add, addDecorator, storiesOf)
+import Storybook.React (NodeModule, Storybook, add, addDecorator, storiesOf)
 import Yoga.Cluster.Component as Cluster
 
-stories ∷ _ -> Effect Storybook
+stories ∷ NodeModule -> Effect Storybook
 stories = do
   storiesOf "Cluster" do
     addDecorator fullScreenDecorator

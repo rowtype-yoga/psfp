@@ -1,14 +1,15 @@
 module Yoga.Stack.Stories where
 
 import Prelude hiding (add)
+
 import Effect (Effect)
 import Justifill (justifill)
 import React.Basic.DOM as R
 import Storybook.Decorator.FullScreen (fullScreenDecorator)
-import Storybook.React (Storybook, add, addDecorator, storiesOf)
+import Storybook.React (NodeModule, Storybook, add, addDecorator, storiesOf)
 import Yoga.Stack.Component as Stack
 
-stories ∷ _ -> Effect Storybook
+stories ∷ NodeModule -> Effect Storybook
 stories = do
   storiesOf "Stack" do
     addDecorator fullScreenDecorator

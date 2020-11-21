@@ -6,7 +6,7 @@ import Data.Maybe (Maybe)
 import Effect (Effect)
 import React.Basic (JSX)
 import React.Basic.DOM as R
-import React.Basic.Hooks (ReactComponent, component)
+import React.Basic.Hooks (ReactComponent, reactComponent)
 import React.Basic.Hooks as React
 import Record.Extra (pick)
 import Yoga.Stack.Styles (styles)
@@ -28,7 +28,7 @@ type OptionalProps r
 makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do
   useStyles <- makeStylesJSS styles
-  component "Stack" \props@{ kids, className } -> React.do
+  reactComponent "Stack" \props@{ kids, className } -> React.do
     { stack } <- useStyles (pick props)
     pure
       $ R.div

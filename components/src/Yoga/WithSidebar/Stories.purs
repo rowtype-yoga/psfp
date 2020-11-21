@@ -1,16 +1,17 @@
 module Yoga.WithSidebar.Stories where
 
 import Prelude hiding (add)
+
 import Data.Monoid (power)
 import Effect (Effect)
 import Justifill (justifill)
 import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import Storybook.Decorator.FullScreen (fullScreenDecorator)
-import Storybook.React (Storybook, add, addDecorator, storiesOf)
+import Storybook.React (NodeModule, Storybook, add, addDecorator, storiesOf)
 import Yoga.WithSidebar.Component as WithSidebar
 
-stories ∷ _ -> Effect Storybook
+stories ∷ NodeModule -> Effect Storybook
 stories = do
   storiesOf "WithSidebar" do
     addDecorator fullScreenDecorator

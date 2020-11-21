@@ -1,6 +1,7 @@
 module Yoga.Button.Stories where
 
 import Prelude hiding (add)
+
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Console (log)
@@ -8,14 +9,14 @@ import Justifill (justifill)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (component)
+import React.Basic.Hooks (reactComponent)
 import Storybook.Decorator.FullScreen (fullScreenDecorator)
-import Storybook.React (Storybook, add, addDecorator, storiesOf)
+import Storybook.React (NodeModule, Storybook, add, addDecorator, storiesOf)
 import Yoga.Box.Component as Box
 import Yoga.Button.Component (ButtonType(..))
 import Yoga.Button.Component as Button
 
-stories ∷ _ -> Effect Storybook
+stories ∷ NodeModule -> Effect Storybook
 stories =
   storiesOf "Button" do
     addDecorator fullScreenDecorator
@@ -41,7 +42,7 @@ stories =
   mkExample = do
     box <- Box.makeComponent
     button <- Button.mkButton
-    component "ExampleButton" \{ text, buttonType, onClick } -> React.do
+    reactComponent "ExampleButton" \{ text, buttonType, onClick } -> React.do
       pure
         $ jsx button
             { onClick

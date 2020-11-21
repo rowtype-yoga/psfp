@@ -8,7 +8,7 @@ import React.Basic.DOM (CSS)
 import React.Basic.Events (handler_)
 import React.Basic.Extra.Hooks.UseKeyUp (KeyCode(..), useKeyUp)
 import React.Basic.Helpers (jsx, orUndefined)
-import React.Basic.Hooks (ReactComponent, component, useState)
+import React.Basic.Hooks (ReactComponent, reactComponent, useState)
 import React.Basic.Hooks as React
 import Record.Extra (pick)
 import Yoga.ClickAway.Styles as Style
@@ -30,7 +30,7 @@ makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do
   imposter <- Imposter.makeComponent
   useStyles <- makeStylesJSS Style.styles
-  component "ClickAway" \props -> React.do
+  reactComponent "ClickAway" \props -> React.do
     cs <- useStyles (pick props)
     useKeyUp Escape $ ifJustTrue props.allowEscape props.onClick
     animationDone /\ modifyAnimationDone <- useState false

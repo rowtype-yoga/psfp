@@ -1,13 +1,14 @@
 module Yoga.Typography.Stories where
 
 import Prelude hiding (add)
+
 import Data.Maybe (Maybe(..))
-import Storybook.Decorator.FullScreen (fullScreenDecorator)
 import Effect (Effect)
-import Storybook.React (Storybook, add, addDecorator, storiesOf)
+import Storybook.Decorator.FullScreen (fullScreenDecorator)
+import Storybook.React (NodeModule, Storybook, add, addDecorator, storiesOf)
 import Yoga.Typography.Header (HeadingLevel(..), mkH)
 
-stories ∷ _ -> Effect Storybook
+stories ∷ NodeModule -> Effect Storybook
 stories = do
   storiesOf "Typography" do
     addDecorator fullScreenDecorator

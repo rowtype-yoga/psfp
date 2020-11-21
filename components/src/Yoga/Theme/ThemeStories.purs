@@ -1,16 +1,17 @@
 module Yoga.Theme.Stories where
 
 import Prelude hiding (add)
+
 import Color (toHexString)
 import Effect (Effect)
 import React.Basic.DOM (css)
 import React.Basic.DOM as R
-import React.Basic.Hooks (component, element)
-import Storybook.React (Storybook, add, storiesOf)
+import React.Basic.Hooks (reactComponent, element)
+import Storybook.React (NodeModule, Storybook, add, storiesOf)
 import Yoga.Theme (fromTheme)
 import Yoga.Theme.Default (darkTheme, lightTheme)
 
-stories ∷ _ -> Effect Storybook
+stories ∷ NodeModule -> Effect Storybook
 stories = do
   storiesOf "Theme" do
     add "The swatches in the themes" mkExample
@@ -20,7 +21,7 @@ stories = do
   where
   mkExample = do
     swatch <- mkSwatch
-    component "ExampleSwatches" \{ theme, themeName } -> React.do
+    reactComponent "ExampleSwatches" \{ theme, themeName } -> React.do
       let
         cssTheme = fromTheme theme
         sw name colour = element swatch { name, colour, fontFamily: cssTheme.textFontFamily }
@@ -70,7 +71,7 @@ stories = do
               ]
             }
   mkSwatch = do
-    component "Swatch" \{ name, colour, fontFamily } -> React.do
+    reactComponent "Swatch" \{ name, colour, fontFamily } -> React.do
       pure
         $ R.div
             { style: css { display: "flex", flexDirection: "column", alignItems: "center" }

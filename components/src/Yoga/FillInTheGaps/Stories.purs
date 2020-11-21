@@ -1,26 +1,26 @@
 module Yoga.FillInTheGaps.Stories where
 
 import Prelude hiding (add)
+
 import Control.Monad.Trans.Class (lift)
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Ref as Ref
 import Justifill (justifill)
-import React.Basic (ReactComponent, fragment)
-import React.Basic.Hooks (element, useState, component)
+import React.Basic (ReactComponent)
+import React.Basic.Hooks (element, useState, reactComponent)
 import React.Basic.Hooks as React
 import Storybook.Decorator.FullScreen (fullScreenDecorator)
-import Storybook.React (Storybook, add, addDecorator, storiesOf)
+import Storybook.React (NodeModule, Storybook, add, addDecorator, storiesOf)
 import Yoga.FillInTheGaps.Component as FillInTheGaps
 import Yoga.FillInTheGaps.Logic (parseSegments)
-import Yoga.Grimoire.Component as Grimoire
 import Yoga.Grimoire.Spell.Component as Spell
 import Yoga.Helpers ((?||))
 import Yoga.Spell.Types (Spell)
 import Yoga.WithSidebar.Component as WithSidebar
 
-stories ∷ _ -> Effect Storybook
+stories ∷ NodeModule -> Effect Storybook
 stories = do
   storiesOf "FillInTheGaps" do
     addDecorator fullScreenDecorator
@@ -33,7 +33,7 @@ makeWrapper = do
   gaps <- FillInTheGaps.makeComponent
   withSidebar <- WithSidebar.makeComponent
   spell <- Spell.makeComponent
-  component "GapsWrapper" \_ -> React.do
+  reactComponent "GapsWrapper" \_ -> React.do
     segments /\ updateSegments <- useState $ parseSegments codeWithHoles ?|| []
     pure
       $ element withSidebar
@@ -61,6 +61,7 @@ spells =
   , { name: "drop", signature: "Int -> String -> String", description: "Removes the first characters of a string wow man this is a really long description I bet it produces a much longer card than the others if I keep writing like a crazy person" }
   ]
 
+codeWithHoles :: String
 codeWithHoles =
   """
 --result Hello World

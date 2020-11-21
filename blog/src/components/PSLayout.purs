@@ -16,6 +16,7 @@ import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (launchAff_)
 import Effect.Class (liftEffect)
+import Effect.Unsafe (unsafePerformEffect)
 import JSS (jssClasses)
 import Justifill (justifill)
 import Milkis.Impl (FetchImpl)
@@ -23,7 +24,7 @@ import React.Basic (JSX, ReactComponent, fragment)
 import React.Basic.DOM (css, unsafeCreateDOMComponent)
 import React.Basic.DOM as R
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (ReactChildren, component, componentWithChildren, element, memo, reactChildrenToArray, useReducer, useState)
+import React.Basic.Hooks (ReactChildren, element, memo, mkReducer, reactChildrenToArray, reactComponent, reactComponentWithChildren, useReducer, useState)
 import React.Basic.Hooks as React
 import Shared.Models.Body (CompileResult)
 import Unsafe.Coerce (unsafeCoerce)
@@ -36,7 +37,7 @@ import Yoga.Compiler.Api (apiCompiler)
 import Yoga.Compiler.Types (Compiler)
 import Yoga.Cover.Component as Cover
 import Yoga.FillInTheGaps.Component as FillInTheGaps
-import Yoga.FillInTheGaps.Logic (findResult, parseSegments, toCode)
+import Yoga.FillInTheGaps.Logic (Segment, findResult, parseSegments, toCode)
 import Yoga.Header.Component (mkHeader)
 import Yoga.Helpers ((?||))
 import Yoga.Imposter.Component as Imposter
@@ -90,12 +91,14 @@ mkLayout fetchImpl = do
   cover <- memo Cover.makeComponent
   cluster <- memo Cluster.makeComponent
   clickAway <- memo ClickAway.makeComponent
+  reducer <-
+    mkReducer case _, _ of
+      _, ShowModal props -> Just props
+      _, HideModal -> Nothing
   mdxProviderComponent <- memo $ mkMdxProviderComponent (apiCompiler fetchImpl)
-  componentWithChildren "MDXLayout" \{ children, siteInfo } -> React.do
+  reactComponentWithChildren "MDXLayout" \{ children, siteInfo } -> React.do
     (maybeModalProps ∷ Maybe Modal.Props) /\ dispatch <-
-      useReducer Nothing case _, _ of
-        _, ShowModal props -> Just props
-        _, HideModal -> Nothing
+      useReducer Nothing reducer
     pure
       $ element themeProvider
           { theme: fromTheme darkTheme
@@ -157,7 +160,7 @@ mkMdxProviderComponent compiler = do
             , borderRadius: "3px"
             }
           }
-  componentWithChildren "MDXProviderComponent" \({ children, siteInfo, showModal, hideModal } ∷ MdxProviderProps) -> React.do
+  reactComponentWithChildren "MDXProviderComponent" \({ children, siteInfo, showModal, hideModal } ∷ MdxProviderProps) -> React.do
     classes <- useStyles {}
     visibleUntil /\ updateVisible <- useState 1
     let
@@ -236,7 +239,7 @@ mkMdxProviderComponent compiler = do
                   , height
                   , language
                   }
-              false, _, _ -> element (unsafeCreateDOMComponent "pre") props
+              false, _, _ -> element (unsafePerformEffect $ unsafeCreateDOMComponent "pre") props
         }
     pure
       $ element mdxProvider
@@ -244,11 +247,17 @@ mkMdxProviderComponent compiler = do
           , components: mdxComponents
           }
 
-mkQuiz ∷ _ -> Effect (ReactComponent _)
+type QuizProps =
+  { initialSegments ∷ Array (Array Segment)
+  , onFailure ∷ String -> Array JSX -> Effect Unit
+  , onSuccess ∷ Effect Unit
+  }
+
+mkQuiz ∷ ∀ r. { | Compiler r } -> Effect (ReactComponent QuizProps)
 mkQuiz compiler = do
   fillInTheGaps <- FillInTheGaps.makeComponent
   box <- Box.makeComponent
-  component "Quiz" \({ initialSegments, onFailure, onSuccess } ∷ { initialSegments ∷ _, onFailure ∷ _, onSuccess ∷ _ }) -> React.do
+  reactComponent "Quiz" \({ initialSegments, onFailure, onSuccess } ∷ QuizProps) -> React.do
     segments /\ updateSegments <- useState initialSegments
     solvedWith /\ updateSolvedWith <- useState Nothing
     pure

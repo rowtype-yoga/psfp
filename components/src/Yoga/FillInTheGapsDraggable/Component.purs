@@ -16,7 +16,7 @@ import React.Basic.DOM as R
 import React.Basic.DOM.Events (preventDefault)
 import React.Basic.Events (handler, handler_)
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (Ref, component)
+import React.Basic.Hooks (Ref, reactComponent)
 import React.Basic.Hooks as React
 import React.Basic.SyntaxHighlighter.Component (HighlighterTheme, syntaxHighlighterImpl)
 import Record.Extra (pick)
@@ -78,7 +78,7 @@ makeComponent = do
   box <- Box.makeComponent
   cluster <- Cluster.makeComponent
   useStyles <- makeStylesJSS styles
-  component "FillInTheGapsDraggable" \(props@{ updateSegments, segments, incantate, solvedWith } ∷ Props) -> React.do
+  reactComponent "FillInTheGapsDraggable" \(props@{ updateSegments, segments, incantate, solvedWith } ∷ Props) -> React.do
     { codeContainer, solutionContainer } <- useStyles (pick props)
     theme ∷ CSSTheme <- useTheme
     ref <- useFocus

@@ -119,100 +119,75 @@ let additions =
 
 
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.13.6-20200309/packages.dhall sha256:9221987b4e7ea99ccd0efbe056f7bebc872cd92e0058efe5baa181d73359e7b3
+      https://github.com/purescript/package-sets/releases/download/psc-0.13.8-20201021/packages.dhall sha256:55ebdbda1bd6ede4d5307fbc1ef19988c80271b4225d833c8d6fb9b6fb1aa6d8
 
 let overrides =
-      { react-basic-hooks =
-            upstream.react-basic-hooks
-          ⫽ { repo =
-                "https://github.com/i-am-the-slime/purescript-react-basic-hooks.git"
-            , version = "e04b106ab2dfda3f9a1407420c434a908ff72b90"
-            }
-      , css =
-            upstream.css
-          ⫽ { repo = "https://github.com/i-am-the-slime/purescript-css.git"
-            , version = "8ea0bab17c268d9c62a09892d7ba231dcbe6308b"
-            }
+      { css =
+              upstream.css
+          //  { repo = "https://github.com/i-am-the-slime/purescript-css.git"
+              , version = "8ea0bab17c268d9c62a09892d7ba231dcbe6308b"
+              }
       }
 
 let additions =
       { react-testing-library =
-          { dependencies =
-            [ "aff-promise"
-            , "console"
-            , "debug"
-            , "effect"
-            , "foreign"
-            , "foreign-object"
-            , "psci-support"
-            , "react-basic-hooks"
-            , "remotedata"
-            , "run"
-            , "simple-json"
-            , "spec"
-            , "spec-discovery"
-            ]
-          , repo =
-              "https://github.com/i-am-the-slime/purescript-react-testing-library.git"
-          , version = "13a63056506a3ce32572e326130be325931ba7c0"
-          }
+        { dependencies =
+          [ "aff-promise"
+          , "console"
+          , "debug"
+          , "effect"
+          , "foreign"
+          , "foreign-object"
+          , "psci-support"
+          , "react-basic-hooks"
+          , "remotedata"
+          , "run"
+          , "simple-json"
+          , "spec"
+          , "spec-discovery"
+          ]
+        , repo =
+            "https://github.com/i-am-the-slime/purescript-react-testing-library.git"
+        , version = "master"
+        }
       , pseudo-random =
-          { dependencies =
-            [ "prelude", "console", "effect", "lcg", "arrays", "st" ]
-          , repo = "https://github.com/opyapeus/purescript-pseudo-random.git"
-          , version = "7715e8a2c096c480a093a5e0a6df1ece4df5ed2a"
-          }
-      , oneof =
-          { dependencies =
-            [ "assert"
-            , "console"
-            , "effect"
-            , "foreign"
-            , "foreign-object"
-            , "literal"
-            , "maybe"
-            , "newtype"
-            , "proxy"
-            , "psci-support"
-            , "tuples"
-            , "unsafe-coerce"
-            ]
-          , repo = "https://github.com/jvliwanag/purescript-oneof.git"
-          , version = "0325fddf6ee8a181fac2128c9b542c2c01ddd361"
-          }
-      , literal =
-          { dependencies =
-            [ "assert"
-            , "effect"
-            , "console"
-            , "integers"
-            , "numbers"
-            , "partial"
-            , "psci-support"
-            , "unsafe-coerce"
-            , "typelevel-prelude"
-            ]
-          , repo = "https://github.com/jvliwanag/purescript-literal.git"
-          , version = "7b2ae20f77c67b7e419a92fdd0dc7a09b447b18e"
-          }
+        { dependencies =
+          [ "prelude", "console", "effect", "lcg", "arrays", "st" ]
+        , repo = "https://github.com/opyapeus/purescript-pseudo-random.git"
+        , version = "7715e8a2c096c480a093a5e0a6df1ece4df5ed2a"
+        }
       , justifill =
-          { dependencies = [ "record", "typelevel-prelude" ]
-          , repo = "https://github.com/i-am-the-slime/purescript-justifill.git"
-          , version = "2de06260ae8e37355678198180bbdd06c91457e3"
-          }
+        { dependencies = [ "record", "typelevel-prelude" ]
+        , repo = "https://github.com/i-am-the-slime/purescript-justifill.git"
+        , version = "master"
+        }
       , matryoshka =
-          { dependencies =
-            [ "prelude", "fixed-points", "free", "transformers", "profunctor" ]
-          , repo = "https://github.com/slamdata/purescript-matryoshka.git"
-          , version = "caaca2d836d52159ba7963333996286a00428394"
-          }
-      , interpolate =
-          { dependencies = [ "prelude" ]
-          , repo =
-              "https://github.com/jordanmartinez/purescript-interpolate.git"
-          , version = "v2.0.1"
-          }
+        { dependencies =
+          [ "prelude", "fixed-points", "free", "transformers", "profunctor" ]
+        , repo = "https://github.com/slamdata/purescript-matryoshka.git"
+        , version = "caaca2d836d52159ba7963333996286a00428394"
+        }
       , yoga-components = ../components/spago.dhall as Location
+      , ry-blocks =
+        { dependencies =
+          [ "console"
+          , "effect"
+          , "heterogeneous"
+          , "interpolate"
+          , "psci-support"
+          , "react-basic-dom"
+          , "react-basic-emotion"
+          , "react-basic-hooks"
+          , "react-testing-library"
+          , "record-extra"
+          , "routing"
+          , "routing-duplex"
+          , "spec-discovery"
+          , "untagged-union"
+          ]
+        , repo = "https://github.com/rowtype-yoga/ry-blocks.git"
+        , version = "main"
+        }
       }
 
-in  upstream ⫽ overrides ⫽ additions
+in  upstream // overrides // additions

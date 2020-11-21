@@ -10,7 +10,7 @@ import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.DOM.Events (targetValue)
 import React.Basic.Events (handler)
-import React.Basic.Hooks (ReactComponent, component, element, useEffect, useState, (/\))
+import React.Basic.Hooks (ReactComponent, reactComponent, element, useEffect, useState, (/\))
 import React.Basic.Hooks as React
 import Web.HTML (window)
 import Web.HTML.Window (localStorage)
@@ -76,7 +76,7 @@ mkThemeSwitcher = do
               }
           }
   storage <- window >>= localStorage
-  component "ThemeSwitcher" \{ defaultTheme, themes, child } -> React.do
+  reactComponent "ThemeSwitcher" \{ defaultTheme, themes, child } -> React.do
     { theme, name } /\ modTheme <- useState defaultTheme
     useEffect unit do
       maybeSaved <- getItem "theme" storage

@@ -1,22 +1,20 @@
 module Yoga.CloseIcon.Component where
 
 import Prelude
-import Data.Foldable (for_, traverse_)
 import Data.Int (round, toNumber)
 import Data.Interpolate (i)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe)
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Foreign.Object as Obj
 import Math (pi, pow, sqrt)
-import React.Basic.DOM (CSS, css)
+import React.Basic.DOM (CSS)
 import React.Basic.DOM.SVG as R
 import React.Basic.DOM.SVG as SVG
 import React.Basic.Events (handler_)
 import React.Basic.Helpers (orUndefined)
-import React.Basic.Hooks (ReactComponent, component, useEffect, useState)
+import React.Basic.Hooks (ReactComponent, reactComponent, useState)
 import React.Basic.Hooks as React
-import React.Basic.Hooks.Spring (animatedPath, useSpring)
 import Record.Extra (pick)
 import Yoga.Box.Component as Box
 import Yoga.CloseIcon.Styles as Style
@@ -35,7 +33,7 @@ makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do
   box <- Box.makeComponent
   useStyles <- makeStylesJSS Style.styles
-  component "CloseIcon" \(props ∷ Props) -> React.do
+  reactComponent "CloseIcon" \(props ∷ Props) -> React.do
     cs <- useStyles (pick props)
     animationDone /\ modifyAnimationDone <- useState false
     pure

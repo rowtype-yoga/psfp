@@ -1,6 +1,7 @@
 module Yoga.SVG.Image where
 
 import Prelude
+
 import Color (toHexString)
 import Data.Array (elem, foldl, head, intercalate, snoc, uncons, zip, (:))
 import Data.Array.NonEmpty as NEA
@@ -10,6 +11,7 @@ import Data.String (codePointFromChar)
 import Data.String as String
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
+import Effect.Unsafe (unsafePerformEffect)
 import JSS (jssClasses)
 import Random.PseudoRandom (mkSeed, randomRs)
 import React.Basic (JSX, element)
@@ -115,7 +117,7 @@ mkLandingPageBackground = do
             , animationDirection: "alternate"
             }
           }
-  React.component "LandingPageBackground" \{ className } -> React.do
+  React.reactComponent "LandingPageBackground" \{ className } -> React.do
     theme <- useTheme
     classes <- useStyles {}
     scrollY <- useScrollYPosition
@@ -125,7 +127,7 @@ mkLandingPageBackground = do
         Nothing -> 0.0
         Just vh -> scrollY / vh.height
     pure
-      $ element (unsafeCreateDOMComponent "svg") -- [TODO] make PR for react-basic to allow for `ref` on svg
+      $ element (unsafePerformEffect $ unsafeCreateDOMComponent "svg") -- [TODO] make PR for react-basic to allow for `ref` on svg
           { ref
           , viewBox: "0 0 800 447"
           , preserveAspectRatio: "xMidYMax slice"

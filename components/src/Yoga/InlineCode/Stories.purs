@@ -1,6 +1,7 @@
 module Yoga.InlineCode.Stories where
 
 import Prelude hiding (add)
+
 import Data.Array (intercalate)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
@@ -16,15 +17,15 @@ import React.Basic (JSX, fragment)
 import React.Basic.DOM as R
 import React.Basic.Extra.Hooks.UseAffReducer (useAffReducer)
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (ReactComponent, component, element)
+import React.Basic.Hooks (ReactComponent, element, reactComponent)
 import React.Basic.Hooks as React
 import Storybook.Decorator.FullScreen (fullScreenDecorator)
-import Storybook.React (Storybook, add, addDecorator, storiesOf)
+import Storybook.React (NodeModule, Storybook, add, addDecorator, storiesOf)
 import Yoga.Compiler.Api (apiCompiler)
 import Yoga.InlineCode.Component as InlineCode
 import Yoga.Modal.Component as Modal
 
-stories ∷ _ -> Effect Storybook
+stories ∷ NodeModule -> Effect Storybook
 stories = do
   storiesOf "InlineCode" do
     addDecorator fullScreenDecorator
@@ -74,7 +75,7 @@ renderCode c = intercalate [ R.br {} ] (toJSX <$> lines)
 mkWrapper ∷ Effect (ReactComponent { inside ∷ ReactComponent InlineCode.Props -> Array JSX })
 mkWrapper = do
   inlineCode <- InlineCode.makeComponent
-  component "InlineCodeWrapper" \{ inside } -> React.do
+  reactComponent "InlineCodeWrapper" \{ inside } -> React.do
     pure
       $ R.div_ (inside inlineCode)
 
@@ -90,7 +91,7 @@ mkRealWrapper ∷ Effect (ReactComponent {})
 mkRealWrapper = do
   inlineCode <- InlineCode.makeComponent
   modal <- Modal.makeComponent
-  component "InlineCodeWrapper" \{} -> React.do
+  reactComponent "InlineCodeWrapper" \{} -> React.do
     state /\ dispatch <- useAffReducer Nothing realReducer
     pure
       $ R.div_

@@ -8,7 +8,7 @@ import React.Basic (JSX)
 import React.Basic.DOM (CSS)
 import React.Basic.Events (EventHandler, handler_)
 import React.Basic.Helpers (orUndefined)
-import React.Basic.Hooks (ReactComponent, component)
+import React.Basic.Hooks (ReactComponent, reactComponent)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Spring (animatedDiv)
 import Record.Extra (pick)
@@ -33,7 +33,7 @@ type OptionalProps r
 makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do
   useStyles <- makeStylesJSS Style.styles
-  component "Imposter" \props@{ kids, className } -> React.do
+  reactComponent "Imposter" \props@{ kids, className } -> React.do
     classes <- useStyles (pick props)
     pure
       $ animatedDiv

@@ -1,38 +1,22 @@
 module Yoga.MultipleChoice.Component where
 
 import Prelude
-import Data.Array as A
-import Data.Maybe (Maybe(..), isJust)
+import Data.Maybe (Maybe)
 import Data.Newtype as NT
-import Data.Nullable (Nullable)
 import Data.Time.Duration (Milliseconds(..))
 import Effect (Effect)
 import Effect.Aff (delay, launchAff_)
 import Effect.Class (liftEffect)
-import Justifill (justifill)
-import Literals.Undefined (undefined)
-import React.Basic (JSX, ReactComponent, element)
+import React.Basic (ReactComponent)
 import React.Basic.DOM as R
-import React.Basic.DOM.Events (preventDefault)
-import React.Basic.Events (handler, handler_)
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (Ref, component)
+import React.Basic.Hooks (reactComponent)
 import React.Basic.Hooks as React
-import React.Basic.SyntaxHighlighter.Component (HighlighterTheme, syntaxHighlighterImpl)
 import Record.Extra (pick)
-import Unsafe.Coerce (unsafeCoerce)
-import Web.DOM (Node)
-import Yoga.Box.Component as Box
-import Yoga.Button.Component (ButtonType(..), mkButtonWithProps)
-import Yoga.Button.Component as Button
 import Yoga.Card.Component (mkCard)
-import Yoga.Cluster.Component as Cluster
 import Yoga.DOM.Hook (useFocus)
-import Yoga.Helpers ((?||))
-import Yoga.InlineCode.Component as InlineCode
-import Yoga.MultipleChoice.Logic (Segment(..), complete, findFirstHoleIndex, holeToFiller, updateSegments)
+import Yoga.MultipleChoice.Logic (Segment)
 import Yoga.MultipleChoice.Styles (styles)
-import Yoga.Stack.Component as Stack
 import Yoga.Theme.Styles (makeStylesJSS, useTheme)
 import Yoga.Theme.Syntax (mkHighlighterTheme)
 import Yoga.Theme.Types (CSSTheme)
@@ -48,7 +32,7 @@ makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do
   card <- mkCard
   useStyles <- makeStylesJSS styles
-  component "MultipleChoice" \(props@{ updateSegments, segments, incantate, solvedWith } ∷ Props) -> React.do
+  reactComponent "MultipleChoice" \(props@{ updateSegments, segments, incantate, solvedWith } ∷ Props) -> React.do
     { codeContainer, solutionContainer } <- useStyles (pick props)
     theme ∷ CSSTheme <- useTheme
     ref <- useFocus

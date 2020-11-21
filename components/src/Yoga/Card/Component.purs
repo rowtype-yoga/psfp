@@ -7,17 +7,15 @@ import Data.Foldable (fold)
 import Data.Interpolate (i)
 import Data.Maybe (Maybe)
 import Data.Nullable (Nullable)
-import Debug.Trace (spy)
 import Effect (Effect)
 import JSS (JSSClasses, JSSElem, jssClasses)
 import React.Basic (JSX)
 import React.Basic.DOM (CSS)
 import React.Basic.DOM as R
 import React.Basic.Helpers (orUndefined)
-import React.Basic.Hooks (ReactComponent, Ref, component)
+import React.Basic.Hooks (ReactComponent, Ref, reactComponent)
 import React.Basic.Hooks as React
 import Record.Extra (pick)
-import Unsafe.Coerce (unsafeCoerce)
 import Web.DOM (Node)
 import Yoga.Box.Component as Box
 import Yoga.Helpers (ifJustTrue)
@@ -67,7 +65,7 @@ mkCard ∷ Effect (ReactComponent Props)
 mkCard = do
   useStyles <- makeStylesJSS styles
   box <- Box.makeComponent
-  component "Card" \(props@{ kids, style, className } ∷ Props) -> React.do
+  reactComponent "Card" \(props@{ kids, style, className } ∷ Props) -> React.do
     classes <- useStyles (pick props)
     pure
       $ R.div

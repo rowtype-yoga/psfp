@@ -7,7 +7,7 @@ import Data.Maybe (Maybe)
 import Effect (Effect)
 import React.Basic (JSX)
 import React.Basic.DOM as R
-import React.Basic.Hooks (ReactComponent, component)
+import React.Basic.Hooks (ReactComponent, reactComponent)
 import React.Basic.Hooks as React
 import Yoga.Cover.Styles as Cover
 import Yoga.Theme.Styles (makeStylesJSS)
@@ -29,7 +29,7 @@ type OptionalProps r
 makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do
   useStyles <- makeStylesJSS Cover.styles
-  component "Cover" \{ header, footer, kids, className } -> React.do
+  reactComponent "Cover" \{ header, footer, kids, className } -> React.do
     classes <- useStyles {}
     pure
       $ R.div

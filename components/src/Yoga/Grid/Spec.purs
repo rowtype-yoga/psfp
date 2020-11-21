@@ -2,7 +2,6 @@ module Yoga.Grid.Spec where
 
 import Prelude
 import Justifill (justifill)
-import React.Basic.DOM as R
 import React.Basic.Hooks (JSX)
 import React.TestingLibrary (describeComponent, renderComponent)
 import Test.Spec (Spec, it)

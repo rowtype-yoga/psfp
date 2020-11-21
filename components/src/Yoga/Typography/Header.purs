@@ -9,7 +9,7 @@ import Data.Maybe (Maybe)
 import Effect (Effect)
 import JSS (jssClasses)
 import React.Basic.DOM as R
-import React.Basic.Hooks (ReactComponent, component)
+import React.Basic.Hooks (ReactComponent, reactComponent)
 import React.Basic.Hooks as React
 import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.Theme.Types (CSSTheme)
@@ -62,7 +62,7 @@ mkH = do
             , color: theme.textColourLighter # toHexString
             }
           }
-  component "Heading" \{ level, text, className } -> React.do
+  reactComponent "Heading" \{ level, text, className } -> React.do
     classes <- useStyles {}
     let
       elem = case level of

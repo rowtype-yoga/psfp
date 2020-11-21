@@ -1,7 +1,7 @@
 module Yoga.Modal.Stories where
 
 import Prelude hiding (add)
-import Data.Maybe (Maybe(..))
+
 import Data.Monoid (guard)
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
@@ -10,17 +10,17 @@ import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (ReactComponent, component, element, fragment, memo, useState)
+import React.Basic.Hooks (ReactComponent, reactComponent, element, fragment, memo, useState)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Spring (useTransition)
 import Storybook.Decorator.FullScreen (fullScreenDecorator)
-import Storybook.React (Storybook, add, addDecorator, storiesOf)
+import Storybook.React (NodeModule, Storybook, add, addDecorator, storiesOf)
 import Yoga.Button.Component (mkButton)
 import Yoga.Centre.Component as Centre
 import Yoga.CloseIcon.Component as CloseIcon
 import Yoga.Modal.Component as Modal
 
-stories ∷ _ -> Effect Storybook
+stories ∷ NodeModule -> Effect Storybook
 stories = do
   storiesOf "Modal" do
     addDecorator fullScreenDecorator
@@ -42,7 +42,7 @@ mkExample = do
   modal <- Modal.makeComponent
   centre <- Centre.makeComponent
   button <- mkButton
-  component "ModalStory" \{} -> React.do
+  reactComponent "ModalStory" \{} -> React.do
     state /\ modState <- useState { open: true }
     pure
       $ fragment
@@ -67,7 +67,7 @@ mkAnimatedExample = do
   centre <- Centre.makeComponent
   closeIcon <- memo CloseIcon.makeComponent
   button <- mkButton
-  component "ModalStoryAnimated" \{} -> React.do
+  reactComponent "ModalStoryAnimated" \{} -> React.do 
     state /\ modState <- useState { open: true }
     transitionFn <-
       useTransition [ state.open ]

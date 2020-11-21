@@ -7,7 +7,7 @@ import Effect (Effect)
 import JSS (jssClasses)
 import React.Basic (JSX)
 import React.Basic.DOM as R
-import React.Basic.Hooks (ReactComponent, component, element)
+import React.Basic.Hooks (ReactComponent, reactComponent, element)
 import React.Basic.Hooks as React
 import Yoga.SVG.Icon (trianglelogoIcon)
 import Yoga.Theme.Styles (makeStylesJSS)
@@ -43,7 +43,7 @@ mkHeader = do
             , marginBottom: "5px"
             }
           }
-  component "Header" \{ kids, className } -> React.do
+  reactComponent "Header" \{ kids, className } -> React.do
     classNames <- useStyles {}
     pure
       $ R.div

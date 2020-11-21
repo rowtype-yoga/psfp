@@ -1,21 +1,22 @@
 module Yoga.Grid.Stories where
 
 import Prelude hiding (add)
+
 import Data.Array ((..))
 import Effect (Effect)
 import Justifill (justifill)
 import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (component, element)
+import React.Basic.Hooks (reactComponent, element)
 import Storybook.Decorator.FullScreen (fullScreenDecorator)
-import Storybook.React (Storybook, add, addDecorator, storiesOf)
+import Storybook.React (NodeModule, Storybook, add, addDecorator, storiesOf)
 import Yoga.Box.Component as Box
 import Yoga.Card.Component (mkCard)
 import Yoga.Centre.Component as Centre
 import Yoga.Grid.Component as Grid
 
-stories ∷ _ -> Effect Storybook
+stories ∷ NodeModule -> Effect Storybook
 stories = do
   storiesOf "Grid" do
     addDecorator fullScreenDecorator
@@ -42,7 +43,7 @@ stories = do
     grid <- Grid.makeComponent
     centre <- Centre.makeComponent
     card <- mkCard
-    component "ExampleGrid" \(props ∷ Grid.Props) -> React.do
+    reactComponent "ExampleGrid" \(props ∷ Grid.Props) -> React.do
       let
         kids = props.kids <#> \kid -> jsx card {} [ kid ]
       pure
@@ -54,4 +55,5 @@ stories = do
               ]
             }
 
+src :: forall a. Show a => a -> String
 src seed = "https://picsum.photos/200?random=" <> show seed

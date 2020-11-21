@@ -16,7 +16,7 @@ import React.Basic (ReactComponent)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (component, element, useState)
+import React.Basic.Hooks (reactComponent, element, useState)
 import React.Basic.Hooks as React
 import Yoga.Button.Component (ButtonType(..), mkButton)
 import Yoga.Card.Component (mkCard)
@@ -59,7 +59,7 @@ mkCompileEditor { compileAndRun } = do
           , compileError: { color: theme.red, opacity: 1, transition: "opacity 2.0s ease" }
           , runOutput: { color: theme.green, opacity: 1, transition: "opacity 2.0s ease" }
           }
-  component "CompileEditor" \{ initialCode, height, language } -> React.do
+  reactComponent "CompileEditor" \{ initialCode, height, language } -> React.do
     maybeEditor /\ modifyEditor <- useState Nothing
     classes <- useStyles {}
     let

@@ -15,7 +15,7 @@ import React.Basic (JSX)
 import React.Basic.DOM (Props_button)
 import React.Basic.DOM as R
 import React.Basic.Events (EventHandler)
-import React.Basic.Hooks (ReactComponent, component)
+import React.Basic.Hooks (ReactComponent, reactComponent)
 import React.Basic.Hooks as React
 import Record as Record
 import Yoga.Helpers ((?||))
@@ -224,7 +224,7 @@ mkButtonWithProps ∷
 mkButtonWithProps = do
   useBaseStyles <- makeStylesJSS styles
   useHighlightStyles <- makeStylesJSS highlightStyles
-  component "Button" \(props@{ kids, onClick } ∷ Props extra) -> React.do
+  reactComponent "Button" \(props@{ kids, onClick } ∷ Props extra) -> React.do
     classes <- useBaseStyles {}
     { highlightedButton } <- useHighlightStyles {}
     let

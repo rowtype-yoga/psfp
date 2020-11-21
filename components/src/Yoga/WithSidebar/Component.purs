@@ -7,7 +7,7 @@ import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import React.Basic (JSX)
 import React.Basic.DOM as R
-import React.Basic.Hooks (ReactComponent, component)
+import React.Basic.Hooks (ReactComponent, reactComponent)
 import React.Basic.Hooks as React
 import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.WithSidebar.Styles as WithSidebar
@@ -32,7 +32,7 @@ type OptionalProps r
 makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do
   useStyles <- makeStylesJSS WithSidebar.styles
-  component "WithSidebar" \( { sidebarChildren
+  reactComponent "WithSidebar" \( { sidebarChildren
     , notSidebarChildren
     , className
     , sidebarClassName

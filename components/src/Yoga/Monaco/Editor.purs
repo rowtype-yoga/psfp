@@ -20,7 +20,7 @@ import JSS (jssClasses)
 import Prim.Row (class Union)
 import React.Basic (JSX, ReactComponent, Ref, element, fragment)
 import React.Basic.DOM as R
-import React.Basic.Hooks (component, useEffect, useState)
+import React.Basic.Hooks (reactComponent, useEffect, useState)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Aff (useAff)
 import Web.DOM (Node)
@@ -109,7 +109,7 @@ mkEditor = do
               overflowY hidden
               backgroundColor theme.backgroundColour
           }
-  component "Editor" \{ onLoad, height, language } -> React.do
+  reactComponent "Editor" \{ onLoad, height, language } -> React.do
     classes <- useStyles {}
     maybeEditor /\ modifyEditor <- useState Nothing
     maybeMonaco /\ modifyMonaco <- useState Nothing

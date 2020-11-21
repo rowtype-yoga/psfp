@@ -4,7 +4,7 @@ import Prelude
 import Effect (Effect)
 import React.Basic (ReactComponent)
 import React.Basic.DOM as R
-import React.Basic.Hooks (component)
+import React.Basic.Hooks (reactComponent)
 import React.Basic.Hooks as React
 import Record.Extra (pick)
 import Yoga.Template.Styles (styles)
@@ -20,7 +20,7 @@ type Props
 makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do
   useStyles <- makeStylesJSS styles
-  component "Template" \(props@{} ∷ Props) -> React.do
+  reactComponent "Template" \(props@{} ∷ Props) -> React.do
     {} <- useStyles (pick props)
     theme ∷ CSSTheme <- useTheme
     pure

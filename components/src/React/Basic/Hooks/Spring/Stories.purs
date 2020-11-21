@@ -1,15 +1,13 @@
 module React.Basic.Hooks.Spring.Stories where
 
 import Prelude hiding (add)
+
 import CSS (backgroundColor, height, position, relative, vh, vw, width)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Eq (genericEq)
 import Data.Int (pow)
-import Data.Maybe (Maybe(..), isJust)
-import Data.Monoid (guard)
 import Data.Time.Duration (Seconds(..), convertDuration)
 import Data.Tuple.Nested ((/\))
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (delay)
 import Effect.Class (liftEffect)
@@ -19,7 +17,7 @@ import React.Basic.DOM (css)
 import React.Basic.DOM as R
 import React.Basic.Events (handler_)
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (ReactComponent, component, useEffect, useState)
+import React.Basic.Hooks (ReactComponent, reactComponent, useEffect, useState)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Aff (useAff)
 import React.Basic.Hooks.Spring (animatedDiv, useSpring, useTransition)
@@ -55,7 +53,7 @@ mkAnimated = do
   centre <- Centre.makeComponent
   box <- Box.makeComponent
   cluster <- Cluster.makeComponent
-  component "Animated Example" \{} -> React.do
+  reactComponent "Animated Example" \{} -> React.do
     toggled /\ modifyToggled <- useState false
     { style, set, stop } <- useSpring $ const { opacity: 1.0, transform: "scale3d(1.0,1.0,1.0)" }
     useEffect toggled do
@@ -106,7 +104,7 @@ mkTransition = do
               backgroundColor t.green
               position relative
           }
-  component "Transition Example" \{} -> React.do
+  reactComponent "Transition Example" \{} -> React.do
     toggled /\ modifyToggled <- useState false
     classes <- useStyles {}
     transitionFn <-
@@ -167,7 +165,7 @@ mkCountdown = do
               width (50.0 # vw)
               height (50.0 # vh)
           }
-  component "Transition Countdown Example" \{} -> React.do
+  reactComponent "Transition Countdown Example" \{} -> React.do
     countdown /\ modifyCountdown <- useState CountdownNotStarted
     classes <- useStyles {}
     transitionFn <-
@@ -230,7 +228,7 @@ mkDragAnimated = do
       $ jssClasses \t ->
           { card: { width: "200px", height: "200px", marginTop: "30px" }
           }
-  component "Draggable Example" \{} -> React.do
+  reactComponent "Draggable Example" \{} -> React.do
     { style, set } <- useSpring $ const { x: 0.0, y: 0.0, config: { mass: 1, tension: 210, friction: 20 } }
     classes <- useStyles {}
     bindDragProps <-

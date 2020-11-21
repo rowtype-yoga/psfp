@@ -1,16 +1,17 @@
 module Yoga.Card.Stories where
 
 import Prelude hiding (add)
+
 import Effect (Effect)
 import React.Basic.DOM as R
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (component)
+import React.Basic.Hooks (reactComponent)
 import Storybook.Decorator.FullScreen (fullScreenDecorator)
-import Storybook.React (Storybook, add, addDecorator, storiesOf)
+import Storybook.React (NodeModule, Storybook, add, addDecorator, storiesOf)
 import Yoga.Box.Component as Box
 import Yoga.Card.Component (mkCard)
 
-stories ∷ _ -> Effect Storybook
+stories ∷ NodeModule -> Effect Storybook
 stories = do
   storiesOf "Card" do
     addDecorator fullScreenDecorator
@@ -21,7 +22,7 @@ stories = do
   mkExample = do
     box <- Box.makeComponent
     card <- mkCard
-    component "ExampleCard" \{} -> React.do
+    reactComponent "ExampleCard" \{} -> React.do
       pure
         $ jsx box {}
         $ pure

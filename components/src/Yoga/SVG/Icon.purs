@@ -8,7 +8,7 @@ import JSS (jssClasses)
 import Prim.Row (class Union)
 import React.Basic.DOM.SVG as SVG
 import React.Basic.Events (EventHandler)
-import React.Basic.Hooks (ReactComponent, component)
+import React.Basic.Hooks (ReactComponent, reactComponent)
 import React.Basic.Hooks as React
 import Unsafe.Coerce (unsafeCoerce)
 import Yoga.Theme.Styles (makeStylesJSS)
@@ -120,7 +120,7 @@ mkMenu = do
               }
             }
           }
-  component "MenuIcon" \{ activeArrowDirection } -> React.do
+  reactComponent "MenuIcon" \{ activeArrowDirection } -> React.do
     classes <- useStyles {}
     pure
       $ SVG.svg

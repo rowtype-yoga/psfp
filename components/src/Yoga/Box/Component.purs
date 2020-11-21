@@ -1,12 +1,13 @@
 module Yoga.Box.Component where
 
 import Prelude
+
 import Data.Foldable (fold, intercalate)
 import Data.Maybe (Maybe)
 import Effect (Effect)
 import React.Basic (JSX)
 import React.Basic.DOM as R
-import React.Basic.Hooks (ReactComponent, component)
+import React.Basic.Hooks (ReactComponent, reactComponent)
 import React.Basic.Hooks as React
 import Record.Extra (pick)
 import Unsafe.Coerce (unsafeCoerce)
@@ -30,7 +31,7 @@ type OptionalProps r
 makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do
   useStyles <- makeStylesJSS styles
-  component "Box" \props@{ kids, className, padding } -> React.do
+  reactComponent "Box" \props@{ kids, className, padding } -> React.do
     classes <- useStyles (pick props)
     pure
       $ R.div

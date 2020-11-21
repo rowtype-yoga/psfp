@@ -7,7 +7,7 @@ import Data.Array.NonEmpty as NEA
 import Effect (Effect)
 import JSS (JSSClasses, JSSElem, jss, jssClasses)
 import React.Basic (ReactComponent)
-import React.Basic.Hooks (JSX, component, fragment)
+import React.Basic.Hooks (JSX, reactComponent, fragment)
 import React.Basic.Hooks as React
 import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.Theme.Types (YogaTheme, CSSTheme)
@@ -17,7 +17,7 @@ mkCssBaseline ∷
   Effect (ReactComponent { kids ∷ Array JSX })
 mkCssBaseline fontFaces = do
   useStyles <- makeStylesJSS (styles fontFaces)
-  component "CSSBaseline" \{ kids } -> React.do
+  reactComponent "CSSBaseline" \{ kids } -> React.do
     classes <- useStyles {}
     pure
       $ fragment kids

@@ -6,7 +6,7 @@ import Color as Color
 import Effect (Effect)
 import JSS (jss)
 import Prim.Row (class Lacks)
-import React.Basic.Hooks (ReactComponent, component, element)
+import React.Basic.Hooks (ReactComponent, reactComponent, element)
 import Yoga.Font (FontFamily)
 import Yoga.Theme (fromTheme)
 import Yoga.Theme.CSSBaseline (mkCssBaseline)
@@ -25,7 +25,7 @@ withTheme theme mkComp = do
   themeProvider <- mkThemeProvider
   baseline <- mkCssBaseline (jss ([] ∷ _ FontFamily))
   comp <- mkComp
-  component "ThemeWrapper" \(props ∷ { | props }) -> React.do
+  reactComponent "ThemeWrapper" \(props ∷ { | props }) -> React.do
     pure
       $ element themeProvider
           { theme

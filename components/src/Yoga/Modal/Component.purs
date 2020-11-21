@@ -11,7 +11,7 @@ import React.Basic.DOM as R
 import React.Basic.DOM.Events (stopPropagation)
 import React.Basic.Events (handler)
 import React.Basic.Helpers (jsx, orUndefined)
-import React.Basic.Hooks (ReactComponent, component)
+import React.Basic.Hooks (ReactComponent, reactComponent)
 import React.Basic.Hooks as React
 import Record.Extra (pick)
 import Yoga.Box.Component as Box
@@ -39,7 +39,7 @@ makeComponent = do
   stack <- Stack.makeComponent
   cluster <- Cluster.makeComponent
   useStyles <- makeStylesJSS Style.styles
-  component "Modal" \props -> React.do
+  reactComponent "Modal" \props -> React.do
     cs <- useStyles (pick props)
     let
       dialogImposter =

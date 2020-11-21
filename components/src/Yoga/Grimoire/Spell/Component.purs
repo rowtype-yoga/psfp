@@ -7,7 +7,7 @@ import Effect (Effect)
 import React.Basic (ReactComponent)
 import React.Basic.DOM as R
 import React.Basic.Helpers (classSpan, jsx)
-import React.Basic.Hooks (component)
+import React.Basic.Hooks (reactComponent)
 import React.Basic.Hooks as React
 import Record.Extra (pick)
 import Yoga.Box.Component as Box
@@ -36,7 +36,7 @@ makeComponent = do
   card <- mkCard
   cover <- Cover.makeComponent
   useStyles <- makeStylesJSS styles
-  component "Spell" \(props@{ spell } ∷ Props) -> React.do
+  reactComponent "Spell" \(props@{ spell } ∷ Props) -> React.do
     style <- useStyles (pick props)
     theme ∷ CSSTheme <- useTheme
     let
