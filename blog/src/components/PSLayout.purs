@@ -1,6 +1,7 @@
 module PSLayout where
 
 import Prelude
+import Components.Container as Container
 import Data.Array (foldMap, intercalate)
 import Data.Array as Array
 import Data.Array.NonEmpty as NEA
@@ -21,17 +22,17 @@ import JSS (jssClasses)
 import Justifill (justifill)
 import Milkis.Impl (FetchImpl)
 import React.Basic (JSX, ReactComponent, fragment)
-import React.Basic.DOM (css, unsafeCreateDOMComponent)
+import React.Basic.DOM (Props_h1, Props_h2, Props_h3, Props_p, css, unsafeCreateDOMComponent)
 import React.Basic.DOM as R
 import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (ReactChildren, element, memo, mkReducer, reactChildrenToArray, reactComponent, reactComponentWithChildren, useReducer, useState)
+import React.Basic.Hooks (ReactChildren, element, memo, mkReducer, reactChildrenFromArray, reactChildrenToArray, reactComponent, reactComponentWithChildren, useReducer, useState)
 import React.Basic.Hooks as React
 import Shared.Models.Body (CompileResult)
 import Unsafe.Coerce (unsafeCoerce)
+import Yoga (el)
 import Yoga.Box.Component as Box
 import Yoga.ClickAway.Component as ClickAway
 import Yoga.CloseIcon.Component as CloseIcon
-import Yoga.Cluster.Component as Cluster
 import Yoga.CompileEditor.Component (mkCompileEditor)
 import Yoga.Compiler.Api (apiCompiler)
 import Yoga.Compiler.Types (Compiler)
@@ -50,8 +51,6 @@ import Yoga.Theme.Default as Default
 import Yoga.Theme.Provider (mkThemeProvider)
 import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.Theme.Types (CSSTheme)
-import Yoga.Typography.Header (HeadingLevel(..), mkH)
-import Yoga.Typography.Paragraph (mkP)
 
 type SiteQueryResult =
   { siteMetadata ∷
@@ -86,42 +85,41 @@ mkLayout ∷
     )
 mkLayout fetchImpl = do
   themeProvider <- mkThemeProvider
-  modal <- memo Modal.makeComponent
-  imposter <- memo Imposter.makeComponent
-  cover <- memo Cover.makeComponent
-  cluster <- memo Cluster.makeComponent
-  clickAway <- memo ClickAway.makeComponent
+  modal <- Modal.makeComponent
+  imposter <- Imposter.makeComponent
+  cover <- Cover.makeComponent
+  clickAway <- ClickAway.makeComponent
   reducer <-
     mkReducer case _, _ of
       _, ShowModal props -> Just props
       _, HideModal -> Nothing
   mdxProviderComponent <- memo $ mkMdxProviderComponent (apiCompiler fetchImpl)
   reactComponentWithChildren "MDXLayout" \{ children, siteInfo } -> React.do
-    (maybeModalProps ∷ Maybe Modal.Props) /\ dispatch <-
-      useReducer Nothing reducer
+    (maybeModalProps ∷ Maybe Modal.Props) /\ dispatch <- useReducer Nothing reducer
     pure
-      $ element themeProvider
-          { theme: fromTheme darkTheme
-          , children:
-            [ R.div
-                { style: css { maxWidth: "none" }
-                , children:
-                  [ maybeModalProps
-                      # foldMap \modalProps ->
-                          fragment
-                            [ element clickAway { allowEscape: Just true, onClick: dispatch HideModal, style: Nothing }
-                            , element modal (justifill modalProps)
-                            ]
-                  , element mdxProviderComponent
-                      { children
-                      , siteInfo
-                      , showModal: dispatch <<< ShowModal
-                      , hideModal: dispatch HideModal
-                      }
-                  ]
-                }
-            ]
-          }
+      $ el themeProvider
+          { theme: fromTheme darkTheme }
+          [ el R.div'
+              { style: css { maxWidth: "none" } }
+              [ maybeModalProps
+                  # foldMap \modalProps ->
+                      fragment
+                        [ element clickAway { allowEscape: Just true, onClick: dispatch HideModal, style: Nothing }
+                        , element modal (justifill modalProps)
+                        ]
+              , element Container.component
+                  { children:
+                    reactChildrenFromArray
+                      [ element mdxProviderComponent
+                          { children
+                          , siteInfo
+                          , showModal: dispatch <<< ShowModal
+                          , hideModal: dispatch HideModal
+                          }
+                      ]
+                  }
+              ]
+          ]
 
 isQuiz ∷ JSX -> Boolean
 isQuiz a =
@@ -145,23 +143,8 @@ mkMdxProviderComponent compiler = do
   header <- memo mkHeader
   yogaInlineCode <- InlineCode.makeComponent
   quiz <- memo $ mkQuiz compiler
-  h <- memo mkH
-  p <- memo mkP
   closeIcon <- CloseIcon.makeComponent
-  useStyles <-
-    makeStylesJSS
-      $ jssClasses \(theme ∷ CSSTheme) ->
-          { code:
-            { fontFamily: theme.codeFontFamily # NEA.head
-            , backgroundColor: theme.interfaceColour
-            , fontSize: "10pt"
-            , border: "1px solid #383c39"
-            , padding: "3px"
-            , borderRadius: "3px"
-            }
-          }
   reactComponentWithChildren "MDXProviderComponent" \({ children, siteInfo, showModal, hideModal } ∷ MdxProviderProps) -> React.do
-    classes <- useStyles {}
     visibleUntil /\ updateVisible <- useState 1
     let
       onFailure title kids =
@@ -194,23 +177,17 @@ mkMdxProviderComponent compiler = do
     mdxComponents /\ _ <-
       useState
         { h1:
-          \props ->
-            element h ({ level: H2, text: props.children, className: Nothing })
+          \(props ∷ { | Props_h1 }) -> R.h1 props
         , h2:
-          \props ->
-            element h { level: H3, text: props.children, className: Nothing }
+          \(props ∷ { | Props_h2 }) -> R.h2 props
         , h3:
-          \props ->
-            element h { level: H4, text: props.children, className: Nothing }
+          \(props ∷ { | Props_h3 }) -> R.h3 props
         , hr: (const $ R.hr {})
         , p:
-          \props ->
-            R.div
-              { children: [ element p { text: props.children } ]
-              }
+          \(props ∷ { | Props_p }) -> R.p props
         , inlineCode:
           \props -> do
-            R.span { className: classes.code, children: props.children }
+            R.span { children: props.children }
         , pre:
           mkFn2 \(props ∷ PreProps) other -> do
             let
