@@ -29,8 +29,9 @@ data ButtonType
   | DisabledButton
 
 derive instance eqButtonType ∷ Eq ButtonType
-type StyleProps
-  = {}
+
+type StyleProps =
+  {}
 
 highlightStyles ∷
   JSSClasses YogaTheme {}
@@ -96,11 +97,8 @@ styles =
     $ \(theme ∷ CSSTheme) ->
         let
           darken x = Color.darken x
-
           lighten x = Color.lighten x
-
           more amount x = if Color.isLight x then lighten amount x else darken amount x
-
           less amount x = if Color.isLight x then darken amount x else lighten amount x
         in
           { container:
@@ -198,22 +196,22 @@ styles =
             }
           }
 
-type MyProps
-  = ( children ∷ Array JSX, className ∷ String, disabled ∷ Boolean, onClick ∷ EventHandler )
+type MyProps =
+  ( children ∷ Array JSX, className ∷ String, disabled ∷ Boolean, onClick ∷ EventHandler )
 
-type Props r
-  = { kids ∷ Array JSX
-    , buttonType ∷ Maybe ButtonType
-    , onClick ∷ EventHandler
-    , className ∷ Maybe String
-    , buttonProps ∷ Maybe { | r }
-    }
+type Props r =
+  { kids ∷ Array JSX
+  , buttonType ∷ Maybe ButtonType
+  , onClick ∷ EventHandler
+  , className ∷ Maybe String
+  , buttonProps ∷ Maybe { | r }
+  }
 
 mkButton ∷ Effect (ReactComponent (Props ()))
 mkButton = mkButtonWithProps
 
-type WithProps r
-  = Effect (ReactComponent (Props r))
+type WithProps r =
+  Effect (ReactComponent (Props r))
 
 mkButtonWithProps ∷
   ∀ extra given missing.
@@ -229,9 +227,7 @@ mkButtonWithProps = do
     { highlightedButton } <- useHighlightStyles {}
     let
       buttonType = props.buttonType ?|| PlainButton
-
       className = props.className ?|| ""
-
       buttonProps ∷ { | MyProps }
       buttonProps =
         { className:

@@ -19,11 +19,11 @@ import Yoga.Helpers ((?||))
 complete ∷ Array (Array Segment) -> Boolean
 complete arr = foldl f true (join arr)
   where
-  f acc seg =
-    acc
-      && case seg of
-          Hole _ s -> s /= ""
-          _ -> true
+    f acc seg =
+      acc
+        && case seg of
+            Hole _ s -> s /= ""
+            _ -> true
 
 data Segment
   = ExpectedResult String
@@ -34,6 +34,7 @@ data Segment
 
 derive instance eqSegment ∷ Eq Segment
 derive instance ordSegment ∷ Ord Segment
+
 isHole ∷ Segment -> Boolean
 isHole = case _ of
   Hole _ _ -> true
@@ -62,11 +63,12 @@ findFirstHoleIndex lines = do
 toCode ∷ Array (Array Segment) -> String
 toCode lines = intercalate "\n" mapped
   where
-  mapped = lines <#> (intercalate "" <<< map segmentToCode)
-  segmentToCode = case _ of
-    Filler s -> s
-    Hole _ s -> s
-    _ -> ""
+    mapped = lines <#> (intercalate "" <<< map segmentToCode)
+
+    segmentToCode = case _ of
+      Filler s -> s
+      Hole _ s -> s
+      _ -> ""
 
 holeRegex ∷ Regex
 holeRegex = unsafeRegex "({-.*?-})" RegexFlags.global
@@ -98,9 +100,9 @@ toSegment = case _ of
 updateSegments ∷ Int -> Int -> String -> Array (Array Segment) -> Array (Array Segment)
 updateSegments i j v = (ix i <<< ix j) %~ f
   where
-  f = case _ of
-    Hole h _ -> Hole h v
-    _ -> unsafeCrashWith "Updated a non-hole"
+    f = case _ of
+      Hole h _ -> Hole h v
+      _ -> unsafeCrashWith "Updated a non-hole"
 
 -- Glues together Filler segments
 -- [[Filler "line1"], [Filler "line2"]] --> [[Filler "line1\nline2"]]
@@ -109,16 +111,19 @@ updateSegments i j v = (ix i <<< ix j) %~ f
 smooshFillers ∷ Array (Array Segment) -> Array (Array Segment)
 smooshFillers = foldl smooshOuter []
   where
-  smooshInner segments segment = case segment, A.unsnoc segments of
-    Filler f, Just { init, last: Filler prev } -> A.snoc init (Filler (prev <> "\n" <> f))
-    _, _ -> A.snoc segments segment
-  smooshOuter acc segs = case foldl smooshInner [] segs, A.unsnoc acc of
-    [ Filler f ], Just { init, last: [ Filler prev ] } -> A.snoc init [ Filler (prev <> "\n" <> f) ]
-    _, _ -> A.snoc acc segs
+    smooshInner segments segment = case segment, A.unsnoc segments of
+      Filler f, Just { init, last: Filler prev } -> A.snoc init (Filler (prev <> "\n" <> f))
+      _, _ -> A.snoc segments segment
+
+    smooshOuter acc segs = case foldl smooshInner [] segs, A.unsnoc acc of
+      [ Filler f ], Just { init, last: [ Filler prev ] } -> A.snoc init [ Filler (prev <> "\n" <> f) ]
+      _, _ -> A.snoc acc segs
 
 parseSegments ∷ String -> Maybe (Array (Array Segment))
 parseSegments code = result $> segments
   where
-  lines = split (Pattern "\n") code
-  segments = smooshFillers (lines <#> \line -> rawSegments line <#> toSegment)
-  result = findResult (join segments)
+    lines = split (Pattern "\n") code
+
+    segments = smooshFillers (lines <#> \line -> rawSegments line <#> toSegment)
+
+    result = findResult (join segments)

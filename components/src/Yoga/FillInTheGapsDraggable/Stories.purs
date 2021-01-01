@@ -1,14 +1,15 @@
 module Yoga.FillInTheGapsDraggable.Stories where
 
 import Prelude hiding (add)
-
 import Control.Monad.Trans.Class (lift)
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Ref as Ref
+import Effect.Unsafe (unsafePerformEffect)
 import Justifill (justifill)
-import React.Basic (ReactComponent)
+import React.Basic (JSX, ReactComponent)
+import React.Basic.DOM as R
 import React.Basic.Hooks (element, useState, reactComponent)
 import React.Basic.Hooks as React
 import Storybook.Decorator.FullScreen (fullScreenDecorator)
@@ -19,6 +20,20 @@ import Yoga.Grimoire.Spell.Component as Spell
 import Yoga.Helpers ((?||))
 import Yoga.Spell.Types (Spell)
 import Yoga.WithSidebar.Component as WithSidebar
+
+default ∷
+  { decorators ∷ Array (Effect JSX -> JSX)
+  , title ∷ String
+  }
+default =
+  { title: "FillInTheGapsDraggable"
+  , decorators:
+    [ \storyFn ->
+        R.div_
+          [ unsafePerformEffect storyFn
+          ]
+    ]
+  }
 
 stories ∷ NodeModule -> Effect Storybook
 stories = do
@@ -61,17 +76,15 @@ spells =
   , { name: "drop", signature: "Int -> String -> String", description: "Removes the first characters of a string wow man this is a really long description I bet it produces a much longer card than the others if I keep writing like a crazy person" }
   ]
 
-codeWithHoles :: String
+codeWithHoles ∷ String
 codeWithHoles =
   """
 --result Hello World
 module Main where
 import Grimoire
-
 incantation :: Effect Unit
 --start here
 --please say Hello World
-incantation = cast
-  "{-Hello World-}"
+incantation = cast "{-Hello World-}"
 --end here
 """

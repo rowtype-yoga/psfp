@@ -1,21 +1,21 @@
 module Yoga.Cluster.Styles where
 
 import Prelude
-import CSS (AlignItemsValue, JustifyContentValue, alignItems, display, flex, flexDirection, flexStart, flexWrap, justifyContent, row, wrap)
+import CSS (AlignItemsValue, JustifyContentValue, alignItems, display, flex, flexStart, flexWrap, justifyContent, wrap)
 import CSS.Common (center)
 import Data.Maybe (Maybe, fromMaybe)
 import JSS (JSSClasses, JSSElem, jss, jssClasses)
 import Yoga.Helpers ((?||))
 import Yoga.Theme.Types (YogaTheme)
 
-type PropsR
-  = ( justify ∷ Maybe JustifyContentValue
-    , align ∷ Maybe AlignItemsValue
-    , space ∷ Maybe String
-    )
+type PropsR =
+  ( justify ∷ Maybe JustifyContentValue
+  , align ∷ Maybe AlignItemsValue
+  , space ∷ Maybe String
+  )
 
-type Props
-  = Record PropsR
+type Props =
+  Record PropsR
 
 -- [TODO] Refactor to typed CSS
 styles ∷ JSSClasses YogaTheme Props ( cluster ∷ JSSElem Props )

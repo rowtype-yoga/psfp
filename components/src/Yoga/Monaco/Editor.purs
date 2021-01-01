@@ -1,11 +1,10 @@
 module Yoga.Editor where
 
 import Prelude
-import CSS (backgroundColor, borderBox, boxSizing, margin, pct, toHexString, unitless, width)
+import CSS (borderBox, borderRadius, boxSizing, margin, padding, pct, px, toHexString, unitless, width)
 import CSS.Overflow (hidden, overflowY)
 import Control.Promise (Promise)
 import Control.Promise as Promise
-import Data.Array.NonEmpty as NEA
 import Data.Foldable (for_)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Nullable (Nullable)
@@ -25,22 +24,24 @@ import React.Basic.Hooks as React
 import React.Basic.Hooks.Aff (useAff)
 import Web.DOM (Node)
 import Web.HTML (HTMLElement)
-import Yoga.Theme.Styles (makeStylesJSS, useTheme)
+import Yoga.Theme (fromTheme)
+import Yoga.Theme.Default (darkTheme)
+import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.Theme.Types (CSSTheme)
 
-type EditorProps
-  = ( value ∷ String
-    , language ∷ String
-    , editorDidMount ∷ EffectFn2 Editor Node Unit
-    , editorWillMount ∷ EffectFn1 Monaco Unit
-    , theme ∷ String
-    , line ∷ Number
-    , ref ∷ Ref (Nullable HTMLElement)
-    , width ∷ String
-    , height ∷ String
-    , loading ∷ JSX
-    , options ∷ Foreign
-    )
+type EditorProps =
+  ( value ∷ String
+  , language ∷ String
+  , editorDidMount ∷ EffectFn2 Editor Node Unit
+  , editorWillMount ∷ EffectFn1 Monaco Unit
+  , theme ∷ String
+  , line ∷ Number
+  , ref ∷ Ref (Nullable HTMLElement)
+  , width ∷ String
+  , height ∷ String
+  , loading ∷ JSX
+  , options ∷ Foreign
+  )
 
 foreign import monacoEditorImpl ∷ ∀ attrs. Effect (Promise (ReactComponent { | attrs }))
 
@@ -90,24 +91,25 @@ initEditor theme monaco = do
   registerLanguageImpl monaco "purescript"
   setMonarchTokensProviderImpl monaco "purescript" purescriptSyntax
 
-type Props
-  = { onLoad ∷ Editor -> Effect Unit
-    , height ∷ String
-    , language ∷ String
-    }
+type Props =
+  { onLoad ∷ Editor -> Effect Unit
+  , height ∷ String
+  , language ∷ String
+  }
 
 mkEditor ∷ Effect (ReactComponent Props)
 mkEditor = do
   useStyles <-
     makeStylesJSS
-      $ jssClasses \(theme ∷ CSSTheme) ->
+      $ jssClasses \_ ->
           { wrapper:
             do
               margin (0.0 # unitless) (0.0 # unitless) (0.0 # unitless) (0.0 # unitless)
               boxSizing borderBox
+              borderRadius (8.0 # px) (8.0 # px) (8.0 # px) (8.0 # px)
               width (100.0 # pct)
               overflowY hidden
-              backgroundColor theme.backgroundColour
+          -- backgroundColor (colour.background) [TODO]
           }
   reactComponent "Editor" \{ onLoad, height, language } -> React.do
     classes <- useStyles {}
@@ -116,12 +118,10 @@ mkEditor = do
     useAff unit do
       eddy <- monacoEditor
       liftEffect $ modifyEditor (const (Just eddy))
-    theme <- useTheme
-    useEffect theme.backgroundColour do
-      for_ maybeMonaco (initEditor theme)
+    useEffect unit do -- [TODO] notice theme change
+      for_ maybeMonaco (initEditor (fromTheme darkTheme))
       pure mempty
-    let
-      themeName = if theme.isLight then lightThemeName else darkThemeName
+    let themeName = darkThemeName
     pure
       $ fragment
           [ R.div
@@ -134,9 +134,9 @@ mkEditor = do
                           , height
                           , options:
                             unsafeToForeign
-                              { fontFamily: NEA.head theme.codeFontFamily
+                              { fontFamily: "Victor Mono"
                               , fontLigatures: true
-                              , fontSize: "12pt"
+                              , fontSize: "var(--s0)"
                               , lineNumbers: "off"
                               , glyphMargin: false
                               , folding: false
@@ -144,6 +144,9 @@ mkEditor = do
                               , lineNumbersMinChars: 0
                               , minimap: { enabled: false }
                               , scrollBeyondLastLine: false
+                              , scrollbar: { vertical: "hidden", verticalScrollBarSize: 20 }
+                              , hideCursorInOverviewRuler: true
+                              , overviewRulerBorder: false
                               }
                           , language
                           -- https://microsoft.github.io/monaco-editor/playground.html#extending-language-services-custom-languages
@@ -151,7 +154,7 @@ mkEditor = do
                           , editorWillMount:
                             mkEffectFn1 \m -> do
                               modifyMonaco (const $ Just m)
-                              (initEditor theme m)
+                              (initEditor (fromTheme darkTheme) m)
                           }
                 ]
               }

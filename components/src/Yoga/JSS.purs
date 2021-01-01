@@ -1,13 +1,11 @@
 module JSS where
 
 import Prelude
-import CSS (class Val, App(..), BackgroundImage, Color, Key(..), Keyframes(..), Path(..), Predicate(..), Refinement(..), Rule(..), Selector(..), StyleM, Value(..), cssStringRGBA, plain, predicate, runS, value)
+import CSS (App(..), BackgroundImage, Color, Key(..), Keyframes(..), Path(..), Refinement(..), Rule(..), Selector(..), StyleM, Value(..), cssStringRGBA, plain, predicate, runS, value)
 import Data.Foldable (foldMap)
 import Data.Int (round)
-import Data.Newtype (un, unwrap)
 import Data.Symbol (class IsSymbol, SProxy(..), reflectSymbol)
 import Data.Tuple (Tuple(..))
-import Debug.Trace (spy)
 import Foreign (unsafeToForeign)
 import Foreign.Object (Object)
 import Foreign.Object as Object
@@ -21,11 +19,10 @@ import Type.Prelude (RLProxy, Proxy(..))
 import Type.Row as R
 import Type.Row.Homogeneous (class Homogeneous)
 import Type.RowList as RL
-import Untagged.Coercible (coerce)
 import Untagged.Union (type (|+|))
+import Untagged.Castable (cast)
 
-newtype JSSClasses theme props r
-  = JSSClasses ({ | theme } -> { | r })
+newtype JSSClasses theme props r = JSSClasses ({ | theme } -> { | r })
 
 jssClasses ∷
   ∀ theme props row rowRL to.
@@ -36,15 +33,19 @@ jssClasses ∷
   ({ | theme } -> { | row }) -> JSSClasses theme props to
 jssClasses f = JSSClasses f'
   where
-  f' theme = built
-    where
-    rec = f theme
-    built ∷ Record to
-    built = Builder.build builder {}
-    rlp = RL.RLProxy ∷ RL.RLProxy rowRL
-    propsy = Proxy ∷ Proxy props
-    builder ∷ Builder.Builder (Record ()) (Record to)
-    builder = jssifyFields propsy rlp rec
+    f' theme = built
+      where
+        rec = f theme
+
+        built ∷ Record to
+        built = Builder.build builder {}
+
+        rlp = RL.RLProxy ∷ RL.RLProxy rowRL
+
+        propsy = Proxy ∷ Proxy props
+
+        builder ∷ Builder.Builder (Record ()) (Record to)
+        builder = jssifyFields propsy rlp rec
 
 data JSSElem props
   = PrimitiveJss (String |+| Int |+| Number)
@@ -62,8 +63,6 @@ instance semigroupJssElem ∷ Semigroup (JSSElem props) where
       PropsJss \props -> case fn props of
         NestedJss n2 -> NestedJss (n1 <> n2)
         other -> do
-          let
-            _ = spy "other" other
           unsafeCrashWith "Untreated branch (1), fix me"
     PropsJss fn1, PropsJss fn2 ->
       PropsJss \props -> do
@@ -71,16 +70,8 @@ instance semigroupJssElem ∷ Semigroup (JSSElem props) where
           n1@(NestedJss _), n2@(NestedJss _) -> n1 <> n2
           p1@(PrimitiveJss _), p2@(PrimitiveJss _) -> p1 <> p2
           x, y -> do
-            let
-              _ = spy "x" x
-
-              _ = spy "y" y
             unsafeCrashWith "Untreated branch (2), fix me"
     x, y -> do
-      let
-        _ = spy "x" x
-
-        _ = spy "y" y
       unsafeCrashWith "Untreated branch (3), fix me"
 
 instance wfJSSElem ∷ WriteForeign (JSSElem props) where
@@ -97,21 +88,21 @@ instance jssAbleJssElem ∷ JSSAble p (JSSElem p) where
   jss = identity
 
 instance jssAbleColor ∷ JSSAble p Color where
-  jss c = PrimitiveJss (coerce (cssStringRGBA c))
+  jss c = PrimitiveJss (cast (cssStringRGBA c))
 
 instance jssAbleBackgroundImage ∷ JSSAble p BackgroundImage where
-  jss v = PrimitiveJss (coerce (render (value v)))
+  jss v = PrimitiveJss (cast (render (value v)))
     where
-    render (Value val) = plain val
+      render (Value val) = plain val
 
 instance jssAbleString ∷ JSSAble p String where
-  jss = coerce >>> PrimitiveJss
+  jss = cast >>> PrimitiveJss
 
 instance jssAbleInt ∷ JSSAble p Int where
-  jss = coerce >>> PrimitiveJss
+  jss = cast >>> PrimitiveJss
 
 instance jssAbleNumber ∷ JSSAble p Number where
-  jss = coerce >>> PrimitiveJss
+  jss = cast >>> PrimitiveJss
 
 instance jssAbleArray ∷ JSSAble p a => JSSAble p (Array a) where
   jss arr = ArrayJss (jss <$> arr)
@@ -125,21 +116,20 @@ instance jssAbleNested ∷ JSSAble p jss => JSSAble p (Object jss) where
 instance jssAbleCss ∷ JSSAble p (StyleM Unit) where
   jss someCss = NestedJss (foldMap ruleToObject rules)
     where
-    rules = runS someCss
-    ruleToObject = case _ of
-      Property (Key k) (Value v) -> Object.singleton (plain k) (jss (plain v))
-      Nested (Sub (Selector (Refinement preds) (Elem el))) rules -> Object.singleton (el <> foldMap predicate preds) (jss (foldMap ruleToObject rules))
-      Keyframe (Keyframes name frames) ->
-        frames
-          # foldMap \(Tuple pos rules) ->
-              Object.singleton
-                (show (round pos) <> "%")
-                (NestedJss (foldMap ruleToObject rules))
-      x ->
-        unsafeCrashWith do
-          let
-            _ = spy "Unsupported CSS" x
-          "tried to create CSS that I couldn't understand"
+      rules = runS someCss
+
+      ruleToObject = case _ of
+        Property (Key k) (Value v) -> Object.singleton (plain k) (jss (plain v))
+        Nested (Sub (Selector (Refinement preds) (Elem el))) rules -> Object.singleton (el <> foldMap predicate preds) (jss (foldMap ruleToObject rules))
+        Keyframe (Keyframes name frames) ->
+          frames
+            # foldMap \(Tuple pos rules) ->
+                Object.singleton
+                  (show (round pos) <> "%")
+                  (NestedJss (foldMap ruleToObject rules))
+        x ->
+          unsafeCrashWith do
+            "tried to create CSS that I couldn't understand"
 
 instance jssAbleRecord ∷
   ( JSSAbleFields props rowRL row () to
@@ -149,12 +139,15 @@ instance jssAbleRecord ∷
   JSSAble props (Record row) where
   jss rec = NestedJss <<< Object.fromHomogeneous $ built
     where
-    built ∷ Record to
-    built = Builder.build builder {}
-    rlp = RL.RLProxy ∷ RL.RLProxy rowRL
-    propsy = Proxy ∷ Proxy props
-    builder ∷ Builder.Builder (Record ()) (Record to)
-    builder = jssifyFields propsy rlp rec
+      built ∷ Record to
+      built = Builder.build builder {}
+
+      rlp = RL.RLProxy ∷ RL.RLProxy rowRL
+
+      propsy = Proxy ∷ Proxy props
+
+      builder ∷ Builder.Builder (Record ()) (Record to)
+      builder = jssifyFields propsy rlp rec
 
 propsJss ∷ ∀ p a. JSSAble p a => (p -> a) -> JSSElem p
 propsJss fn = PropsJss (map jss fn)
@@ -176,10 +169,16 @@ instance jssAbleFieldsCons ∷
   JSSAbleFields props (RL.Cons name a tail) row from to where
   jssifyFields _ _ r = first <<< rest
     where
-    first = Builder.insert nameP (jss val)
-    val = Record.get nameP r
-    rest = jssifyFields propsP tailP r
-    nameP = SProxy ∷ SProxy name
-    tailP = RL.RLProxy ∷ RL.RLProxy tail
-    propsP = Proxy ∷ Proxy props
-    name = reflectSymbol nameP
+      first = Builder.insert nameP (jss val)
+
+      val = Record.get nameP r
+
+      rest = jssifyFields propsP tailP r
+
+      nameP = SProxy ∷ SProxy name
+
+      tailP = RL.RLProxy ∷ RL.RLProxy tail
+
+      propsP = Proxy ∷ Proxy props
+
+      name = reflectSymbol nameP

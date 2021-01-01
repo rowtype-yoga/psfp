@@ -1,7 +1,7 @@
 module Yoga.CompileEditor.Component where
 
 import Prelude hiding (add)
-import CSS (JustifyContentValue(..), flexEnd, toHexString)
+import CSS (JustifyContentValue(..), flexEnd)
 import Data.Array (intercalate)
 import Data.Either (Either(..))
 import Data.Foldable (for_)
@@ -18,17 +18,19 @@ import React.Basic.Events (handler_)
 import React.Basic.Helpers (jsx)
 import React.Basic.Hooks (reactComponent, element, useState)
 import React.Basic.Hooks as React
-import Yoga.Button.Component (ButtonType(..), mkButton)
+import Yoga as Y
+import Yoga.Block as Block
+import Yoga.Block.Atom.Button.Types as BT
+import Yoga.Block.Container.Style (colour)
 import Yoga.Card.Component (mkCard)
 import Yoga.Cluster.Component as Cluster
 import Yoga.Compiler.Types (Compiler)
 import Yoga.Editor (getValue, mkEditor, setValue)
 import Yoga.Stack.Component as Stack
 import Yoga.Theme.Styles (makeStylesJSS)
-import Yoga.Theme.Types (CSSTheme)
 
-type Props
-  = { initialCode ∷ String, height ∷ String, language ∷ String }
+type Props =
+  { initialCode ∷ String, height ∷ String, language ∷ String }
 
 mkCompileEditor ∷ ∀ r. { | Compiler r } -> Effect (ReactComponent Props)
 mkCompileEditor { compileAndRun } = do
@@ -36,28 +38,27 @@ mkCompileEditor { compileAndRun } = do
   card <- mkCard
   cluster <- Cluster.makeComponent
   stack <- Stack.makeComponent
-  button <- mkButton
   useStyles <-
     makeStylesJSS
-      $ jssClasses \(theme ∷ CSSTheme) ->
+      $ jssClasses \_ ->
           { editor:
-            { background: theme.backgroundColour
+            { background: colour.background
             , boxSizing: "content-box"
             , height: "80%"
             , padding: "20px"
             , marginTop: "0px"
             , borderRadius: "12px"
-            , boxShadow: i "22px 22px 24px " (toHexString theme.backgroundColourDarker) ", -22px -22px 24px " (toHexString theme.backgroundColourLighter) ∷ String
+            , boxShadow: i "22px 22px 24px " colour.background ", -22px -22px 24px " colour.backgroundLayer1 ∷ String
             , display: "flex"
             , flexDirection: "column"
-            , minWidth: theme.measure
+            -- , minWidth: theme.measure
             }
           , card:
             { zIndex: 0
             }
           , cardHidden: { opacity: 0 }
-          , compileError: { color: theme.red, opacity: 1, transition: "opacity 2.0s ease" }
-          , runOutput: { color: theme.green, opacity: 1, transition: "opacity 2.0s ease" }
+          , compileError: { color: colour.invalid, opacity: 1, transition: "opacity 2.0s ease" }
+          , runOutput: { color: colour.success, opacity: 1, transition: "opacity 2.0s ease" }
           }
   reactComponent "CompileEditor" \{ initialCode, height, language } -> React.do
     maybeEditor /\ modifyEditor <- useState Nothing
@@ -71,19 +72,15 @@ mkCompileEditor { compileAndRun } = do
       reset = do
         setCompileResult Nothing
         for_ maybeEditor (setValue initialCode)
-
       compileResultToString = case _ of
         Nothing -> ""
         Just (Left cr) -> cr.result <#> _.message # intercalate "/n"
         Just (Right r) -> r.stdout
-
       compileResultToClass = case _ of
         Nothing -> classes.cardHidden
         Just (Left cr) -> classes.compileError
         Just (Right r) -> classes.runOutput
-
       setCompileResult = modifyCompileResult <<< const
-
       compile = do
         for_ maybeEditor \ed -> do
           setCompileResult Nothing
@@ -97,12 +94,12 @@ mkCompileEditor { compileAndRun } = do
               [ element editor { onLoad, height, language }
               , jsx cluster { justify: JustifyContentValue flexEnd }
                   [ R.div_
-                      [ jsx button
+                      [ Y.el Block.button
                           { onClick: handler_ reset
                           }
                           [ R.text "Reset" ]
-                      , jsx button
-                          { buttonType: HighlightedButton
+                      , Y.el Block.button
+                          { buttonType: BT.Primary
                           , onClick: handler_ compile
                           }
                           [ R.text "Run" ]

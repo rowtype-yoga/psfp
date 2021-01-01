@@ -1,31 +1,29 @@
 module Yoga.Grimoire.Spell.Styles where
 
 import Prelude hiding (top)
-import CSS (backgroundColor, black, boxShadow, color, darken, display, fontFamily, fontSize, fontStyle, fromString, height, inlineBlock, key, pct, rgba, sansSerif, textOverflow, textWhitespace, unitless, white, whitespaceNoWrap, width)
+import CSS (backgroundColor, boxShadow, color, display, fontFamily, fontSize, fontStyle, fromString, height, inlineBlock, key, pct, rgba, sansSerif, unitless, white, width)
 import CSS.FontStyle (italic)
 import CSS.Overflow (overflow)
 import CSS.Overflow as Overflow
-import CSS.Text.Overflow (ellipsis)
 import CSS.TextAlign (rightTextAlign, textAlign)
 import Data.Array (fromFoldable)
 import Data.NonEmpty as NonEmpty
 import JSS (JSSClasses, JSSElem, jss, jssClasses)
-import Text.Parsing.StringParser.CodePoints (whiteSpace)
 import Yoga.Theme.Types (YogaTheme)
 
-type PropsR
-  = ()
+type PropsR =
+  ()
 
-type Props
-  = Record PropsR
+type Props =
+  Record PropsR
 
-type Classes a
-  = ( container ∷ a
-    , signature ∷ a
-    , description ∷ a
-    , card ∷ a
-    , name ∷ a
-    )
+type Classes a =
+  ( container ∷ a
+  , signature ∷ a
+  , description ∷ a
+  , card ∷ a
+  , name ∷ a
+  )
 
 styles ∷ JSSClasses YogaTheme Props (Classes (JSSElem Props))
 styles =

@@ -1,4 +1,5 @@
 {
     "workbench.preferredDarkColorTheme": "Base2Tone_HeathDark",
-    "workbench.colorTheme": "Kay Dark"
+    "workbench.colorTheme": "Horizon",
+    "editor.formatOnSave": true
 }

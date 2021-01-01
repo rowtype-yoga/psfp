@@ -18,7 +18,7 @@ import React.Basic.Events (handler, handler_)
 import React.Basic.Helpers (jsx)
 import React.Basic.Hooks (Ref, reactComponent)
 import React.Basic.Hooks as React
-import React.Basic.SyntaxHighlighter.Component (HighlighterTheme, syntaxHighlighterImpl)
+import React.Basic.SyntaxHighlighter.Component (HighlighterTheme, syntaxHighlighter)
 import Record.Extra (pick)
 import Unsafe.Coerce (unsafeCoerce)
 import Web.DOM (Node)
@@ -39,36 +39,40 @@ import Yoga.Theme.Types (CSSTheme)
 visibleRange ∷ Array (Array Segment) -> { end ∷ Int, start ∷ Int }
 visibleRange arr = { start, end }
   where
-  start = A.findIndex (_ == [ Start ]) arr ?|| 0
-  end = A.findIndex (_ == [ End ]) arr ?|| A.length arr
+    start = A.findIndex (_ == [ Start ]) arr ?|| 0
+
+    end = A.findIndex (_ == [ End ]) arr ?|| A.length arr
 
 renderSegments ∷ Milliseconds -> HighlighterTheme -> ReactComponent InlineCode.Props -> ((Array (Array Segment) -> Array (Array Segment)) -> Effect Unit) -> Array (Array Segment) -> JSX
 renderSegments debounceBy highlighterTheme ic update arrs = R.div_ (A.mapWithIndex renderLine arrs)
   where
-  firstHoleIndex = findFirstHoleIndex arrs
-  { start, end } = visibleRange arrs
-  renderLine i l = R.div_ (A.mapWithIndex (renderSegment i) l)
-  renderSegment i j s = case s, between start end i of
-    Filler s', true ->
-      element
-        syntaxHighlighterImpl
-        { style: highlighterTheme, language: "purescript", children: s' }
-    Hole width text, true ->
-      element ic
-        $ justifill
-            { width
-            , update: update <<< updateSegments i j
-            , text
-            , focusOnFirstRender: firstHoleIndex <#> \fh -> fh.i == i && fh.j == j
-            }
-    _, _ -> mempty
+    firstHoleIndex = findFirstHoleIndex arrs
 
-type Props
-  = { segments ∷ Array (Array Segment)
-    , updateSegments ∷ (Array (Array Segment) -> Array (Array Segment)) -> Effect Unit
-    , incantate ∷ Effect Unit
-    , solvedWith ∷ Maybe String
-    }
+    { start, end } = visibleRange arrs
+
+    renderLine i l = R.div_ (A.mapWithIndex (renderSegment i) l)
+
+    renderSegment i j s = case s, between start end i of
+      Filler s', true ->
+        element
+          syntaxHighlighter
+          { style: highlighterTheme, language: "purescript", children: s' }
+      Hole width text, true ->
+        element ic
+          $ justifill
+              { width
+              , update: update <<< updateSegments i j
+              , text
+              , focusOnFirstRender: firstHoleIndex <#> \fh -> fh.i == i && fh.j == j
+              }
+      _, _ -> mempty
+
+type Props =
+  { segments ∷ Array (Array Segment)
+  , updateSegments ∷ (Array (Array Segment) -> Array (Array Segment)) -> Effect Unit
+  , incantate ∷ Effect Unit
+  , solvedWith ∷ Maybe String
+  }
 
 makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do

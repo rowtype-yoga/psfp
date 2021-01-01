@@ -19,6 +19,10 @@ function SEO({ description, lang, meta, keywords, title }) {
             titleTemplate={`%s | ${data.site.siteMetadata.title}`}
             meta={[
               {
+                name: 'viewport',
+                content: "width=device-width, initial-scale=1.0",
+              },
+              {
                 name: 'description',
                 content: metaDescription,
               },
@@ -54,9 +58,9 @@ function SEO({ description, lang, meta, keywords, title }) {
               .concat(
                 keywords.length > 0
                   ? {
-                      name: 'keywords',
-                      content: keywords.join(', '),
-                    }
+                    name: 'keywords',
+                    content: keywords.join(', '),
+                  }
                   : []
               )
               .concat(meta)}

@@ -119,7 +119,7 @@ let additions =
 
 
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.13.8-20201021/packages.dhall sha256:55ebdbda1bd6ede4d5307fbc1ef19988c80271b4225d833c8d6fb9b6fb1aa6d8
+      https://github.com/purescript/package-sets/releases/download/psc-0.13.8-20201223/packages.dhall sha256:a1a8b096175f841c4fef64c9b605fb0d691229241fd2233f6cf46e213de8a185
 
 let overrides =
       { css =
@@ -168,26 +168,7 @@ let additions =
         , version = "caaca2d836d52159ba7963333996286a00428394"
         }
       , yoga-components = ../components/spago.dhall as Location
-      , ry-blocks = 
-         { dependencies =
-            [ "console"
-            , "effect"
-            , "heterogeneous"
-            , "interpolate"
-            , "psci-support"
-            , "react-basic-dom"
-            , "react-basic-emotion"
-            , "react-basic-hooks"
-            , "react-testing-library"
-            , "record-extra"
-            , "routing"
-            , "routing-duplex"
-            , "spec-discovery"
-            , "untagged-union"
-            ]
-          , repo = "https://github.com/rowtype-yoga/ry-blocks.git"
-          , version = "main"
-          }
+      , ry-blocks = ../../ry-blocks/spago.dhall as Location
       }
 
 in  upstream // overrides // additions

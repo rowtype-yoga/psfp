@@ -7,6 +7,7 @@ import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
 import Data.Traversable (for_)
 import Data.Tuple.Nested (type (/\))
+import Debug.Trace (spy, traceM)
 import React.Basic (Ref)
 import React.Basic.Hooks (Hook, UseLayoutEffect, UseRef, UseState, coerceHook, readRefMaybe, useLayoutEffect, useRef, useState, (/\))
 import React.Basic.Hooks as React
@@ -19,8 +20,7 @@ import Web.HTML.HTMLElement (DOMRect, focus, getBoundingClientRect)
 import Web.HTML.HTMLElement as HTMLElement
 import Web.HTML.Window (document)
 
-newtype UseBoundingBox hooks
-  = UseBoundingBox
+newtype UseBoundingBox hooks = UseBoundingBox
   ( UseLayoutEffect Unit
       ( UseState (Maybe DOMRect)
           (UseRef (Nullable Node) hooks)
@@ -28,6 +28,7 @@ newtype UseBoundingBox hooks
   )
 
 derive instance ntUseBoundingBox ∷ Newtype (UseBoundingBox hooks) _
+
 useBoundingBox ∷ Hook UseBoundingBox (Maybe DOMRect /\ Ref (Nullable Node))
 useBoundingBox =
   coerceHook React.do
@@ -35,26 +36,24 @@ useBoundingBox =
     bb /\ modifyBb <- useState Nothing
     useLayoutEffect unit do
       maybeRef <- readRefMaybe nullableRef
-      let
-        toHTMLOrSVGElement = unsafeCoerce -- [TODO] Make a bit safer?
+      let toHTMLOrSVGElement = unsafeCoerce -- [TODO] Make a bit safer?
       for_ (maybeRef <#> toHTMLOrSVGElement) \elem -> do
         rect <- getBoundingClientRect elem
         modifyBb (const $ Just rect)
       pure (pure unit)
     pure (bb /\ nullableRef)
 
-newtype UseViewportHeight hooks
-  = UseViewportHeight (UseLayoutEffect Unit (UseState (Maybe Number) hooks))
+newtype UseViewportHeight hooks = UseViewportHeight (UseLayoutEffect Unit (UseState (Maybe Number) hooks))
 
 derive instance ntUseViewportHeight ∷ Newtype (UseViewportHeight hooks) _
+
 useViewportHeight ∷ Hook UseViewportHeight (Maybe Number)
 useViewportHeight =
   coerceHook React.do
     viewportHeight /\ modifyViewportHeight <- useState Nothing
     useLayoutEffect unit do
       doc <- window >>= document
-      let
-        maybeElem = Document.toNode doc # HTMLElement.fromNode
+      let maybeElem = Document.toNode doc # HTMLElement.fromNode
       case maybeElem of
         Nothing -> pure unit
         Just elem -> do
@@ -63,18 +62,17 @@ useViewportHeight =
       pure (pure unit)
     pure viewportHeight
 
-newtype UseViewportWidth hooks
-  = UseViewportWidth (UseLayoutEffect Unit (UseState (Maybe Number) hooks))
+newtype UseViewportWidth hooks = UseViewportWidth (UseLayoutEffect Unit (UseState (Maybe Number) hooks))
 
 derive instance ntUseViewportWidth ∷ Newtype (UseViewportWidth hooks) _
+
 useViewportWidth ∷ Hook UseViewportWidth (Maybe Number)
 useViewportWidth =
   coerceHook React.do
     viewportWidth /\ modifyViewportWidth <- useState Nothing
     useLayoutEffect unit do
       doc <- window >>= document
-      let
-        maybeElem = Document.toNode doc # HTMLElement.fromNode
+      let maybeElem = Document.toNode doc # HTMLElement.fromNode
       case maybeElem of
         Nothing -> pure unit
         Just elem -> do
@@ -83,10 +81,10 @@ useViewportWidth =
       pure (pure unit)
     pure viewportWidth
 
-newtype UseFocus hooks
-  = UseFocus (UseLayoutEffect Unit (UseRef (Nullable Node) (UseState Boolean hooks)))
+newtype UseFocus hooks = UseFocus (UseLayoutEffect Unit (UseRef (Nullable Node) (UseState Boolean hooks)))
 
 derive instance ntUseFocus ∷ Newtype (UseFocus hooks) _
+
 useFocus ∷ Hook UseFocus (Ref (Nullable Node))
 useFocus =
   coerceHook React.do

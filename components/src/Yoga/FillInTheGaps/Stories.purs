@@ -1,77 +1,63 @@
 module Yoga.FillInTheGaps.Stories where
 
 import Prelude hiding (add)
-
-import Control.Monad.Trans.Class (lift)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), fromJust)
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
-import Effect.Ref as Ref
-import Justifill (justifill)
-import React.Basic (ReactComponent)
-import React.Basic.Hooks (element, useState, reactComponent)
+import Effect.Class.Console (log)
+import Effect.Unsafe (unsafePerformEffect)
+import Partial.Unsafe (unsafePartial)
+import React.Basic (JSX, ReactComponent)
+import React.Basic.Hooks (element, reactComponent, useState)
 import React.Basic.Hooks as React
 import Storybook.Decorator.FullScreen (fullScreenDecorator)
-import Storybook.React (NodeModule, Storybook, add, addDecorator, storiesOf)
 import Yoga.FillInTheGaps.Component as FillInTheGaps
-import Yoga.FillInTheGaps.Logic (parseSegments)
-import Yoga.Grimoire.Spell.Component as Spell
-import Yoga.Helpers ((?||))
-import Yoga.Spell.Types (Spell)
-import Yoga.WithSidebar.Component as WithSidebar
+import Yoga.FillInTheGaps.Logic (Segment, parseSegments)
 
-stories ∷ NodeModule -> Effect Storybook
+default ∷
+  { decorators ∷ Array (Effect JSX -> JSX)
+  , title ∷ String
+  }
+default =
+  { title: "FillInTheGaps"
+  , decorators:
+    [ \storyFn ->
+        unsafePerformEffect (fullScreenDecorator storyFn)
+    ]
+  }
+
+stories ∷ Effect JSX
 stories = do
-  storiesOf "FillInTheGaps" do
-    addDecorator fullScreenDecorator
-    segRef <- Ref.new [] # lift
-    add "The FillInTheGaps" makeWrapper
-      [ {} ]
-
-makeWrapper ∷ Effect (ReactComponent {})
-makeWrapper = do
-  gaps <- FillInTheGaps.makeComponent
-  withSidebar <- WithSidebar.makeComponent
-  spell <- Spell.makeComponent
-  reactComponent "GapsWrapper" \_ -> React.do
-    segments /\ updateSegments <- useState $ parseSegments codeWithHoles ?|| []
-    pure
-      $ element withSidebar
-          ( justifill
-              { notSidebarChildren:
-                [ element gaps
-                    { segments
-                    , updateSegments
-                    , incantate: mempty
-                    , solvedWith: Nothing
-                    }
-                ]
-              , sidebarChildren: [ element spell { spell: castSpell } ]
+  wrapper <- makeWrapper
+  pure $ React.element wrapper {}
+  where
+    makeWrapper ∷ Effect (ReactComponent {})
+    makeWrapper = do
+      gaps <- FillInTheGaps.makeComponent
+      reactComponent "GapsWrapper" \_ -> React.do
+        segments /\ updateSegments <- useState initialSegments
+        pure
+          $ element gaps
+              { segments: segments
+              , updateSegments
+              , run: log "pressed run"
+              , solvedWith: Nothing
               }
-          )
 
-castSpell ∷ Spell
-castSpell = { name: "cast", signature: "String -> Effect Unit", description: "Casts an incantation" }
+    initialSegments ∷ Array (Array Segment)
+    initialSegments = parseSegments codeWithHoles # unsafePartial fromJust
 
-spells ∷ Array Spell
-spells =
-  [ { name: "cast", signature: "String -> Effect Unit", description: "Casts an incantation" }
-  , { name: "take", signature: "Int -> String -> String", description: "Takes the first characters of a string" }
-  , { name: "append", signature: "a -> a -> a", description: "Takes two values and produces one" }
-  , { name: "drop", signature: "Int -> String -> String", description: "Removes the first characters of a string wow man this is a really long description I bet it produces a much longer card than the others if I keep writing like a crazy person" }
-  ]
-
-codeWithHoles :: String
-codeWithHoles =
-  """
---result Hello World
+    codeWithHoles ∷ String
+    codeWithHoles =
+      """
+--result kazam
 module Main where
 import Grimoire
 
-incantation :: Effect Unit
---start here
---please say Hello World
-incantation = cast
-  "{-Hello World-}"
+main :: Effect Unit
+main = 
+  --start here
+  {-log-} "kazam"
+  log "{-ala-}"
 --end here
 """
