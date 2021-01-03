@@ -5,6 +5,8 @@
   "author": "Mark Eibes",
   "dependencies": {
     "@emotion/core": "^10.0.28",
+    "@fontsource/cormorant-garamond": "^4.1.0",
+    "@fontsource/inter": "^4.1.0",
     "@material-ui/styles": "^4.9.0",
     "@mdx-js/mdx": "^1.1.5",
     "@mdx-js/react": "^1.1.5",

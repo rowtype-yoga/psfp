@@ -1,7 +1,7 @@
 module Yoga.Editor where
 
 import Prelude
-import CSS (borderBox, borderRadius, boxSizing, margin, padding, pct, px, toHexString, unitless, width)
+import CSS (borderBox, borderRadius, boxSizing, calc, margin, padding, pct, px, toHexString, unitless, width)
 import CSS.Overflow (hidden, overflowY)
 import Control.Promise (Promise)
 import Control.Promise as Promise
@@ -19,6 +19,7 @@ import JSS (jssClasses)
 import Prim.Row (class Union)
 import React.Basic (JSX, ReactComponent, Ref, element, fragment)
 import React.Basic.DOM as R
+import React.Basic.Emotion (var)
 import React.Basic.Hooks (reactComponent, useEffect, useState)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Aff (useAff)
@@ -107,6 +108,7 @@ mkEditor = do
               margin (0.0 # unitless) (0.0 # unitless) (0.0 # unitless) (0.0 # unitless)
               boxSizing borderBox
               borderRadius (8.0 # px) (8.0 # px) (8.0 # px) (8.0 # px)
+              padding (4.0 # px) (8.0 # px) (0.0 # px) (8.0 # px)
               width (100.0 # pct)
               overflowY hidden
           -- backgroundColor (colour.background) [TODO]
@@ -136,7 +138,7 @@ mkEditor = do
                             unsafeToForeign
                               { fontFamily: "Victor Mono"
                               , fontLigatures: true
-                              , fontSize: "var(--s0)"
+                              , fontSize: "15px"
                               , lineNumbers: "off"
                               , glyphMargin: false
                               , folding: false
@@ -144,9 +146,11 @@ mkEditor = do
                               , lineNumbersMinChars: 0
                               , minimap: { enabled: false }
                               , scrollBeyondLastLine: false
-                              , scrollbar: { vertical: "hidden", verticalScrollBarSize: 20 }
                               , hideCursorInOverviewRuler: true
                               , overviewRulerBorder: false
+                              , renderLineHighlightOnlyWhenFocus: true
+                              , scrollbar: { alwaysConsumeMouseWheel: false }
+                              , renderLineHighlight: "none"
                               }
                           , language
                           -- https://microsoft.github.io/monaco-editor/playground.html#extending-language-services-custom-languages

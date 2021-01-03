@@ -1,113 +1,189 @@
 module Yoga.CompileEditor.Component where
 
 import Prelude hiding (add)
-import CSS (JustifyContentValue(..), flexEnd)
 import Data.Array (intercalate)
 import Data.Either (Either(..))
 import Data.Foldable (for_)
-import Data.Interpolate (i)
 import Data.Maybe (Maybe(..))
+import Data.Monoid (guard)
 import Data.Tuple.Nested ((/\))
+import Data.TwoOrMore (twoOrMore)
 import Effect (Effect)
-import Effect.Aff (launchAff_)
+import Effect.Aff (Error, launchAff_, message, try)
 import Effect.Class (liftEffect)
-import JSS (jssClasses)
-import React.Basic (ReactComponent)
+import Framer.Motion as M
+import React.Basic (JSX, ReactComponent)
+import React.Basic.DOM (css)
 import React.Basic.DOM as R
+import React.Basic.Emotion as E
 import React.Basic.Events (handler_)
-import React.Basic.Helpers (jsx)
-import React.Basic.Hooks (reactComponent, element, useState)
+import React.Basic.Hooks (reactComponent, useState)
 import React.Basic.Hooks as React
+import Shared.Models.Body (CompileResult, RunResult)
+import Yoga ((</>))
 import Yoga as Y
 import Yoga.Block as Block
 import Yoga.Block.Atom.Button.Types as BT
 import Yoga.Block.Container.Style (colour)
-import Yoga.Card.Component (mkCard)
-import Yoga.Cluster.Component as Cluster
 import Yoga.Compiler.Types (Compiler)
 import Yoga.Editor (getValue, mkEditor, setValue)
-import Yoga.Stack.Component as Stack
-import Yoga.Theme.Styles (makeStylesJSS)
 
-type Props =
-  { initialCode ∷ String, height ∷ String, language ∷ String }
+type Props
+  = { initialCode ∷ String, height ∷ String, language ∷ String }
 
 mkCompileEditor ∷ ∀ r. { | Compiler r } -> Effect (ReactComponent Props)
 mkCompileEditor { compileAndRun } = do
   editor <- mkEditor
-  card <- mkCard
-  cluster <- Cluster.makeComponent
-  stack <- Stack.makeComponent
-  useStyles <-
-    makeStylesJSS
-      $ jssClasses \_ ->
-          { editor:
-            { background: colour.background
-            , boxSizing: "content-box"
-            , height: "80%"
-            , padding: "20px"
-            , marginTop: "0px"
-            , borderRadius: "12px"
-            , boxShadow: i "22px 22px 24px " colour.background ", -22px -22px 24px " colour.backgroundLayer1 ∷ String
-            , display: "flex"
-            , flexDirection: "column"
-            -- , minWidth: theme.measure
-            }
-          , card:
-            { zIndex: 0
-            }
-          , cardHidden: { opacity: 0 }
-          , compileError: { color: colour.invalid, opacity: 1, transition: "opacity 2.0s ease" }
-          , runOutput: { color: colour.success, opacity: 1, transition: "opacity 2.0s ease" }
-          }
+  motionBox <- M.custom Block.box
+  motionBox1 <- M.custom Block.box
+  motionButton <- M.custom Block.button
   reactComponent "CompileEditor" \{ initialCode, height, language } -> React.do
+    activeIndex /\ updateActiveIndex <- React.useState' 0
     maybeEditor /\ modifyEditor <- useState Nothing
-    classes <- useStyles {}
     let
       onLoad e = do
         setValue initialCode e
         modifyEditor (const $ Just e)
     compileResult /\ modifyCompileResult <- useState Nothing
     let
-      reset = do
+      showEditor = updateActiveIndex 0
+
+      showResult = updateActiveIndex 1
+
+      reset = resetCompileResult *> showEditor
+
+      run = compile *> showResult
+
+      resetCompileResult = do
         setCompileResult Nothing
         for_ maybeEditor (setValue initialCode)
+
+      compileResultToString ∷ Maybe (Either Error (Either CompileResult RunResult)) -> String
       compileResultToString = case _ of
         Nothing -> ""
-        Just (Left cr) -> cr.result <#> _.message # intercalate "/n"
-        Just (Right r) -> r.stdout
-      compileResultToClass = case _ of
-        Nothing -> classes.cardHidden
-        Just (Left cr) -> classes.compileError
-        Just (Right r) -> classes.runOutput
+        Just (Right (Left cr)) -> cr.result <#> _.message # intercalate "/n"
+        Just (Right (Right r)) -> r.stdout
+        Just (Left e) -> message e
+
       setCompileResult = modifyCompileResult <<< const
+
       compile = do
         for_ maybeEditor \ed -> do
           setCompileResult Nothing
           code <- getValue ed
           launchAff_ do
-            res <- compileAndRun { code }
+            res <- try $ compileAndRun { code }
             setCompileResult (Just res) # liftEffect
+
+      tabs ∷ JSX
+      tabs =
+        Block.segmented
+          </> { activeIndex
+            , updateActiveIndex
+            , buttonContents:
+                twoOrMore
+                  { id: "editor", value: "Editor" }
+                  { id: "Result", value: "Result" }
+                  []
+            }
+
+      editorView ∷ JSX
+      editorView = editor </> { onLoad, height, language }
+
+      buttons ∷ Array JSX -> JSX
+      buttons = Y.el Block.cluster { justify: "flex-end", space: "var(--s-1)" }
+
+      button =
+        Y.el motionButton
+          <<< M.motion
+              { transition: M.transition $ { duration: 0.2 }
+              }
+
+      resetButton ∷ JSX
+      resetButton =
+        button
+          { buttonType: BT.Generic, onClick: handler_ reset }
+          [ R.text "Reset" ]
+
+      runButton ∷ JSX
+      runButton =
+        button
+          { buttonType: BT.Primary, onClick: handler_ run }
+          [ R.text "Run" ]
+
+      buttonControls ∷ Array JSX -> JSX
+      buttonControls = Y.el motionBox $ M.motion { layout: M.layout true } {}
+
+      tabContainer ∷ Array JSX -> JSX
+      tabContainer children =
+        Y.styled R.div'
+          { className: "tabby"
+          , css:
+              E.css
+                { background: E.str colour.backgroundLayer4
+                , borderTop: E.str $ "1px solid " <> colour.interfaceBackgroundHighlight
+                , borderRadius: E.str "14px 14px 0 0"
+                , paddingLeft: E.var "--s-1"
+                , paddingRight: E.var "--s-1"
+                , paddingTop: E.str "0"
+                , paddingBottom: E.str "0"
+                , marginBottom: E.str "0"
+                , zIndex: E.str "0"
+                }
+          }
+          [ Y.el Block.centre { andText: true } children
+          ]
+
+      terminal ∷ Array JSX -> JSX
+      terminal =
+        Y.el motionBox1
+          $ M.motion
+              { layout: M.layout true
+              }
+              { css:
+                  E.css
+                    { background: E.str "rgb(42,42,59)"
+                    , boxSizing: E.str "content-box"
+                    , margin: E.str "0"
+                    , minHeight: E.str "8em"
+                    , padding: E.str "0"
+                    , display: E.str "flex"
+                    }
+              }
+
+      container =
+        Y.el motionBox1
+          $ M.motion { layout: M.layout true }
+              { css:
+                  E.css
+                    { background: E.str colour.backgroundLayer4
+                    , borderBottom: E.str $ "1px solid " <> colour.interfaceBackgroundShadow
+                    , borderRadius: E.str "0 0 14px 14px"
+                    , paddingLeft: E.str "0"
+                    , paddingRight: E.str "0"
+                    , paddingTop: E.str "0"
+                    , paddingBottom: E.var "--s-1"
+                    , zIndex: E.str "0"
+                    }
+              }
     pure
-      $ jsx stack { space: "--s1" }
-          [ jsx stack { space: "--s0", className: classes.editor }
-              [ element editor { onLoad, height, language }
-              , jsx cluster { justify: JustifyContentValue flexEnd }
-                  [ R.div_
-                      [ Y.el Block.button
-                          { onClick: handler_ reset
-                          }
-                          [ R.text "Reset" ]
-                      , Y.el Block.button
-                          { buttonType: BT.Primary
-                          , onClick: handler_ compile
-                          }
-                          [ R.text "Run" ]
+      $ Y.el Block.stack { space: E.str "0" }
+          [ tabContainer [ tabs ]
+          , Y.el M.animateSharedLayout {}
+              [ container
+                  [ terminal
+                      [ if activeIndex == 0 then
+                          editorView
+                        else
+                          Y.el M.div
+                            { layout: M.layout true
+                            , initial: M.initial $ css { width: "100%" }
+                            }
+                            [ R.text (compileResultToString compileResult) ]
+                      ]
+                  , buttonControls
+                      [ buttons [ resetButton, runButton ]
                       ]
                   ]
               ]
-          , jsx card
-              { className: classes.card <> " " <> compileResultToClass compileResult
-              }
-              [ R.text (compileResultToString compileResult) ]
           ]
