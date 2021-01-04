@@ -100,10 +100,12 @@ mkMdxProviderComponent compiler = do
               , css:
                   E.css
                     { fontFamily: E.str "Cormorant Garamond"
-                    , fontSize: E.str "min(calc(var(--s0) + 4vw), var(--s1))"
+                    , fontSize: E.str "min(calc(var(--s-1) + 2.4vw), var(--s1))"
+                    , lineHeight: E.var "--line-height-small"
                     , "-ms-hyphens": E.str "auto"
                     , "-webkit-hyphens": E.str "auto"
                     , hyphens: E.str "auto"
+                    , overflow: E.str "hidden"
                     }
               , className: "blog-p"
               , children: parChildren

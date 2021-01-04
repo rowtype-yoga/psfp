@@ -147,14 +147,18 @@ mkLayout fetchImpl = do
                                     { "& > p:first-of-type:first-letter":
                                         Emotion.nested
                                           $ Emotion.css
-                                              { fontSize: Emotion.var "--s4"
-                                              , height: Emotion.var "--s3"
-                                              , display: Emotion.str "block"
-                                              , overflow: Emotion.str "hidden"
+                                              { overflow: Emotion.str "hidden"
                                               , float: Emotion.str "left"
-                                              , marginTop: Emotion.str "calc(var(--s0))"
-                                              , lineHeight: Emotion.var "--s3"
+                                              , fontSize: Emotion.str "min(calc(var(--s0) * 1 + 8.03vw), var(--s5))"
+                                              , lineHeight: Emotion.str "min(calc(var(--s-1) + 2px + 3vw), var(--s3))"
+                                              , marginTop: Emotion.str "min(calc(var(--s-1) + 1.5vw), var(--s2))"
                                               , marginRight: Emotion.var "--s-2"
+                                              , "&::selection":
+                                                  Emotion.nested
+                                                    $ Emotion.css
+                                                        { color: Emotion.str colour.highlightText
+                                                        , background: Emotion.str colour.highlight
+                                                        }
                                               }
                                     }
                               }
