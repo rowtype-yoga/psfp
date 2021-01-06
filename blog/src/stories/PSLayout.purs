@@ -68,6 +68,11 @@ This is particularly lovely.
 I cannot recommend this party enough.
 
 ## Nobody has ever seen this problem in the flesh
+«Well why not?» You might ask
+
+This is a quote
+> Don't quote me on that
+
 """
 
 landingPage ∷ Effect JSX
@@ -85,14 +90,14 @@ landingPage = do
         pure
           $ React.element layout
               { children:
-                  reactChildrenFromArray mdx
+                reactChildrenFromArray mdx
               , mdxProviderComponent: mdxProvider
               , siteInfo:
-                  { siteMetadata:
-                      { menuLinks: []
-                      , title: "Page"
-                      }
+                { siteMetadata:
+                  { menuLinks: []
+                  , title: "Page"
                   }
+                }
               }
   compo <- mkCompo
   pure $ React.element compo {}

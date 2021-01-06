@@ -5,6 +5,7 @@ import Color as Color
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
+import Framer.Motion as Motion
 import MDX (MDX)
 import MDXProvider (MdxProviderProps)
 import Milkis.Impl (FetchImpl)
