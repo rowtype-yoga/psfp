@@ -152,11 +152,11 @@ mkLayout fetchImpl = do
                                         , lineHeight: Emotion.str "min(calc(var(--s-1) + 2px + 3vw), var(--s3))"
                                         , marginTop: Emotion.str "min(calc(var(--s-1) + 1.5vw), var(--s2))"
                                         , marginRight: Emotion.var "--s-2"
-                                        , "&::selection":
+                                        , "&:::selection":
                                           Emotion.nested
                                             $ Emotion.css
                                                 { color: Emotion.str colour.highlightText
-                                                , background: Emotion.str colour.highlight
+                                                , background: Emotion.str "green" -- colour.highlight
                                                 }
                                         }
                                 }

@@ -94,8 +94,9 @@ mkMdxProviderComponent compiler = do
             ( { layout: M.layout true
               , css:
                 E.css
-                  { fontFamily: E.str "Cormorant Garamond"
+                  { fontFamily: E.str "'Cormorant Garamond', Georgia, serif"
                   , fontSize: E.str "min(calc(var(--s-1) + 2.4vw), var(--s1))"
+                  , fontWeight: E.str "400"
                   , lineHeight: E.var "--line-height-small"
                   , "-msHyphens": E.str "auto"
                   , "-webkitHyphens": E.str "auto"
