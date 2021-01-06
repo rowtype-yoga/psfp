@@ -127,30 +127,14 @@ let overrides =
           //  { repo = "https://github.com/i-am-the-slime/purescript-css.git"
               , version = "8ea0bab17c268d9c62a09892d7ba231dcbe6308b"
               }
+      , react-testing-library =
+              upstream.react-testing-library
+          //  { version = "main"
+              }
       }
 
 let additions =
-      { react-testing-library =
-        { dependencies =
-          [ "aff-promise"
-          , "console"
-          , "debug"
-          , "effect"
-          , "foreign"
-          , "foreign-object"
-          , "psci-support"
-          , "react-basic-hooks"
-          , "remotedata"
-          , "run"
-          , "simple-json"
-          , "spec"
-          , "spec-discovery"
-          ]
-        , repo =
-            "https://github.com/i-am-the-slime/purescript-react-testing-library.git"
-        , version = "master"
-        }
-      , pseudo-random =
+      { pseudo-random =
         { dependencies =
           [ "prelude", "console", "effect", "lcg", "arrays", "st" ]
         , repo = "https://github.com/opyapeus/purescript-pseudo-random.git"

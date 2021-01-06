@@ -4,5 +4,6 @@
   "search.exclude": {
     "**/.history": true
   },
-  "purescript.addSpagoSources": true
+  "purescript.addSpagoSources": true,
+  "nixEnvSelector.nixShellConfig": "NOT_MODIFIED_ENV"
 }

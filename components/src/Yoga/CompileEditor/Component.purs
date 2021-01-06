@@ -8,6 +8,7 @@ import Data.Maybe (Maybe(..))
 import Data.Monoid (guard)
 import Data.Tuple.Nested ((/\))
 import Data.TwoOrMore (twoOrMore)
+import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (Error, launchAff_, message, try)
 import Effect.Class (liftEffect)
@@ -24,7 +25,7 @@ import Yoga ((</>))
 import Yoga as Y
 import Yoga.Block as Block
 import Yoga.Block.Atom.Button.Types as BT
-import Yoga.Block.Container.Style (colour)
+import Yoga.Block.Container.Style (colour, getDarkOrLightMode)
 import Yoga.Compiler.Types (Compiler)
 import Yoga.Editor (getValue, mkEditor, setValue)
 
@@ -39,7 +40,12 @@ mkCompileEditor { compileAndRun } = do
   motionButton <- M.custom Block.button
   reactComponent "CompileEditor" \{ initialCode, height, language } -> React.do
     activeIndex /\ updateActiveIndex <- React.useState' 0
-    maybeEditor /\ modifyEditor <- useState Nothing
+    maybeEditor /\ modifyEditor <- React.useState Nothing
+    themeMode /\ setThemeMode <- React.useState' Nothing
+    React.useEffectAlways do
+      mode <- getDarkOrLightMode
+      unless (mode == themeMode) do setThemeMode (spy "mode" mode)
+      mempty
     let
       onLoad e = do
         setValue initialCode e
@@ -56,7 +62,7 @@ mkCompileEditor { compileAndRun } = do
       compileResultToString ∷ Maybe (Either Error (Either CompileResult RunResult)) -> String
       compileResultToString = case _ of
         Nothing -> ""
-        Just (Right (Left cr)) -> cr.result <#> _.message # intercalate "/n"
+        Just (Right (Left cr)) -> cr.result <#> _.message # intercalate "\n"
         Just (Right (Right r)) -> r.stdout
         Just (Left e) -> message e
       setCompileResult = modifyCompileResult <<< const
@@ -75,7 +81,7 @@ mkCompileEditor { compileAndRun } = do
             , buttonContents:
               twoOrMore
                 { id: "editor", value: "Editor" }
-                { id: "Result", value: "Result" }
+                { id: "result", value: "Result" }
                 []
             }
       editorView ∷ JSX
@@ -126,10 +132,11 @@ mkCompileEditor { compileAndRun } = do
               }
               { css:
                 E.css
-                  { background: E.str "rgb(42,42,59)"
+                  { background: E.str colour.backgroundLayer2
                   , boxSizing: E.str "content-box"
                   , margin: E.str "0"
                   , minHeight: E.str "8em"
+                  , height: E.str height
                   , padding: E.str "0"
                   , display: E.str "flex"
                   }
@@ -155,9 +162,8 @@ mkCompileEditor { compileAndRun } = do
                       [ if activeIndex == 0 then
                           editorView
                         else
-                          Y.el M.div
-                            { layout: M.layout true
-                            , initial: M.initial $ css { width: "100%" }
+                          Y.el R.div'
+                            { style: css { width: "100%" }
                             }
                             [ R.text (compileResultToString compileResult) ]
                       ]
