@@ -36,17 +36,17 @@ import Yoga.FillInTheGaps.Logic (Segment, findResult, parseSegments, toCode)
 import Yoga.Helpers ((?||))
 import Yoga as Y
 
-type PreProps
-  = { children ∷
+type PreProps =
+  { children ∷
+    Nullable
+      { props ∷
         Nullable
-          { props ∷
-              Nullable
-                { mdxType ∷ Nullable String
-                , children ∷ Nullable String
-                , className ∷ Nullable String
-                }
+          { mdxType ∷ Nullable String
+          , children ∷ Nullable String
+          , className ∷ Nullable String
           }
-    }
+      }
+  }
 
 isQuiz ∷ MDX -> Boolean
 isQuiz (MDX a) =
@@ -55,9 +55,9 @@ isQuiz (MDX a) =
     && ((unsafeCoerce a).props.children.props.mdxType == "code")
     && ((unsafeCoerce a).props.children.props.children # parseSegments # isJust)
 
-type MdxProviderProps
-  = { children ∷ ReactChildren MDX
-    }
+type MdxProviderProps =
+  { children ∷ ReactChildren MDX
+  }
 
 mkLiveMdxProviderComponent ∷ FetchImpl -> Effect (ReactComponent MdxProviderProps)
 mkLiveMdxProviderComponent fetchImpl = mkMdxProviderComponent (apiCompiler fetchImpl)
@@ -75,38 +75,33 @@ mkMdxProviderComponent compiler = do
       visibleUntil /\ updateVisible <- useState 1
       let
         onFailure title kids = log "Oopsie daisy"
-
         onSuccess = updateVisible (_ + one)
-
         mapVisible ∷ Int -> MDX -> _
         mapVisible i kid =
           { accum: i + if isQuiz kid then one else zero
           , value: if (i < visibleUntil) then Just kid else Nothing
           }
-
         visibleKids ∷ Array MDX
         visibleKids =
           reactChildrenToArray children
             # mapAccumL mapVisible zero
             # _.value
             # Array.catMaybes
-
         contentMDX ∷ ReactChildren MDX
         contentMDX = reactChildrenFromArray visibleKids
-
         paragraph parChildren =
           E.element M.p
             ( { layout: M.layout true
               , css:
-                  E.css
-                    { fontFamily: E.str "Cormorant Garamond"
-                    , fontSize: E.str "min(calc(var(--s-1) + 2.4vw), var(--s1))"
-                    , lineHeight: E.var "--line-height-small"
-                    , "-ms-hyphens": E.str "auto"
-                    , "-webkit-hyphens": E.str "auto"
-                    , hyphens: E.str "auto"
-                    , overflow: E.str "hidden"
-                    }
+                E.css
+                  { fontFamily: E.str "Cormorant Garamond"
+                  , fontSize: E.str "min(calc(var(--s-1) + 2.4vw), var(--s1))"
+                  , lineHeight: E.var "--line-height-small"
+                  , "-msHyphens": E.str "auto"
+                  , "-webkitHyphens": E.str "auto"
+                  , hyphens: E.str "auto"
+                  , overflow: E.str "hidden"
+                  }
               , className: "blog-p"
               , children: parChildren
               }
@@ -114,65 +109,56 @@ mkMdxProviderComponent compiler = do
       let
         mdxComponents =
           { "Sc":
-              \(props :: { children :: String }) ->
-                smallCaps props.children
+            \(props ∷ { children ∷ String }) ->
+              smallCaps props.children
           , h1:
-              \(props ∷ { | M.MotionProps Props_h1 }) ->
-                React.element M.h1 (props { layout = M.layout true })
+            \(props ∷ { | M.MotionProps Props_h1 }) ->
+              React.element M.h1 (props { layout = M.layout true })
           , h2:
-              \(props ∷ { | M.MotionProps Props_h2 }) ->
-                React.element M.h2 (props { layout = M.layout true })
+            \(props ∷ { | M.MotionProps Props_h2 }) ->
+              React.element M.h2 (props { layout = M.layout true })
           , h3:
-              \(props ∷ { | M.MotionProps Props_h3 }) ->
-                React.element M.h3 (props { layout = M.layout true })
+            \(props ∷ { | M.MotionProps Props_h3 }) ->
+              React.element M.h3 (props { layout = M.layout true })
           , h4:
-              \(props ∷ { | M.MotionProps Props_h4 }) ->
-                React.element M.h4 (props { layout = M.layout true })
+            \(props ∷ { | M.MotionProps Props_h4 }) ->
+              React.element M.h4 (props { layout = M.layout true })
           , hr: (const $ R.hr {})
           , p:
-              \(props ∷ { children :: Array JSX }) ->
-                paragraph props.children
+            \(props ∷ { children ∷ Array JSX }) ->
+              paragraph props.children
           , inlineCode:
-              \props -> do
-                R.span { children: props.children }
+            \props -> do
+              R.span { children: props.children }
           , pre:
-              mkFn2 \(props ∷ PreProps) other -> do
-                let
-                  childrenQ = Nullable.toMaybe props.children
-
-                  propsQ = (_.props >>> Nullable.toMaybe) =<< childrenQ
-
-                  mdxTypeQ = (_.mdxType >>> Nullable.toMaybe) =<< propsQ
-
-                  childrenQ2 = (_.children >>> Nullable.toMaybe) =<< propsQ
-
-                  classNameQ = (_.className >>> Nullable.toMaybe) =<< propsQ
-
-                  isCode = fromMaybe false (mdxTypeQ <#> eq "code")
-
-                  codeQ = childrenQ2
-
-                  height =
-                    (fromMaybe 200 >>> show >>> (_ <> "px")) do
-                      code <- codeQ
-                      pure
-                        ( String.split (String.Pattern "\n") code
-                            # Array.length
-                            # \x -> (x * 12) + 100
-                        )
-
-                  language = fromMaybe "" (classNameQ >>= String.stripPrefix (String.Pattern "language-"))
-
-                  segmentsQ = parseSegments (codeQ ?|| "")
-                case isCode, language, segmentsQ of
-                  true, "purescript", Just initialSegments -> element quiz { initialSegments, onFailure, onSuccess }
-                  true, _, _ ->
-                    element editor
-                      { initialCode: fromMaybe "" codeQ
-                      , height
-                      , language
-                      }
-                  false, _, _ -> element (unsafePerformEffect $ unsafeCreateDOMComponent "pre") props
+            mkFn2 \(props ∷ PreProps) other -> do
+              let
+                childrenQ = Nullable.toMaybe props.children
+                propsQ = (_.props >>> Nullable.toMaybe) =<< childrenQ
+                mdxTypeQ = (_.mdxType >>> Nullable.toMaybe) =<< propsQ
+                childrenQ2 = (_.children >>> Nullable.toMaybe) =<< propsQ
+                classNameQ = (_.className >>> Nullable.toMaybe) =<< propsQ
+                isCode = fromMaybe false (mdxTypeQ <#> eq "code")
+                codeQ = childrenQ2
+                height =
+                  (fromMaybe 200 >>> show >>> (_ <> "px")) do
+                    code <- codeQ
+                    pure
+                      ( String.split (String.Pattern "\n") code
+                          # Array.length
+                          # \x -> (x * 12) + 100
+                      )
+                language = fromMaybe "" (classNameQ >>= String.stripPrefix (String.Pattern "language-"))
+                segmentsQ = parseSegments (codeQ ?|| "")
+              case isCode, language, segmentsQ of
+                true, "purescript", Just initialSegments -> element quiz { initialSegments, onFailure, onSuccess }
+                true, _, _ ->
+                  element editor
+                    { initialCode: fromMaybe "" codeQ
+                    , height
+                    , language
+                    }
+                false, _, _ -> element (unsafePerformEffect $ unsafeCreateDOMComponent "pre") props
           }
       pure
         $ element mdxProvider
@@ -180,11 +166,11 @@ mkMdxProviderComponent compiler = do
             , components: mdxComponents
             }
 
-type QuizProps
-  = { initialSegments ∷ Array (Array Segment)
-    , onFailure ∷ String -> Array JSX -> Effect Unit
-    , onSuccess ∷ Effect Unit
-    }
+type QuizProps =
+  { initialSegments ∷ Array (Array Segment)
+  , onFailure ∷ String -> Array JSX -> Effect Unit
+  , onSuccess ∷ Effect Unit
+  }
 
 mkQuiz ∷ ∀ r. { | Compiler r } -> Effect (ReactComponent QuizProps)
 mkQuiz compiler = do
@@ -196,24 +182,22 @@ mkQuiz compiler = do
       $ element fillInTheGaps
           { segments
           , run:
-              launchAff_ do
-                let
-                  code = toCode segments
-                result <- compiler.compileAndRun { code }
-                liftEffect case result of
-                  Right r
-                    | String.stripSuffix (String.Pattern "\n") r.stdout == (findResult $ join segments) -> do
-                      updateSolvedWith (const $ String.stripSuffix (String.Pattern "\n") r.stdout)
-                      onSuccess
-                  Right r
-                    | r.stdout /= "\n" -> onFailure "Oh shit!" [ R.text r.stdout ]
-                  Right r -> onFailure "Oh shit!" [ R.text r.stderr ]
-                  Left (cr ∷ CompileResult) -> onFailure "Oh shit!" [ R.text (intercalate ", " (cr.result <#> _.message)) ]
+            launchAff_ do
+              let code = toCode segments
+              result <- compiler.compileAndRun { code }
+              liftEffect case result of
+                Right r
+                  | String.stripSuffix (String.Pattern "\n") r.stdout == (findResult $ join segments) -> do
+                    updateSolvedWith (const $ String.stripSuffix (String.Pattern "\n") r.stdout)
+                    onSuccess
+                Right r
+                  | r.stdout /= "\n" -> onFailure "Oh shit!" [ R.text r.stdout ]
+                Right r -> onFailure "Oh shit!" [ R.text r.stderr ]
+                Left (cr ∷ CompileResult) -> onFailure "Oh shit!" [ R.text (intercalate ", " (cr.result <#> _.message)) ]
           , updateSegments:
-              \update -> do
-                let
-                  updated = update segments
-                unless (segments == updated) do updateSegments (const updated)
+            \update -> do
+              let updated = update segments
+              unless (segments == updated) do updateSegments (const updated)
           , solvedWith
           }
 

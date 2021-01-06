@@ -8,15 +8,15 @@ import React.Basic.Hooks (JSX)
 import React.Basic.Hooks as React
 import Yoga as Y
 
-mkSmallCaps :: Effect (String -> JSX)
+mkSmallCaps ∷ Effect (String -> JSX)
 mkSmallCaps = do
   React.component "SmallCaps" \text -> React.do
     pure
       $ Y.styled R.span'
           { className: "small-caps"
           , css:
-              E.css
-                { fontVariant: E.str "small-caps"
-                }
+            E.css
+              { fontFamily: E.str "'Cormorant SC'"
+              }
           }
           [ R.text $ text ]
