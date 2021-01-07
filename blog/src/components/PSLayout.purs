@@ -5,7 +5,6 @@ import Color as Color
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
-import Framer.Motion as Motion
 import MDX (MDX)
 import MDXProvider (MdxProviderProps)
 import Milkis.Impl (FetchImpl)
@@ -48,8 +47,9 @@ mkLayout fetchImpl = do
   -- mdxProviderComponent <- mkMdxProviderComponent (apiCompiler fetchImpl)
   reactComponentWithChildren "MDXLayout" \{ children, siteInfo, mdxProviderComponent } -> React.do
     darkOrLightMode /\ setDarkOrLightMode <- useState' Nothing
+    togglePosition /\ setTogglePosition <- useState' ToggleIsLeft
     let
-      maybeTogglePosition =
+      themeToMaybeTogglePosition =
         darkOrLightMode
           <#> case _ of
               DarkMode -> ToggleIsRight
@@ -67,7 +67,7 @@ mkLayout fetchImpl = do
                 case _ of
                   ToggleIsLeft -> setDarkOrLightMode (Just LightMode)
                   ToggleIsRight -> setDarkOrLightMode (Just DarkMode)
-              , togglePosition: fromMaybe ToggleIsLeft maybeTogglePosition
+              , togglePosition: themeToMaybeTogglePosition # fromMaybe togglePosition
               , left:
                 Block.icon
                   Y.</> do
@@ -119,6 +119,10 @@ mkLayout fetchImpl = do
     pure
       $ element Container.component
           { themeVariant: darkOrLightMode
+          , onPreferredSystemThemeChange:
+            case _ of
+              LightMode -> setTogglePosition ToggleIsLeft
+              DarkMode -> setTogglePosition ToggleIsRight
           , content:
             Y.styled Block.stack
               { className: "blog-content"
