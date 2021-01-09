@@ -5,10 +5,8 @@ import Data.Array (intercalate)
 import Data.Either (Either(..))
 import Data.Foldable (for_)
 import Data.Maybe (Maybe(..))
-import Data.Monoid (guard)
 import Data.Tuple.Nested ((/\))
 import Data.TwoOrMore (twoOrMore)
-import Debug.Trace (spy)
 import Effect (Effect)
 import Effect.Aff (Error, launchAff_, message, try)
 import Effect.Class (liftEffect)
@@ -44,7 +42,7 @@ mkCompileEditor { compileAndRun } = do
     themeMode /\ setThemeMode <- React.useState' Nothing
     React.useEffectAlways do
       mode <- getDarkOrLightMode
-      unless (mode == themeMode) do setThemeMode (spy "mode" mode)
+      unless (mode == themeMode) do setThemeMode mode
       mempty
     let
       onLoad e = do

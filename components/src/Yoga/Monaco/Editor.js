@@ -82,6 +82,7 @@ exports.colorizeImpl = function (text) {
     };
 };
 exports.setValue = function (value) { return function (editor) { return function () { return editor.setValue(value); }; }; };
+exports.layout = (editor) => () => editor.layout()
 exports.defineThemeImpl = function (monacoInstance) {
     return function (name) {
         return function (theme) {
@@ -114,99 +115,138 @@ exports.setMonarchTokensProviderImpl = function (monacoInstance) {
         };
     };
 };
-exports.vsCodeTheme = function (bg) {
+exports.horizonTheme = function (bg) {
     return ({
         base: "vs",
         inherit: true,
         rules: [
             {
-                foreground: "008e00",
-                token: "comment",
+                foreground: "#33333380",
+                fontStyle: "italic",
+                token: "comment"
             },
             {
-                foreground: "7d4726",
-                token: "meta.preprocessor",
+                foreground: "#DC3318",
+                token: "constant"
             },
             {
-                foreground: "7d4726",
-                token: "keyword.control.import",
+                foreground: "#F77D26",
+                token: "entity.name"
             },
             {
-                foreground: "df0002",
-                token: "string",
+                foreground: "#1D8991",
+                token: "entity.name.function"
             },
             {
-                foreground: "3a00dc",
-                token: "constant.numeric",
+                foreground: "#DA103F",
+                token: "entity.name.tag"
             },
             {
-                foreground: "c800a4",
-                token: "constant.language",
+                foreground: "#F77D26",
+                token: "entity.name.type"
             },
             {
-                foreground: "275a5e",
-                token: "constant.character",
+                foreground: "#DA103F",
+                token: "variable"
             },
             {
-                foreground: "275a5e",
-                token: "constant.other",
+                foreground: "#DA103F",
+                token: "entity.name.variable"
             },
             {
-                foreground: "c800a4",
-                token: "variable.language",
+                foreground: "#8A31B9",
+                token: "keyword"
             },
             {
-                foreground: "c800a4",
-                token: "variable.other",
+                foreground: "#333333",
+                token: "keyword.operator"
             },
             {
-                foreground: "c800a4",
-                token: "keyword",
+                foreground: "#8A31B9",
+                token: "keyword.operator.new"
             },
             {
-                foreground: "c900a4",
-                token: "storage",
+                foreground: "#8A31B9",
+                token: "keyword.operator.expression"
             },
             {
-                foreground: "438288",
-                token: "entity.name.class",
+                foreground: "#8A31B9",
+                token: "keyword.operator.logical, keyword.operator.delete"
             },
             {
-                foreground: "790ead",
-                token: "entity.name.tag",
+                foreground: "#8A31B9",
+                token: "keyword.operator.delete"
             },
             {
-                foreground: "450084",
-                token: "entity.other.attribute-name",
+                foreground: "#DC3318",
+                token: "keyword.other.unit"
             },
             {
-                foreground: "450084",
-                token: "support.function",
+                foreground: "#F6661EB3",
+                fontStyle: "italic",
+                token: "markup.quote"
             },
             {
-                foreground: "450084",
-                token: "support.constant",
+                foreground: "#DA103F",
+                token: "entity.name.section"
             },
             {
-                foreground: "790ead",
-                token: "support.type",
+                foreground: "#8A31B9",
+                token: "storage"
             },
             {
-                foreground: "790ead",
-                token: "support.class",
+                foreground: "#F6661E",
+                token: "string"
             },
             {
-                foreground: "790ead",
-                token: "support.other.variable",
+                foreground: "#F77D26",
+                token: "support"
+            },
+            {
+                foreground: "#1D8991",
+                token: "support.function"
+            },
+            {
+                foreground: "#DA103F",
+                token: "support.variable"
+            },
+            {
+                foreground: "#DA103F",
+                token: "support.type.property-name"
+            },
+            {
+                foreground: "#DA103F",
+                token: "meta.object-literal.key"
+            },
+            {
+                foreground: "#333333",
+                token: "support.type.property-name.css"
+            },
+            {
+                foreground: "#F77D26",
+                fontStyle: "italic",
+                token: "variable.language"
+            },
+            {
+                fontStyle: "italic",
+                token: "variable.parameter"
+            },
+            {
+                foreground: "#DA103FB3",
+                token: "punctuation.definition.tag"
+            },
+            {
+                foreground: "#333333",
+                token: "punctuation.separator"
             },
         ],
         colors: {
             "editor.foreground": "#000000",
-            "editor.background": bg,
-            "editor.selectionBackground": "#B5D5FF",
+            "editor.background": bg, //"#FDF0ED" 
+            "editor.selectionBackground": "#F9CBBE80",
             "editor.lineHighlightBackground": "#B5D5FF",
             "editor.lineHighlightBorder": "#B5D5FF",
-            "editorCursor.foreground": "#000000",
+            "editorCursor.foreground": "#333333",
             "editorWhitespace.foreground": "#BFBFBF",
         },
     });
@@ -218,6 +258,7 @@ exports.nightOwlTheme = function (bg) {
         rules: [
             {
                 foreground: "637777",
+                fontStyle: "italic",
                 token: "comment",
             },
             {
