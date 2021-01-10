@@ -1,4 +1,4 @@
-require("../src/components/fonts")
+require("../static/fonts/fonts")
 export const parameters = {
   layout: 'fullscreen'
 }

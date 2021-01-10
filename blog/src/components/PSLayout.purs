@@ -44,7 +44,6 @@ mkLayout ∷
         }
     )
 mkLayout fetchImpl = do
-  -- mdxProviderComponent <- mkMdxProviderComponent (apiCompiler fetchImpl)
   reactComponentWithChildren "MDXLayout" \{ children, siteInfo, mdxProviderComponent } -> React.do
     darkOrLightMode /\ setDarkOrLightMode <- useState' Nothing
     togglePosition /\ setTogglePosition <- useState' ToggleIsLeft
@@ -84,13 +83,14 @@ mkLayout fetchImpl = do
                 Color.hsl 205.0 1.0 0.80
               , backgroundRight:
                 Color.hsl 250.0 1.0 0.1
+              , ariaLabel: "Toggle Dark and Light mode"
               }
       header =
         Block.box
           </ { className: "top-box"
             , css:
               Emotion.css
-                { background: Emotion.str colour.backgroundLayer5
+                { background: Emotion.str colour.background
                 }
             }
           /> [ Block.cluster
@@ -140,7 +140,11 @@ mkLayout fetchImpl = do
                   </* { className: "centre"
                     , padding: _0
                     , gutters: _0
-                    , css: Emotion.css { maxWidth: Emotion.ch 90.0 }
+                    , css:
+                      Emotion.css
+                        { maxWidth: Emotion.ch 90.0
+                        , fontSize: Emotion.str "calc( min( (var(--s-1) * 1.7) + 0.7vw , var(--s0)*1.1 ) )"
+                        }
                     }
                   /> [ Block.box
                         </ do
@@ -151,6 +155,7 @@ mkLayout fetchImpl = do
                                   Emotion.nested
                                     $ Emotion.css
                                         { overflow: Emotion.str "visible"
+                                        , display: Emotion.inlineBlock
                                         , float: Emotion.str "left"
                                         , fontSize: Emotion.str "min(calc(var(--s0) * 1 + 8.03vw), var(--s5))"
                                         , fontFamily: Emotion.str "Cormorant Garamond"
@@ -166,10 +171,7 @@ mkLayout fetchImpl = do
                                         }
                                 }
                             }
-                        /> [ element mdxProviderComponent
-                              { children
-                              }
-                          ]
+                        /> [ element mdxProviderComponent { children } ]
                     ]
               , Y.styled Block.box
                   { className: "blog-footer"

@@ -16,7 +16,9 @@ mkSmallCaps = do
           { className: "small-caps"
           , css:
             E.css
-              { fontFamily: E.str "Cormorant SC"
+              { fontFamily: E.str "Cormorant Garamond"
+              , letterSpacing: E.str "var(--s-5)"
+              , fontFeatureSettings: E.str "\"smcp\" 1"
               }
           }
           [ R.text $ text ]

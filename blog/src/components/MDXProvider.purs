@@ -94,7 +94,7 @@ mkMdxProviderComponent compiler = do
             ( { layout: M.layout true
               , css:
                 E.css
-                  { fontFamily: E.str "'Cormorant Garamond', Georgia, serif"
+                  { fontFamily: E.str "'Cormorant Garamond', Comic Sans MS, serif"
                   , fontSize: E.str "min(calc(var(--s-1) + 2.4vw), var(--s1))"
                   , fontWeight: E.str "400"
                   , lineHeight: E.var "--line-height-small"
@@ -102,6 +102,14 @@ mkMdxProviderComponent compiler = do
                   , "-webkitHyphens": E.str "auto"
                   , hyphens: E.str "auto"
                   , overflow: E.str "hidden"
+                  , fontVariantLigatures: E.str "common-ligatures"
+                  , fontFeatureSettings: E.str $ """ "kern" 1, "liga" 1, "dlig" 1, "hlig" 1, "swsh" 1, "calt" 1, "case" 1 """
+                  , "& > a":
+                    E.nested
+                      $ E.css
+                          { fontFamily: E.str "'Cormorant Garamond', Comic Sans MS, serif"
+                          , fontWeight: E.str "400"
+                          }
                   }
               , className: "blog-p"
               , children: parChildren

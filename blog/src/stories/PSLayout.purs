@@ -36,8 +36,11 @@ example ∷ String
 example =
   """
 # Monad
+T<Sc>ccording to [Hippolytus](https://en.wikipedia.org/wiki/Hippolytus_of_Rome "Hippolytus of Rome")</Sc>, the worldview was inspired by the [Pythagoreans](https://en.wikipedia.org/wiki/Pythagoreanism "Pythagoreanism"), who called the first thing that came into existence the "monad", which begat (bore) the [dyad](https://en.wikipedia.org/wiki/Dyad_(Greek_philosophy) "Dyad (Greek philosophy)") (from the Greek word for two), which begat the [numbers](https://en.wikipedia.org/wiki/Number "Number"), which begat the [point](https://en.wikipedia.org/wiki/Point_(geometry) "Point (geometry)"), begetting [lines](https://en.wikipedia.org/wiki/Line_(geometry) "Line (geometry)") or [finiteness](https://en.wiktionary.org/wiki/finite "wikt:finite"), etc.<sup>[[2]](https://en.wikipedia.org/wiki/Monad_(philosophy)#cite_note-2)</sup> It meant [divinity](https://en.wikipedia.org/wiki/Divinity "Divinity"), the first being, or the totality of all beings, referring in [cosmogony](https://en.wikipedia.org/wiki/Cosmogony "Cosmogony") (creation theories) variously to source acting alone and/or an indivisible origin and [equivalent comparators](https://en.wikipedia.org/wiki/Abstraction_(philosophy) "Abstraction (philosophy)").^[[3]](https://en.wikipedia.org/wiki/Monad_(philosophy)#cite_note-3)
 
 A<Sc>ccording to [Hippolytus](https://en.wikipedia.org/wiki/Hippolytus_of_Rome "Hippolytus of Rome")</Sc>, the worldview was inspired by the [Pythagoreans](https://en.wikipedia.org/wiki/Pythagoreanism "Pythagoreanism"), who called the first thing that came into existence the "monad", which begat (bore) the [dyad](https://en.wikipedia.org/wiki/Dyad_(Greek_philosophy) "Dyad (Greek philosophy)") (from the Greek word for two), which begat the [numbers](https://en.wikipedia.org/wiki/Number "Number"), which begat the [point](https://en.wikipedia.org/wiki/Point_(geometry) "Point (geometry)"), begetting [lines](https://en.wikipedia.org/wiki/Line_(geometry) "Line (geometry)") or [finiteness](https://en.wiktionary.org/wiki/finite "wikt:finite"), etc.<sup>[[2]](https://en.wikipedia.org/wiki/Monad_(philosophy)#cite_note-2)</sup> It meant [divinity](https://en.wikipedia.org/wiki/Divinity "Divinity"), the first being, or the totality of all beings, referring in [cosmogony](https://en.wikipedia.org/wiki/Cosmogony "Cosmogony") (creation theories) variously to source acting alone and/or an indivisible origin and [equivalent comparators](https://en.wikipedia.org/wiki/Abstraction_(philosophy) "Abstraction (philosophy)").^[[3]](https://en.wikipedia.org/wiki/Monad_(philosophy)#cite_note-3)
+
+This is a test for ligatures ffi fi fi tz Quality.
 
 no way is out
 
@@ -45,6 +48,12 @@ no way is out
 module You.Are.An where
 
 asshole = "You"
+
+pigboy = "Piggy {-hi-} Pigster" -- good code
+
+type X = { x :: String }
+
+newtype Holz = Holz String
 ```
 
 ```purescript
