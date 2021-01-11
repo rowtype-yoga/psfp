@@ -13,17 +13,19 @@ import Data.Time.Duration (Seconds(..))
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (Aff)
-import Effect.Aff.Compat (EffectFn1)
+import Effect.Aff.Compat (EffectFn1, EffectFn2, mkEffectFn2)
 import Effect.Class (liftEffect)
 import Effect.Uncurried (EffectFn2, mkEffectFn1, mkEffectFn2)
 import Foreign (Foreign, unsafeToForeign)
 import JSS (jssClasses)
+import MotionValue (onChange)
 import Prim.Row (class Union)
 import React.Basic (JSX, ReactComponent, Ref, element, fragment)
 import React.Basic.DOM as R
 import React.Basic.Hooks (reactComponent, useEffect, useEffectAlways, useState)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Aff (useAff)
+import Test.Spec.Runner.Event (Event)
 import Web.DOM (Node)
 import Web.HTML (HTMLElement)
 import Yoga.Block.Container.Style (DarkOrLightMode(..), getDarkOrLightMode)
@@ -32,6 +34,7 @@ import Yoga.Theme.Styles (makeStylesJSS)
 
 type EditorProps =
   ( value ∷ String
+  , onChange ∷ EffectFn2 String Event Unit
   , language ∷ String
   , editorDidMount ∷ EffectFn2 Editor Node Unit
   , editorWillMount ∷ EffectFn1 Monaco Unit
@@ -98,6 +101,8 @@ type Props =
   { onLoad ∷ Editor -> Effect Unit
   , height ∷ String
   , language ∷ String
+  , value ∷ String
+  , onChange ∷ String -> Event -> Effect Unit
   }
 
 mkEditor ∷ Effect (ReactComponent Props)
@@ -115,7 +120,7 @@ mkEditor = do
               overflowY hidden
           -- backgroundColor (colour.background) [ TODO ]
           }
-  reactComponent "Editor" \{ onLoad, height, language } -> React.do
+  reactComponent "Editor" \{ onChange, onLoad, height, language, value } -> React.do
     classes <- useStyles {}
     mbEditorComponent /\ setEditorComponent <- React.useState' Nothing
     monacoRef <- React.useRef null
@@ -145,6 +150,8 @@ mkEditor = do
                         element editor
                           { theme: themeName
                           , height
+                          , value
+                          , onChange: mkEffectFn2 onChange
                           , options:
                             unsafeToForeign
                               { fontFamily: "Victor Mono"

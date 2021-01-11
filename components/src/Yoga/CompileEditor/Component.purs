@@ -25,7 +25,7 @@ import Yoga.Block as Block
 import Yoga.Block.Atom.Button.Types as BT
 import Yoga.Block.Container.Style (colour, getDarkOrLightMode)
 import Yoga.Compiler.Types (Compiler)
-import Yoga.Editor (getValue, mkEditor, setValue)
+import Yoga.Editor (getValue, mkEditor)
 
 type Props =
   { initialCode ∷ String, height ∷ String, language ∷ String }
@@ -38,15 +38,16 @@ mkCompileEditor { compileAndRun } = do
   motionButton <- M.custom Block.button
   reactComponent "CompileEditor" \{ initialCode, height, language } -> React.do
     activeIndex /\ updateActiveIndex <- React.useState' 0
-    maybeEditor /\ modifyEditor <- React.useState Nothing
+    mbEditor /\ modifyEditor <- React.useState Nothing
     themeMode /\ setThemeMode <- React.useState' Nothing
+    value /\ setValue <- React.useState' initialCode
+    let onChange newValue event = setValue newValue
     React.useEffectAlways do
       mode <- getDarkOrLightMode
       unless (mode == themeMode) do setThemeMode mode
       mempty
     let
       onLoad e = do
-        setValue initialCode e
         modifyEditor (const $ Just e)
     compileResult /\ modifyCompileResult <- useState Nothing
     let
@@ -56,7 +57,7 @@ mkCompileEditor { compileAndRun } = do
       run = compile *> showResult
       resetCompileResult = do
         setCompileResult Nothing
-        for_ maybeEditor (setValue initialCode)
+        setValue initialCode
       compileResultToString ∷ Maybe (Either Error (Either CompileResult RunResult)) -> String
       compileResultToString = case _ of
         Nothing -> ""
@@ -65,7 +66,7 @@ mkCompileEditor { compileAndRun } = do
         Just (Left e) -> message e
       setCompileResult = modifyCompileResult <<< const
       compile = do
-        for_ maybeEditor \ed -> do
+        for_ mbEditor \ed -> do
           setCompileResult Nothing
           code <- getValue ed
           launchAff_ do
@@ -83,7 +84,7 @@ mkCompileEditor { compileAndRun } = do
                 []
             }
       editorView ∷ JSX
-      editorView = editor </> { onLoad, height, language }
+      editorView = editor </> { onLoad, height, language, value, onChange }
       buttons ∷ Array JSX -> JSX
       buttons = Y.el Block.cluster { justify: "flex-end", space: "var(--s-1)" }
       button =

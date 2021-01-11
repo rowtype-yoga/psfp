@@ -67,10 +67,8 @@ exports.monacoEditorImpl = function () {
         });
     });
 };
-exports.getValue = function (editor) {
-    return function () {
-        return editor.getValue();
-    };
+exports.getValue = (editor) => () => {
+    return editor.getValue();
 };
 exports.colorizeImpl = function (text) {
     return function (languageId) {
@@ -81,7 +79,11 @@ exports.colorizeImpl = function (text) {
         };
     };
 };
-exports.setValue = function (value) { return function (editor) { return function () { return editor.setValue(value); }; }; };
+exports.setValue = (value) => (editor) => () => {
+    console.log("Value len", value.length)
+    editor.setValue(value)
+    console.log("Value len after", editor.getValue().length)
+};
 exports.layout = (editor) => () => editor.layout()
 exports.defineThemeImpl = function (monacoInstance) {
     return function (name) {
