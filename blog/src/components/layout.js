@@ -1,7 +1,7 @@
 import React from "react";
 import { graphql, useStaticQuery } from "gatsby";
-// Load
-require("./static/fonts/fonts")
+// Load fonts
+require("../../static/fonts/fonts")
 const psLayout = require("../../output/PSLayout")
 const mdxProvider = require("../../output/MDXProvider")
 const fetch = typeof window !== "undefined" && window.fetch;

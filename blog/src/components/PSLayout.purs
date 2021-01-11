@@ -83,7 +83,7 @@ mkLayout fetchImpl = do
                 Color.hsl 205.0 1.0 0.80
               , backgroundRight:
                 Color.hsl 250.0 1.0 0.1
-              , ariaLabel: "Toggle Dark and Light mode"
+              , ariaLabel: "Use dark mode"
               }
       header =
         Block.box
@@ -151,22 +151,21 @@ mkLayout fetchImpl = do
                             { padding: Emotion.px 16
                             , css:
                               Emotion.css
-                                { "& > p:first-of-type:first-letter":
+                                { "& > p:first-of-type":
                                   Emotion.nested
                                     $ Emotion.css
-                                        { overflow: Emotion.str "visible"
-                                        , display: Emotion.inlineBlock
-                                        , float: Emotion.str "left"
-                                        , fontSize: Emotion.str "min(calc(var(--s0) * 1 + 8.03vw), var(--s5))"
-                                        , fontFamily: Emotion.str "Cormorant Garamond"
-                                        , lineHeight: Emotion.str "min(calc(var(--s-1) + 2px + 3vw), var(--s3))"
-                                        , marginTop: Emotion.str "min(calc(var(--s-1) + 1.5vw), var(--s2))"
-                                        , marginRight: Emotion.var "--s-2"
-                                        , "&:::selection":
+                                        { minHeight: Emotion.str "min(calc(var(--s-1) + 2px + 3vw), var(--s3))"
+                                        , "&:first-letter":
                                           Emotion.nested
                                             $ Emotion.css
-                                                { color: Emotion.str colour.highlightText
-                                                , background: Emotion.str "green" -- colour.highlight
+                                                { overflow: Emotion.str "visible"
+                                                , display: Emotion.inlineBlock
+                                                , float: Emotion.str "left"
+                                                , fontSize: Emotion.str "min(calc(var(--s0) * 1 + 8.03vw), var(--s5))"
+                                                , fontFamily: Emotion.str "Cormorant Garamond"
+                                                , lineHeight: Emotion.str "min(calc(var(--s-1) + 2px + 3vw), var(--s3))"
+                                                , marginTop: Emotion.str "min(calc(var(--s-1) + 1.5vw), var(--s2))"
+                                                , marginRight: Emotion.var "--s-2"
                                                 }
                                         }
                                 }

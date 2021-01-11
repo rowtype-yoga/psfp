@@ -90,19 +90,19 @@ mkMdxProviderComponent compiler = do
         contentMDX ∷ ReactChildren MDX
         contentMDX = reactChildrenFromArray visibleKids
         paragraph parChildren =
-          E.element M.p
-            ( { layout: M.layout true
-              , css:
+          E.element R.p'
+            ( { css:
                 E.css
                   { fontFamily: E.str "'Cormorant Garamond', Comic Sans MS, serif"
                   , fontSize: E.str "min(calc(var(--s-1) + 2.4vw), var(--s1))"
                   , fontWeight: E.str "400"
                   , lineHeight: E.var "--line-height-small"
-                  , "-msHyphens": E.str "auto"
-                  , "-webkitHyphens": E.str "auto"
+                  , "MsHyphens": E.str "auto"
+                  , "WebkitHyphens": E.str "auto"
                   , hyphens: E.str "auto"
                   , overflow: E.str "hidden"
                   , fontVariantLigatures: E.str "common-ligatures"
+                  , textAlign: E.str "justify"
                   , fontFeatureSettings: E.str $ """ "kern" 1, "liga" 1, "dlig" 1, "hlig" 1, "swsh" 1, "calt" 1, "case" 1 """
                   , "& > a":
                     E.nested
@@ -120,18 +120,6 @@ mkMdxProviderComponent compiler = do
           { "Sc":
             \(props ∷ { children ∷ String }) ->
               smallCaps props.children
-          , h1:
-            \(props ∷ { | M.MotionProps Props_h1 }) ->
-              React.element M.h1 (props { layout = M.layout true })
-          , h2:
-            \(props ∷ { | M.MotionProps Props_h2 }) ->
-              React.element M.h2 (props { layout = M.layout true })
-          , h3:
-            \(props ∷ { | M.MotionProps Props_h3 }) ->
-              React.element M.h3 (props { layout = M.layout true })
-          , h4:
-            \(props ∷ { | M.MotionProps Props_h4 }) ->
-              React.element M.h4 (props { layout = M.layout true })
           , hr: (const $ R.hr {})
           , p:
             \(props ∷ { children ∷ Array JSX }) ->
