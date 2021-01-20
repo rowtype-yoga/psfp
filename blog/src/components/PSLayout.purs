@@ -21,7 +21,7 @@ import Yoga.Block.Container as Container
 import Yoga.Block.Container.Style (DarkOrLightMode(..), colour)
 import Yoga.Block.Icon.SVG as Icon
 import Yoga.Block.Internal (_0)
-import Yoga.Block.Modal as Modal
+import Yoga.Block.Molecule.Modal as Modal
 
 type SiteQueryResult =
   { siteMetadata ∷
@@ -154,7 +154,7 @@ mkLayout fetchImpl = do
                                 { "& > p:first-of-type":
                                   Emotion.nested
                                     $ Emotion.css
-                                        { minHeight: Emotion.str "min(calc(var(--s-1) + 2px + 3vw), var(--s3))"
+                                        { minHeight: Emotion.str "min(calc(var(--s3) + 3.0vw),var(--s5))"
                                         , "&:first-letter":
                                           Emotion.nested
                                             $ Emotion.css

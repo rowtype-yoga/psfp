@@ -20,21 +20,54 @@ default ∷
   { title ∷ String
   }
 default =
-  { title: "Page/Landing"
+  { title: "Page/GenericMDX"
   }
 
-fetch ∷ M.Fetch
-fetch = M.fetch windowFetch
+randomPage ∷ Effect JSX
+randomPage = do
+  mdxProvider <- mkLiveMdxProviderComponent windowFetch
+  fakeMdxProvider <- mkFakeMdxProvider
+  layout <- mkLayout windowFetch
+  let
+    mkCompo =
+      reactComponent "Landing Page Story" \{} -> React.do
+        mdx /\ setMdx <- React.useState' []
+        useAff unit do
+          mdxCode <- compileMDX example
+          liftEffect $ setMdx mdxCode
+        pure
+          $ React.element layout
+              { children:
+                reactChildrenFromArray mdx
+              , mdxProviderComponent: mdxProvider
+              , siteInfo:
+                { siteMetadata:
+                  { menuLinks: []
+                  , title: "Rowtype Yoga"
+                  }
+                }
+              }
+  compo <- mkCompo
+  pure $ React.element compo {}
+  where
+  mkFakeMdxProvider ∷ Effect (ReactComponent MdxProviderProps)
+  mkFakeMdxProvider =
+    reactComponentWithChildren "Fake MDX Provider" \{ children } -> React.do
+      pure
+        $ fragment (unsafeCoerce children)
 
-compileMDX ∷ String -> Aff (Array MDX)
-compileMDX body = do
-  res <- fetch (M.URL "/mdx") { method: M.postMethod, body }
-  txt <- M.text res
-  pure $ renderWithReact txt
+  fetch ∷ M.Fetch
+  fetch = M.fetch windowFetch
 
-example ∷ String
-example =
-  """
+  compileMDX ∷ String -> Aff (Array MDX)
+  compileMDX body = do
+    res <- fetch (M.URL "/mdx") { method: M.postMethod, body }
+    txt <- M.text res
+    pure $ renderWithReact txt
+
+  example ∷ String
+  example =
+    """
 # Monad
 T<Sc>ccording to [Hippolytus](https://en.wikipedia.org/wiki/Hippolytus_of_Rome "Hippolytus of Rome")</Sc>, the worldview was inspired by the [Pythagoreans](https://en.wikipedia.org/wiki/Pythagoreanism "Pythagoreanism"), who called the first thing that came into existence the "monad", which begat (bore) the [dyad](https://en.wikipedia.org/wiki/Dyad_(Greek_philosophy) "Dyad (Greek philosophy)") (from the Greek word for two), which begat the [numbers](https://en.wikipedia.org/wiki/Number "Number"), which begat the [point](https://en.wikipedia.org/wiki/Point_(geometry) "Point (geometry)"), begetting [lines](https://en.wikipedia.org/wiki/Line_(geometry) "Line (geometry)") or [finiteness](https://en.wiktionary.org/wiki/finite "wikt:finite"), etc.<sup>[[2]](https://en.wikipedia.org/wiki/Monad_(philosophy)#cite_note-2)</sup> It meant [divinity](https://en.wikipedia.org/wiki/Divinity "Divinity"), the first being, or the totality of all beings, referring in [cosmogony](https://en.wikipedia.org/wiki/Cosmogony "Cosmogony") (creation theories) variously to source acting alone and/or an indivisible origin and [equivalent comparators](https://en.wikipedia.org/wiki/Abstraction_(philosophy) "Abstraction (philosophy)").^[[3]](https://en.wikipedia.org/wiki/Monad_(philosophy)#cite_note-3)
 
@@ -83,36 +116,3 @@ This is a quote
 > Don't quote me on that
 
 """
-
-landingPage ∷ Effect JSX
-landingPage = do
-  mdxProvider <- mkLiveMdxProviderComponent windowFetch
-  fakeMdxProvider <- mkFakeMdxProvider
-  layout <- mkLayout windowFetch
-  let
-    mkCompo =
-      reactComponent "Landing Page Story" \{} -> React.do
-        mdx /\ setMdx <- React.useState' []
-        useAff unit do
-          mdxCode <- compileMDX example
-          liftEffect $ setMdx mdxCode
-        pure
-          $ React.element layout
-              { children:
-                reactChildrenFromArray mdx
-              , mdxProviderComponent: mdxProvider
-              , siteInfo:
-                { siteMetadata:
-                  { menuLinks: []
-                  , title: "Page"
-                  }
-                }
-              }
-  compo <- mkCompo
-  pure $ React.element compo {}
-  where
-  mkFakeMdxProvider ∷ Effect (ReactComponent MdxProviderProps)
-  mkFakeMdxProvider =
-    reactComponentWithChildren "Fake MDX Provider" \{ children } -> React.do
-      pure
-        $ fragment (unsafeCoerce children)
