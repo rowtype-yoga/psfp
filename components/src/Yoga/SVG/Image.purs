@@ -1,10 +1,7 @@
 module Yoga.SVG.Image where
 
 import Prelude
-
-import Color (toHexString)
 import Data.Array (elem, foldl, head, intercalate, snoc, uncons, zip, (:))
-import Data.Array.NonEmpty as NEA
 import Data.Int (round, toNumber)
 import Data.Maybe (Maybe(..), maybe)
 import Data.String (codePointFromChar)
@@ -12,114 +9,136 @@ import Data.String as String
 import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Unsafe (unsafePerformEffect)
-import JSS (jssClasses)
 import Random.PseudoRandom (mkSeed, randomRs)
 import React.Basic (JSX, element)
 import React.Basic.DOM (unsafeCreateDOMComponent)
 import React.Basic.DOM as HTML
 import React.Basic.DOM.SVG as SVG
+import React.Basic.Emotion as E
 import React.Basic.Hooks (ReactComponent)
 import React.Basic.Hooks as React
+import Yoga.Block.Container.Style (colour)
 import Yoga.DOM.Hook (useBoundingBox)
 import Yoga.SVG.Icon (Raw)
 import Yoga.Scroll.Hook (useScrollYPosition)
-import Yoga.Theme.Styles (makeStylesJSS, useTheme)
-import Yoga.Theme.Types (CSSTheme)
 
 foreign import landingPageDarkRaw ∷ ∀ r. Raw r
 
 foreign import landingPageLightRaw ∷ ∀ r. Raw r
 
+animatedCursor =
+  E.keyframes -- [TODO] how?
+    { "0%": E.css { opacity: E.str "0.0" }
+    , "50%": E.css { opacity: E.str "1.0" }
+    }
+
+movingCloud1 =
+  E.keyframes
+    { "0%": E.css { transform: E.str "translate3d(-140%, 4%, 0)" }
+    , "100%": E.css { transform: E.str "translate3d(70%, -4%, 0)" }
+    }
+
+movingCloud2 =
+  E.keyframes
+    { "0%": E.css { transform: E.str "translate3d(-10%, 0%, 0)" }
+    , "100%": E.css { transform: E.str "translate3d(10%, 0%, 0)" }
+    }
+
+twinkle =
+  E.keyframes
+    { "0%": E.css { fill: E.str "rgba(250, 250, 250, 0.2)" }
+    , "50%": E.css { fill: E.str "rgba(250, 250, 250, 0.7)" }
+    , "70%": E.css { fill: E.str "rgba(250, 250, 250, 0.4)" }
+    , "100%": E.css { fill: E.str "rgba(250, 250, 250, 1.0)" }
+    }
+
+twinkleFast =
+  E.keyframes
+    { "0%": E.css { fill: E.str "rgba(250, 250, 250, 0.7)" }
+    , "100%": E.css { fill: E.str "rgba(250, 250, 250, 0.78)" }
+    }
+
+rotateStars =
+  E.keyframes
+    { "0%": E.css { transform: E.str "rotate(0deg) scale(1,1)" }
+    , "100%": E.css { transform: E.str "rotate(1deg) scale(1.01, 1.01)" }
+    }
+
+mkClasses theme =
+  { laptopBackground:
+    E.css
+      { fill: E.str colour.background
+      }
+  , lightEllipsis:
+    E.css
+      { cx: E.str if theme.isLight then "721" else "175"
+      , cy: E.str if theme.isLight then "355" else "310"
+      , rx: E.str if theme.isLight then "647" else "330"
+      , ry: E.str if theme.isLight then "310" else "252"
+      }
+  , laptopBody:
+    E.css
+      { fill: E.str if theme.isLight then "url(#_Linear9)" else "url(#_Linear12)"
+      }
+  , screenText:
+    E.css
+      { fontFamily: E.var "--font-mono"
+      , fontSize: E.str "0.85em"
+      , fill: E.str colour.text
+      }
+  , keyword: E.css { fill: E.str "green" }
+  , typeName: E.css { fill: E.str "rebeccapurple" }
+  , cursor:
+    E.css
+      { animation: E.str "$animatedCursor 0.5s linear infinite"
+      , animationDirection: E.str "alternate"
+      }
+  , movingCloud1:
+    E.css
+      { animation: E.str "$movingCloud1 200s linear infinite"
+      , animationDelay: E.str "-150s"
+      }
+  , movingCloud2:
+    E.css
+      { animation: E.str "$movingCloud2 120s linear infinite"
+      , animationDirection: E.str "alternate"
+      }
+  , movingCloud3:
+    E.css
+      { animation: E.str "$movingCloud2 120s linear infinite"
+      , animationDelay: E.str "-120s"
+      , animationDirection: E.str "alternate"
+      }
+  , twinklingStar1:
+    E.css
+      { animation: E.str "$twinkleFast 0.2s ease-in-out infinite"
+      , animationDirection: E.str "alternate"
+      }
+  , twinklingStar2:
+    E.css
+      { animation: E.str "$twinkle 8s ease-in-out infinite"
+      , animationDelay: E.str "4s"
+      , animationDirection: E.str "alternate"
+      }
+  , twinklingStar3:
+    E.css
+      { animation: E.str "$twinkle 4s ease-in-out infinite"
+      , animationDelay: E.str "3s"
+      , animationDirection: E.str "alternate"
+      }
+  , stars:
+    E.css
+      { animation: E.str "$rotateStars 30s linear infinite"
+      , transformOrigin: E.str "top center"
+      , animationDirection: E.str "alternate"
+      }
+  }
+
 mkLandingPageBackground ∷ Effect (ReactComponent { className ∷ String })
 mkLandingPageBackground = do
-  useStyles <-
-    makeStylesJSS
-      $ jssClasses \(theme ∷ CSSTheme) ->
-          { laptopBackground:
-            { fill: theme.backgroundColour # toHexString
-            }
-          , lightEllipsis:
-            { cx: if theme.isLight then "721" else "175"
-            , cy: if theme.isLight then "355" else "310"
-            , rx: if theme.isLight then "647" else "330"
-            , ry: if theme.isLight then "310" else "252"
-            }
-          , laptopBody:
-            { fill: if theme.isLight then "url(#_Linear9)" else "url(#_Linear12)"
-            }
-          , screenText:
-            { fontFamily: NEA.head theme.codeFontFamily
-            , fontSize: "0.85em"
-            , fill: theme.textColour # toHexString
-            }
-          , keyword: { fill: theme.green # toHexString }
-          , typeName: { fill: theme.purple # toHexString }
-          , "@keyframes animatedCursor":
-            { "0%": { opacity: "0.0" }
-            , "50%": { opacity: "1.0" }
-            }
-          , cursor:
-            { animation: "$animatedCursor 0.5s linear infinite"
-            , animationDirection: "alternate"
-            }
-          , "@keyframes movingCloud1":
-            { "0%": { transform: "translate3d(-140%, 4%, 0)" }
-            , "100%": { transform: "translate3d(70%, -4%, 0)" }
-            }
-          , movingCloud1:
-            { animation: "$movingCloud1 200s linear infinite"
-            , animationDelay: "-150s"
-            }
-          , "@keyframes movingCloud2":
-            { "0%": { transform: "translate3d(-10%, 0%, 0)" }
-            , "100%": { transform: "translate3d(10%, 0%, 0)" }
-            }
-          , movingCloud2:
-            { animation: "$movingCloud2 120s linear infinite"
-            , animationDirection: "alternate"
-            }
-          , movingCloud3:
-            { animation: "$movingCloud2 120s linear infinite"
-            , animationDelay: "-120s"
-            , animationDirection: "alternate"
-            }
-          , "@keyframes twinkle":
-            { "0%": { fill: "rgba(250, 250, 250, 0.2)" }
-            , "50%": { fill: "rgba(250, 250, 250, 0.7)" }
-            , "70%": { fill: "rgba(250, 250, 250, 0.4)" }
-            , "100%": { fill: "rgba(250, 250, 250, 1.0)" }
-            }
-          , "@keyframes twinkleFast":
-            { "0%": { fill: "rgba(250, 250, 250, 0.7)" }
-            , "100%": { fill: "rgba(250, 250, 250, 0.78)" }
-            }
-          , twinklingStar1:
-            { animation: "$twinkleFast 0.2s ease-in-out infinite"
-            , animationDirection: "alternate"
-            }
-          , twinklingStar2:
-            { animation: "$twinkle 8s ease-in-out infinite"
-            , animationDelay: "4s"
-            , animationDirection: "alternate"
-            }
-          , twinklingStar3:
-            { animation: "$twinkle 4s ease-in-out infinite"
-            , animationDelay: "3s"
-            , animationDirection: "alternate"
-            }
-          , "@keyframes rotateStars":
-            { "0%": { transform: "rotate(0deg) scale(1,1)" }
-            , "100%": { transform: "rotate(1deg) scale(1.01, 1.01)" }
-            }
-          , stars:
-            { animation: "$rotateStars 30s linear infinite"
-            , transformOrigin: "top center"
-            , animationDirection: "alternate"
-            }
-          }
   React.reactComponent "LandingPageBackground" \{ className } -> React.do
-    theme <- useTheme
-    classes <- useStyles {}
+    let theme = { isLight: true } -- [TODO]
+    let classes = mkClasses theme
     scrollY <- useScrollYPosition
     bb /\ ref <- useBoundingBox
     let
@@ -157,37 +176,42 @@ mkLandingPageBackground = do
                       { d: "M800.828 448.051V-3.513H-3.028v451.564h803.856z"
                       , fill: "url(#_Linear2)"
                       }
-                  , SVG.ellipse
-                      { className: classes.lightEllipsis
+                  , E.element SVG.ellipse'
+                      { className: "light-ellipsis"
+                      , css: classes.lightEllipsis
                       , fill: "url(#_Radial3)"
                       }
                   , stars classes.stars classes
                   -- bgcloud
-                  , SVG.path
+                  , E.element SVG.path'
                       { d: "M610.291 177.316c-35.879-.428-84.67-.691-138.392-.689-38.684.002-74.811.141-105.402.38-49.14-2.745-80.877-9.954-80.877-14.718 0-1.333 2.655.335 7.294-.896 96.772-.175 171.302-1.213 171.302-2.464 0-1.107-59.462-3.372-140.106-3.687 38.487-2.059 102.543-4.972 173.823-4.972 11.996 0 23.761.07 35.216.206 20.76-4.638 60.945-2.784 107.07-2.784 36.08 0 68.525-.075 90.882 2.983 32.491.899 72.142-1.186 114.922-.379 38.68.729 74.805 1.273 105.395 1.613 49.101 3.673 80.599 8.516 80.54 13.279-.016 1.334-2.504 2.58-7.158 3.723-96.763-1.654-171.297-2.024-171.312-.774-.013 1.108 58.473 3.15 139.105 4.989-38.514 3.085-101.653 4.38-172.925 3.033-11.995-.227-23.757-.52-35.209-.872-20.815 4.245-61.034 6.631-107.154 5.759-24.754-.468-47.786-1.809-67.014-3.73z"
                       , fill: if theme.isLight then "#ddf0fb" else "#240c3c"
-                      , className: classes.movingCloud1
+                      , css: classes.movingCloud1
+                      , className: "moving-cloud-1"
                       , transform: "translate(0 " <> show (scrolled * 20.0) <> ")"
                       }
                   -- bgcloud
-                  , SVG.path
+                  , E.element SVG.path'
                       { d: "M609.299 171.607c-35.88-.338-84.67-.545-138.392-.543-38.684.001-74.812.111-105.402.299-49.141-2.166-80.694-5.519-80.694-9.279 0-1.052 2.472-2.073 7.111-3.045 96.772-.137 171.302-.957 171.302-1.944-.001-.874-58.506-1.614-139.15-1.862 38.471-3.009 101.587-4.973 172.867-4.973 11.996 0 23.761.055 35.216.162 20.76-3.66 60.945-6.143 107.07-6.143 36.08 0 68.525 1.519 90.882 3.933 32.491.709 72.142 1.432 114.922 2.069 38.68.575 74.805 1.005 105.395 1.272 49.101 2.9 80.598 6.722 80.54 10.482-.017 1.052-2.505 2.036-7.158 2.938-96.763-1.305-171.297-1.597-171.312-.611-.014.875 58.473 2.486 139.104 3.938-38.514 2.435-101.653 3.457-172.924 2.394a3771.84 3771.84 0 01-35.21-.688c-20.814 3.35-61.033 5.234-107.153 4.545-24.754-.369-47.786-1.428-67.014-2.944z"
                       , fill: if theme.isLight then "#d8effd" else "#120b38"
-                      , className: classes.movingCloud1
+                      , css: classes.movingCloud1
+                      , className: "moving-cloud-1"
                       , transform: "translate(0 " <> show (scrolled * 20.0) <> ")"
                       }
                   -- rightcloud
-                  , SVG.path
+                  , E.element SVG.path'
                       { d: "M684.234 222.269c-12.108-1.642-29.721-2.832-29.76-5.218-.063-3.861 34.226-4.225 76.6-3.504 42.375.721 75.9-2.707 76.956 1.008 2.476 8.704-12.549 8.552-32.56 10.141-12.403-.58-28.24.216-44.434.479-16.193.263-35.197-1.331-46.802-2.906z"
                       , fill: if theme.isLight then "#d8effd" else "url(#_Linear4)"
-                      , className: classes.movingCloud2
+                      , css: classes.movingCloud2
+                      , className: "moving-cloud-2"
                       , transform: "translate(0 " <> show (scrolled * 20.0) <> ")"
                       }
                   -- leftcloud
-                  , SVG.path
+                  , E.element SVG.path'
                       { d: "M130.064 213.821c42.381 0 76.789.237 76.789 4.224 0 3.986-14.408 4.223-56.789 4.223-42.38 0-96.788.208-96.788-4.223s34.408-4.224 76.788-4.224z"
                       , fill: if theme.isLight then "#d8effd" else "#a7847d"
-                      , className: classes.movingCloud3
+                      , css: classes.movingCloud3
+                      , className: "moving-cloud-3"
                       , transform: "translate(0 " <> show (scrolled * 20.0) <> ")"
                       }
                   , mountains theme.isLight scrolled
@@ -195,7 +219,7 @@ mkLandingPageBackground = do
                   , buildings theme.isLight scrolled
                   -- bar
                   , SVG.path
-                      { fill: theme.backgroundColour # toHexString
+                      { fill: colour.background
                       , d: "M-3.028 431.298h826.844v20.006H-3.028z"
                       }
                   -- laptop
@@ -208,16 +232,16 @@ mkLandingPageBackground = do
 
 laptop ∷
   ∀ r.
-  { cursor ∷ String
-  , keyword ∷ String
-  , laptopBackground ∷ String
-  , laptopBody ∷ String
-  , screenText ∷ String
-  , typeName ∷ String
+  { cursor ∷ E.Style
+  , keyword ∷ E.Style
+  , laptopBackground ∷ E.Style
+  , laptopBody ∷ E.Style
+  , screenText ∷ E.Style
+  , typeName ∷ E.Style
   | r
   } ->
   Number -> JSX
-laptop classes scrolled =
+laptop styles scrolled =
   SVG.g
     { children:
       [ SVG.path
@@ -228,14 +252,16 @@ laptop classes scrolled =
           { d: "M606.064 273.603c0-6.261-5.076-11.337-11.337-11.337H399.673c-6.261 0-11.337 5.076-11.337 11.337v151.521a5.001 5.001 0 005 5h207.728a5.004 5.004 0 003.536-1.464 5.004 5.004 0 001.464-3.536V273.603z"
           , fill: "#657390"
           }
-      , SVG.path
+      , E.element SVG.path'
           { d: "M599.193 275.905a5.528 5.528 0 00-5.526-5.526H400.604a5.528 5.528 0 00-5.526 5.526v141.039a5.528 5.528 0 005.526 5.526h193.063a5.528 5.528 0 005.526-5.526V275.905z"
           , fill: "#130c2b"
-          , className: classes.laptopBackground
+          , className: "laptop-background"
+          , css: styles.laptopBackground
           }
-      , SVG.path
+      , E.element SVG.path'
           { d: "M655.04 427.228a.458.458 0 00-.457-.457H340.83v4.975a5 5 0 005 5h304.21a5 5 0 005-5v-4.518z"
-          , className: classes.laptopBody
+          , className: "laptop-body"
+          , css: styles.laptopBody
           }
       , SVG.circle
           { cx: "497.178"
@@ -256,12 +282,13 @@ laptop classes scrolled =
           , fill: "#102708"
           , fillOpacity: ".45"
           }
-      , SVG.text
+      , E.element SVG.text'
           { x: "407"
           , y: "290"
-          , className: classes.screenText
+          , css: styles.screenText
+          , className: "screen-text"
           , children:
-            textToTspans classes scrolled 407.0
+            textToTspans styles scrolled 407.0
               $ intercalate "\n"
                   [ "hoistJoker "
                   , "\t∷  ∀ f g a b"
@@ -374,13 +401,13 @@ mountains isLight scrolled =
 
 textToTspans ∷
   ∀ r.
-  { cursor ∷ String
-  , keyword ∷ String
-  , typeName ∷ String
+  { cursor ∷ E.Style
+  , keyword ∷ E.Style
+  , typeName ∷ E.Style
   | r
   } ->
   Number -> Number -> String -> Array JSX
-textToTspans classes scrolled x str = (foldl toTspan { distance: 0.0, acc: [] } lines).acc <> [ cursor ]
+textToTspans styles scrolled x str = (foldl toTspan { distance: 0.0, acc: [] } lines).acc <> [ cursor ]
   where
   toTspan { distance, acc } line = case uncons (words line) of
     Nothing -> { distance: distance + 1.2, acc }
@@ -389,7 +416,6 @@ textToTspans classes scrolled x str = (foldl toTspan { distance: 0.0, acc: [] } 
       let
         newElems ∷ Array JSX
         newElems = _.spans $ foldl mkNewElems { prefix: " ", spans: [] } tail
-
         mkNewElems { prefix, spans } = case _ of
           "" -> { prefix: prefix <> " ", spans }
           word ->
@@ -397,40 +423,40 @@ textToTspans classes scrolled x str = (foldl toTspan { distance: 0.0, acc: [] } 
             , spans:
               spans
                 `snoc`
-                  SVG.tspan
+                  E.element SVG.tspan'
                     { children: [ HTML.text $ prefix <> word ]
-                    , className: classNameForWord word
+                    , className: "word"
+                    , css: styleForWord word
                     }
             }
-
         first =
           SVG.tspan
             { x: show x
             , dy: show distance <> "em"
             , children: [ HTML.text head ]
             }
-
         pimped ∷ Array JSX
         pimped = first : newElems
       { distance: 1.2, acc: acc <> pimped }
-  classNameForWord = case _ of
+
+  styleForWord = case _ of
     keyword
-      | elem keyword keywords -> classes.keyword
+      | elem keyword keywords -> styles.keyword
     typeName
-      | isTypeName typeName -> classes.typeName
-    other -> ""
+      | isTypeName typeName -> styles.typeName
+    other -> mempty
+
   isTypeName s =
     let
       firstLetter = String.take 1 s
-
       inRange c1 c2 = between (codePointFromChar c1) (codePointFromChar c2)
-
       isLetter =
         String.toCodePointArray
           >>> head
           >>> maybe false (inRange 'a' 'z' || inRange 'A' 'Z')
     in
       String.toUpper firstLetter == firstLetter && isLetter firstLetter
+
   keywords =
     [ "module"
     , "∷"
@@ -454,21 +480,28 @@ textToTspans classes scrolled x str = (foldl toTspan { distance: 0.0, acc: [] } 
     , "else"
     , "import"
     ]
+
   words line = split
     where
     split = String.split (String.Pattern " ") line
+
   lines = String.split (String.Pattern "\n") scrolledString
+
   scrolledString = String.take charactersToTake str
     where
     doneAfterXPercent = 0.5 -- [WARN] Don't set to 0
+
     charactersToTake = round $ scrolled * (1.0 / doneAfterXPercent) * len
+
     len = toNumber $ String.length str
+
   cursor =
-    SVG.tspan
+    E.element SVG.tspan'
       { dx: "0"
       , dy: "0"
       , children: [ HTML.text "█" ]
-      , className: classes.cursor
+      , css: styles.cursor
+      , className: "landing-page-cursor"
       , id: "landing-page-cursor"
       }
 
@@ -894,43 +927,38 @@ darkDefs =
 
 infixr 8 zip as <%>
 
-stars ∷ ∀ css. String -> { twinklingStar1 ∷ String, twinklingStar2 ∷ String, twinklingStar3 ∷ String | css } -> JSX
-stars className classes =
+stars ∷ ∀ css. E.Style -> { twinklingStar1 ∷ E.Style, twinklingStar2 ∷ E.Style, twinklingStar3 ∷ E.Style | css } -> JSX
+stars starStyle allStyles =
   let
     n = 30
-
     xs = randomRs 0.0 800.0 n $ mkSeed 84
-
     ys = randomRs (-20.0) 200.0 n $ mkSeed 4398
-
     radiuses = randomRs 0.1 1.3 n (mkSeed 15)
-
     opacities = randomRs 0.5 0.9 n (mkSeed 92)
-
-    classNames =
+    styles =
       randomRs 1 50 n (mkSeed 3)
         <#> case _ of
-            1 -> classes.twinklingStar1
-            2 -> classes.twinklingStar2
-            3 -> classes.twinklingStar2
-            _ -> ""
-
-    zipped = xs <%> ys <%> radiuses <%> classNames <%> opacities
-
+            1 -> allStyles.twinklingStar1
+            2 -> allStyles.twinklingStar2
+            3 -> allStyles.twinklingStar2
+            _ -> mempty
+    zipped = xs <%> ys <%> radiuses <%> styles <%> opacities
     children = do
       cx /\ cy /\ r /\ className' /\ opacity <- zipped
       pure
-        $ SVG.circle
+        $ E.element SVG.circle'
             { cx: show cx
             , cy: show cy
             , r: show r
             , fill: "#eeefff"
-            , className: className'
+            , css: className'
+            , className: "starry" -- [TODO]
             , opacity: show (opacity - cy / 200.0)
             }
   in
-    SVG.g
+    E.element SVG.g'
       { fillOpacity: ".67"
       , children
-      , className
+      , css: starStyle
+      , className: "star-g"
       }
