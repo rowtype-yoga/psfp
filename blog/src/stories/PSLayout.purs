@@ -5,12 +5,13 @@ import Data.Tuple.Nested ((/\))
 import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Class (liftEffect)
+import Landing (mkLandingPage)
 import MDX (MDX, renderWithReact)
 import MDXProvider (MdxProviderProps, mkLiveMdxProviderComponent)
 import Milkis as M
 import Milkis.Impl.Window (windowFetch)
 import PSLayout (mkLayout)
-import React.Basic (JSX, ReactComponent, fragment)
+import React.Basic (JSX, ReactComponent, element, fragment)
 import React.Basic.Hooks (reactChildrenFromArray, reactComponent, reactComponentWithChildren)
 import React.Basic.Hooks as React
 import React.Basic.Hooks.Aff (useAff)
@@ -22,6 +23,11 @@ default ∷
 default =
   { title: "Page/GenericMDX"
   }
+
+landingPage ∷ Effect JSX
+landingPage = do
+  lp <- mkLandingPage
+  pure (element lp {})
 
 randomPage ∷ Effect JSX
 randomPage = do
