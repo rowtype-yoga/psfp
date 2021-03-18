@@ -1,6 +1,6 @@
 module Main where
 
-import Grimoire
+import Basics
 
 main :: Effect Unit
 main = log "Abracadabra"
