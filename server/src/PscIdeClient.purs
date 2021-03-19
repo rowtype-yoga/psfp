@@ -1,6 +1,8 @@
 module PscIdeClient where
 
 import Prelude
+import Data.Argonaut.Encode
+import Data.Argonaut.Core
 import Data.Either (Either(..), either)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype, un, unwrap)
@@ -19,7 +21,6 @@ import Node.FS.Aff (writeTextFile)
 import Node.Net.Socket (Socket)
 import Node.Net.Socket as Socket
 import Playground.Playground (Folder(..))
-import Simple.JSON (writeJSON)
 
 type BuildCommand =
   { command ∷ String
@@ -58,15 +59,15 @@ startIdeServer folder port = do
   { error, stderr, stdout } <- execCommand folder "npx spago build"
   stderrStr <- liftEffect $ Buf.toString UTF8 stderr
   log $ "Built: " <> stderrStr
-  log $ "Loading modules" <> infoString
+  log $ "Loading modules: " <> infoString
   loadPscIde folder port
   pure cp
   where
-    infoString =
-      " in folder "
-        <> un Folder folder
-        <> " on port "
-        <> show port
+  infoString =
+    " in folder "
+      <> un Folder folder
+      <> " on port "
+      <> show port
 
 execCommand ∷ Folder -> String -> Aff CP.ExecResult
 execCommand folder command =
@@ -116,13 +117,13 @@ loadPscIde folder port = do
     -- maybe timeout?
     Socket.onError socket (affCb <<< Left)
     void
-      $ Socket.writeString socket (writeJSON loadCommand <> "\n") UTF8 (affCb (Right unit))
+      $ Socket.writeString socket ((stringify <<< encodeJson) loadCommand <> "\n") UTF8 (affCb (Right unit))
     liftEffect
       $ Socket.onClose socket case _ of
           true -> mempty -- should be covered in onError
           false -> do
             affCb (Right unit)
-    let command = writeJSON buildCommand <> "\n"
+    let command = (stringify <<< encodeJson) buildCommand <> "\n"
     Socket.onReady socket (void $ Socket.writeString socket command UTF8 mempty)
     pure (closeSocketCanceller socket)
 
@@ -143,7 +144,7 @@ compileCode code (PscIdeConnection { port, folder, serverProcessRef }) = do
         log $ "Enough data on " <> show port <> " ending socket\n"
         void $ Socket.endString socket "" UTF8 mempty
         affCb (Right newStr)
-    let command = writeJSON buildCommand
+    let command = (stringify <<< encodeJson) buildCommand
     Socket.onReady socket do
       log $ "Socket " <> show port <> " ready"
       void $ Socket.writeString socket (command <> "\n") UTF8 mempty

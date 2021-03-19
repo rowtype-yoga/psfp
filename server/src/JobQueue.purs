@@ -4,7 +4,7 @@ import Prelude
 import Data.Array (delete, filter, find, length, snoc, zip)
 import Data.Foldable (for_)
 import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
+import Data.Show.Generic (genericShow)
 import Data.JSDate (JSDate)
 import Data.JSDate as JSDate
 import Data.Maybe (Maybe(..))
@@ -12,6 +12,7 @@ import Data.Newtype (class Newtype, over, un)
 import Data.Time.Duration (Milliseconds(..))
 import Data.Tuple.Nested ((/\))
 import Data.UUID (UUID, genUUID)
+import Data.UUID as UUID
 import Effect (Effect)
 import Effect.Aff (Aff, Fiber, delay, error, killFiber, launchAff, launchAff_, parallel, sequential)
 import Effect.Class (class MonadEffect, liftEffect)

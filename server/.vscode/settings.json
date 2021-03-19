@@ -1,21 +1,23 @@
 {
-  "editor.formatOnSave": true,
-  "regreplace.commands": [
-    {
-        "name": "replace double colon with unicode version",
-        "match": "\\.purs?$",
-        "regexp": " ::(\\s)",
-        "global": true,
-        "replace": " ∷$1"
-    },
-    {
-        "name": "replace forall with unicode version",
-        "match": "\\.purs?$",
-        "regexp": "forall(\\s)",
-        "global": true,
-        "replace": "∀$1"
-    },
-],
-"purescript.buildCommand": "npx spago build --purs-args '--json-errors'",
-"vscode_custom_css.imports": ["file:///Users/mark/.vscode-oss/extensions/webrender.synthwave-x-fluoromachine-0.0.9/synthwave-x-fluoromachine.css"]
+    "editor.formatOnSave": false,
+    "regreplace.commands": [
+        {
+            "name": "replace double colon with unicode version",
+            "match": "\\.purs?$",
+            "regexp": " ::(\\s)",
+            "global": true,
+            "replace": " ∷$1"
+        },
+        {
+            "name": "replace forall with unicode version",
+            "match": "\\.purs?$",
+            "regexp": "forall(\\s)",
+            "global": true,
+            "replace": "∀$1"
+        },
+    ],
+    "purescript.buildCommand": "npx spago build --purs-args '--json-errors'",
+    "vscode_custom_css.imports": [
+        "file:///Users/mark/.vscode-oss/extensions/webrender.synthwave-x-fluoromachine-0.0.9/synthwave-x-fluoromachine.css"
+    ]
 }

@@ -21,7 +21,7 @@
     "uuid": "^7.0.2"
   },
   "devDependencies": {
-    "purescript": "^0.13.6",
-    "spago": "^0.14.0"
+    "purescript": "^0.14.0",
+    "spago": "^0.19.1"
   }
 }

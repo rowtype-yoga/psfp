@@ -1,21 +1,33 @@
 module Main where
 
 import Prelude
+
 import Auth.Handler (authHandler, readAllowedTokens)
 import Auth.Types (Token(..))
 import Control.Parallel (parOneOf, parTraverse)
+import Data.Argonaut (jsonParser)
+import Data.Argonaut.Core (Json)
+import Data.Argonaut.Core as Json
+import Data.Argonaut.Core as Json
+import Data.Argonaut.Decode (class DecodeJson, decodeJson, printJsonDecodeError)
+import Data.Argonaut.Decode.Class (class DecodeJson)
+import Data.Argonaut.Decode.Decoders (decodeString)
+import Data.Argonaut.Encode (encodeJson)
 import Data.Array (elem, (..))
 import Data.Bifunctor (lmap)
 import Data.Either (Either(..))
+import Data.Either (hush)
 import Data.Int (fromString)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (un)
 import Data.Time.Duration (class Duration, Seconds(..), fromDuration)
+import Data.Traversable (traverse)
 import Effect (Effect)
 import Effect.Aff (Aff, attempt, delay, launchAff_, message)
 import Effect.Aff.Class (liftAff)
 import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Class.Console (info, log)
+import Effect.Exception (Error)
 import Foreign (unsafeToForeign)
 import JobQueue (EnqueueResult(..), NewJob(..), Queue, ResourcePool(..))
 import JobQueue as Q
@@ -38,10 +50,10 @@ import Node.OS (numCpus)
 import Node.Process (lookupEnv)
 import Playground.Playground (Folder(..), copy)
 import PscIdeClient (PscIdeConnection, compileCode, getFolder, mkConnection, execCommand)
-import Shared.Json (readAff)
+import Shared.Json (readAff, readJsonAff)
 import Shared.Models.Body (CompileRequest, RunResult, CompileResult)
 import Shared.Models.Body as Body
-import Simple.JSON (readJSON, read_, write)
+import Unsafe.Coerce (unsafeCoerce)
 
 toBody ∷ ∀ r m. MonadEffect m => { stdout ∷ Buffer, stderr ∷ Buffer | r } -> m RunResult
 toBody result =
@@ -56,7 +68,7 @@ type ErrorWithCode =
   { code ∷ Maybe Int }
 
 asErrorWithCode ∷ ∀ a. a -> Maybe ErrorWithCode
-asErrorWithCode = read_ <<< unsafeToForeign
+asErrorWithCode = unsafeCoerce >>> decodeJson >>> hush
 
 runCode ∷ ∀ d. Duration d => d -> Folder -> Aff (Maybe ExecResult)
 runCode timeout folder =
@@ -68,36 +80,37 @@ runCode timeout folder =
 compileAndRunJob ∷ CompileRequest -> (Handler -> Aff Unit) -> NewJob PscIdeConnection
 compileAndRunJob json handle =
   NewJob \jobId conn -> do
-    stringOrErr <- attempt $ compileCode json.code conn
-    case ((readJSON <$> stringOrErr) ∷ _ _ (_ _ CompileResult)) of
+    stringOrErr ∷ Either Error String <- attempt $ compileCode json.code conn
+    jsonOrErr ∷ Either Error (Either Error CompileResult) <- attempt $ readJsonAff `traverse` stringOrErr
+    case jsonOrErr of
       Left e -> do
         handle $ setStatus 500
         log $ "Aff failed with " <> message e
-        handle $ Response.send $ write {}
+        handle $ Response.send $ encodeJson {}
       Right (Right res)
         | res.resultType == "error" -> do
           handle $ setStatus 422
-          handle $ Response.send $ write res
+          handle $ Response.send $ encodeJson res
       Right (Right res) -> do
         runResult <- runCode timeout (getFolder conn)
         case runResult of
           Nothing -> do
             handle $ setStatus 408
-            handle $ Response.send $ write { error: "Timed out after running for " <> show timeout }
+            handle $ Response.send $ encodeJson { error: "Timed out after running for " <> show timeout }
           Just rr -> do
             resultBody <- toBody rr
-            handle $ Response.send $ write (resultBody ∷ Body.RunResult)
+            handle $ Response.send $ encodeJson (resultBody ∷ Body.RunResult)
       Right (Left errs) -> do
         handle $ setStatus 500
         log $ "Could not decode: " <> show (lmap (const "no way") stringOrErr) <> "\nErrors: " <> show errs
-        handle $ Response.send $ write {}
+        handle $ Response.send $ encodeJson {}
   where
-    timeout = 1.0 # Seconds
+  timeout = 1.0 # Seconds
 
 compileAndRunHandler ∷ Queue PscIdeConnection -> Handler
 compileAndRunHandler queue = do
   body <- getBody'
-  json <- readAff body # liftAff
+  json <- readAff (unsafeCoerce body) # liftAff
   HandlerM \req res next -> do
     let
       handle = unHandler req res next
@@ -108,7 +121,7 @@ compileAndRunHandler queue = do
       QueueFull ->
         handle do
           setStatus 500
-          Response.send $ write { error: "Queue full" }
+          Response.send $ encodeJson { error: "Queue full" }
 
 unHandler ∷ ∀ a. Request -> Response -> Effect Unit -> HandlerM a -> Aff a
 unHandler req res next (HandlerM h) = h req res next
@@ -158,7 +171,7 @@ serverSetup app = do
   let port = maybePortString >>= fromString # fromMaybe 14188
   liftEffect $ (listenHttp app port) \_ -> info $ "psfp server started on port " <> show port
   where
-    makeHttpsOptions = do
-      key <- readTextFile UTF8 "server.key"
-      cert <- readTextFile UTF8 "server.cert"
-      pure { key, cert }
+  makeHttpsOptions = do
+    key <- readTextFile UTF8 "server.key"
+    cert <- readTextFile UTF8 "server.cert"
+    pure { key, cert }

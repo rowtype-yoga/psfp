@@ -1,7 +1,9 @@
 module Auth.Handler where
 
 import Prelude
+
 import Auth.Types (Token(..))
+import Data.Argonaut (encodeJson)
 import Data.Array (elem)
 import Data.JSDate (now, toISOString)
 import Data.Maybe (Maybe(..))
@@ -16,7 +18,6 @@ import Node.Express.Request (getRequestHeader)
 import Node.Express.Response (end, setStatus)
 import Node.Express.Response as Response
 import Node.FS.Aff (appendTextFile, readTextFile)
-import Simple.JSON (write)
 
 readAllowedTokens ∷ Aff (Array Token)
 readAllowedTokens = do
@@ -33,7 +34,7 @@ authHandler authorizedTokens = do
     Nothing -> do
       setStatus 401
       log $ "Denied request without token"
-      Response.send $ write { error: "Jetzt hör'n Sie mir mal zu! Erstens brauch ich ihren Namen!!" }
+      Response.send $ encodeJson { error: "Jetz her'n Sie mir moi zua! Erstens brach i earna Nomen!!" }
       end
     Just token@(Token raw)
       | elem token authorizedTokens -> do
@@ -42,5 +43,5 @@ authHandler authorizedTokens = do
     Just (Token invalid) -> do
       setStatus 403
       log $ "Access denied to " <> invalid
-      Response.send $ write { error: "Ich seh' ja ein das man hier der gläserne Mensch ist." }
+      Response.send $ encodeJson { error: "Ich seh' ja ein, dass man hier der gläserne Mensch ist." }
       end
