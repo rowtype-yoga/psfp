@@ -1,1 +1,0 @@
-exports.windowFetch = window.fetch;

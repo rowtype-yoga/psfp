@@ -2,23 +2,28 @@ module Landing where
 
 import Prelude
 import Data.Foldable (for_)
+import Data.Maybe (Maybe(..))
+import Data.Monoid (power)
 import Data.Nullable (null)
 import Effect (Effect)
 import Effect.Uncurried (runEffectFn1)
 import Icon.Logo (logo)
+import React.Basic (Ref)
 import React.Basic.DOM as R
 import React.Basic.Emotion as E
-import React.Basic.Events (handler_)
+import React.Basic.Events (EventHandler, handler_)
+import React.Basic.Helpers (jsx)
 import React.Basic.Hooks (ReactComponent, reactComponent, readRefMaybe, useRef)
 import React.Basic.Hooks as React
 import Unsafe.Coerce (unsafeCoerce)
 import Web.HTML (window)
 import Web.HTML.HTMLElement (getBoundingClientRect)
 import Web.HTML.HTMLElement as HTMLElement
-import Yoga ((/>), (</*), (</*>), (</>))
+import Yoga ((/>), (</), (</*), (</*>), (</>))
 import Yoga.Block as Block
 import Yoga.Block.Atom.Button.Types as ButtonType
-import Yoga.Block.Container.Style (colour)
+import Yoga.Block.Container.Style (DarkOrLightMode(..), colour)
+import Yoga.Block.Internal (NodeRef)
 import Yoga.SVG.Image (mkLandingPageBackground)
 import Yoga.Scroll.Hook (useScrollYPosition)
 
@@ -79,7 +84,7 @@ classes =
     E.css
       { position: E.str "absolute"
       , maxWidth: E.str "none"
-      , width: E.str "100%"
+      , width: E.str "min(100%, 1200px)"
       , height: E.str "100%"
       }
   }
@@ -90,54 +95,84 @@ mkLandingPage = do
   reactComponent "LandingPage" \{} -> React.do
     ref <- useRef null
     scrollY <- useScrollYPosition
-    pure
-      $ E.element R.div'
+    let
+      themeVariant ∷ DarkOrLightMode
+      themeVariant = DarkMode -- [TODO]
+      backgroundImg =
+        E.element
+          backgroundImage
+          { className: "landing-image"
+          , css: classes.landingImage
+          , themeVariant
+          }
+      button =
+        R.div'
+          </*> { css: classes.actionButton
+            , className: "action-button"
+            , children:
+              [ Block.button
+                  </* { onClick: scrollTo ref
+                    , buttonType: ButtonType.Primary
+                    , css: classes.actualActionButton
+                    , className: "lets-go-btn"
+                    }
+                  /> [ R.text buttonText ]
+              ]
+            }
+      welcomeTitle =
+        R.div'
+          </*> { className: "welcome-text", css: classes.welcomeText, children: [ R.text welcomeText ] }
+      welcomeSubtitle =
+        R.div'
+          </*> { className: "welcome-copy", css: classes.welcomeCopy, children: [ R.text copyText ] }
+      upperBlock =
+        E.element R.div'
           { ref
           , css: classes.landing
           , className: "landing-page"
           , children:
-            [ E.element backgroundImage { className: "landing-image", css: classes.landingImage }
+            [ backgroundImg
             , E.element R.div'
                 { className: "text-layer"
                 , css: classes.textLayer
                 , children:
-                  [ E.element R.div'
-                      { className: "top-bar"
-                      , css: classes.topBar
-                      , children: [ Block.icon </*> { className: "logo", css: E.css { marginTop: E.var "--s0" }, size: E.var "--s3", icon: logo } ]
-                      }
-                  , E.element R.div' { className: "welcome-text", css: classes.welcomeText, children: [ R.text welcomeText ] }
-                  , E.element R.div' { className: "welcome-copy", css: classes.welcomeCopy, children: [ R.text copyText ] }
-                  , E.element R.div'
-                      { css: classes.actionButton
-                      , className: "action-button"
-                      , children:
-                        [ Block.button
-                            </* { onClick:
-                                handler_ do
-                                  maybeNode <- readRefMaybe ref
-                                  for_ (maybeNode >>= HTMLElement.fromNode) \n -> do
-                                    height <- getBoundingClientRect n <#> _.height
-                                    win <- window
-                                    runEffectFn1 ((unsafeCoerce win).scrollTo)
-                                      { top: height, left: 0, behavior: "smooth" }
-                              , buttonType: ButtonType.Primary
-                              , css: classes.actualActionButton
-                              , className: "Heinzer"
-                              }
-                            /> [ R.text buttonText ]
+                  [ R.div'
+                      </*> { className: "top-bar"
+                        , css: classes.topBar
+                        , children: [ Block.icon </*> { className: "logo", css: E.css { marginTop: E.var "--s0" }, size: E.var "--s3", icon: logo } ]
+                        }
+                  , Block.stack
+                      </ {}
+                      /> [ welcomeTitle
+                        , welcomeSubtitle
+                        , button
                         ]
-                      }
                   ]
                 }
             ]
           }
+      textBlock = R.text placeholderText
+      content = Block.stack </ {}
+    pure $ Block.container </> { themeVariant: Just themeVariant, content: content [ upperBlock, textBlock ] }
 
 welcomeText ∷ String
 welcomeText = "Enter the college of Kleisli"
 
 copyText ∷ String
-copyText = "Learn how to tame and harness the compiler, whether you're a λ or a Λ"
+copyText = "Let's go!"
 
 buttonText ∷ String
 buttonText = "I can't wait, let's go!"
+
+placeholderText ∷ String
+placeholderText = "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern. " `power` 20
+
+scrollTo ∷ NodeRef -> EventHandler
+scrollTo ref =
+  handler_ do
+    maybeNode <- readRefMaybe ref
+    for_ (maybeNode >>= HTMLElement.fromNode) \n -> do
+      height <- getBoundingClientRect n <#> _.height
+      win <- window
+      runEffectFn1 ((unsafeCoerce win).scrollTo)
+        { top: height, left: 0, behavior: "smooth" }
