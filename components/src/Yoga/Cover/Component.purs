@@ -1,7 +1,7 @@
 module Yoga.Cover.Component where
 
 import Prelude
-import Data.Array (foldMap)
+import Data.Foldable (foldMap)
 import Data.Array as Array
 import Data.Maybe (Maybe)
 import Effect (Effect)
@@ -12,19 +12,19 @@ import React.Basic.Hooks as React
 import Yoga.Cover.Styles as Cover
 import Yoga.Theme.Styles (makeStylesJSS)
 
-type Props
-  = Record PropsR
+type Props =
+  Record PropsR
 
-type PropsR
-  = OptionalProps ()
+type PropsR =
+  OptionalProps ()
 
-type OptionalProps r
-  = ( header ∷ Maybe JSX
-    , footer ∷ Maybe JSX
-    , kids ∷ Array JSX
-    , className ∷ Maybe String
-    | r
-    )
+type OptionalProps r =
+  ( header ∷ Maybe JSX
+  , footer ∷ Maybe JSX
+  , kids ∷ Array JSX
+  , className ∷ Maybe String
+  | r
+  )
 
 makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do

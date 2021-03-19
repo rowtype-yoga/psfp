@@ -1,8 +1,7 @@
 module Yoga.Cluster.Component where
 
 import Prelude
-
-import Data.Array (foldMap)
+import Data.Foldable (foldMap)
 import Data.Maybe (Maybe)
 import Effect (Effect)
 import React.Basic (JSX)
@@ -13,17 +12,17 @@ import Record.Extra (pick)
 import Yoga.Cluster.Styles as Style
 import Yoga.Theme.Styles (makeStylesJSS)
 
-type Props
-  = Record PropsR
+type Props =
+  Record PropsR
 
-type PropsR
-  = OptionalProps Style.PropsR
+type PropsR =
+  OptionalProps Style.PropsR
 
-type OptionalProps r
-  = ( kids ∷ Array JSX
-    , className ∷ Maybe String
-    | r
-    )
+type OptionalProps r =
+  ( kids ∷ Array JSX
+  , className ∷ Maybe String
+  | r
+  )
 
 makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do

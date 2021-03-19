@@ -1,10 +1,7 @@
 module React.Basic.Hooks.Spring.Stories where
 
 import Prelude hiding (add)
-
 import CSS (backgroundColor, height, position, relative, vh, vw, width)
-import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Eq (genericEq)
 import Data.Int (pow)
 import Data.Time.Duration (Seconds(..), convertDuration)
 import Data.Tuple.Nested ((/\))
@@ -143,9 +140,7 @@ data Countdown
   | CountdownRunning Int
   | CountdownFinished
 
-derive instance genericCountdown ∷ Generic Countdown _
-instance eqCountdown ∷ Eq Countdown where
-  eq = genericEq
+derive instance eqCountdown ∷ Eq Countdown
 
 mkCountdown ∷ Effect (ReactComponent {})
 mkCountdown = do

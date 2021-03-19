@@ -116,20 +116,14 @@ let additions =
   }
 -------------------------------
 -}
-
-
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.13.8-20201223/packages.dhall sha256:a1a8b096175f841c4fef64c9b605fb0d691229241fd2233f6cf46e213de8a185
+      https://github.com/purescript/package-sets/releases/download/psc-0.14.0-20210318/packages.dhall sha256:98bbacd65191cef354ecbafa1610be13e183ee130491ab9c0ef6e3d606f781b5
 
 let overrides =
       { css =
               upstream.css
           //  { repo = "https://github.com/i-am-the-slime/purescript-css.git"
-              , version = "8ea0bab17c268d9c62a09892d7ba231dcbe6308b"
-              }
-      , react-testing-library =
-              upstream.react-testing-library
-          //  { version = "main"
+              , version = "39c9a9d4344e97e561eeac26eb2ce065c12bfcb1"
               }
       }
 
@@ -153,6 +147,8 @@ let additions =
         }
       , yoga-components = ../components/spago.dhall as Location
       , ry-blocks = ../../ry-blocks/spago.dhall as Location
+      , react-testing-library =
+          ../../purescript-react-testing-library/spago.dhall as Location
       }
 
 in  upstream // overrides // additions

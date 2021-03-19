@@ -17,7 +17,7 @@ import React.Basic.DOM.SVG as SVG
 import React.Basic.Emotion as E
 import React.Basic.Hooks (ReactComponent)
 import React.Basic.Hooks as React
-import Yoga.Block.Container.Style (colour)
+import Yoga.Block.Container.Style (DarkOrLightMode(..), colour)
 import Yoga.DOM.Hook (useBoundingBox)
 import Yoga.SVG.Icon (Raw)
 import Yoga.Scroll.Hook (useScrollYPosition)
@@ -67,7 +67,7 @@ rotateStars =
 mkClasses theme =
   { laptopBackground:
     E.css
-      { fill: E.str colour.background
+      { fill: E.var colour.background
       }
   , lightEllipsis:
     E.css
@@ -82,7 +82,7 @@ mkClasses theme =
       }
   , screenText:
     E.css
-      { fontFamily: E.var "--font-mono"
+      { fontFamily: E.var "--mono-font"
       , fontSize: E.str "0.85em"
       , fill: E.str colour.text
       }
@@ -134,10 +134,10 @@ mkClasses theme =
       }
   }
 
-mkLandingPageBackground ∷ Effect (ReactComponent { className ∷ String })
+mkLandingPageBackground ∷ Effect (ReactComponent { className ∷ String, themeVariant ∷ DarkOrLightMode })
 mkLandingPageBackground = do
-  React.reactComponent "LandingPageBackground" \{ className } -> React.do
-    let theme = { isLight: true } -- [TODO]
+  React.reactComponent "LandingPageBackground" \{ className, themeVariant } -> React.do
+    let theme = { isLight: themeVariant == LightMode }
     let classes = mkClasses theme
     scrollY <- useScrollYPosition
     bb /\ ref <- useBoundingBox

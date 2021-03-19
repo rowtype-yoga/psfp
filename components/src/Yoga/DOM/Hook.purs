@@ -7,7 +7,6 @@ import Data.Nullable (Nullable)
 import Data.Nullable as Nullable
 import Data.Traversable (for_)
 import Data.Tuple.Nested (type (/\))
-import Debug.Trace (spy, traceM)
 import React.Basic (Ref)
 import React.Basic.Hooks (Hook, UseLayoutEffect, UseRef, UseState, coerceHook, readRefMaybe, useLayoutEffect, useRef, useState, (/\))
 import React.Basic.Hooks as React

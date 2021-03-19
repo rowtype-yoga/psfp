@@ -1,7 +1,7 @@
 module Yoga.WithSidebar.Component where
 
 import Prelude
-import Data.Array (foldMap)
+import Data.Foldable (foldMap)
 import Data.Array as A
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
@@ -12,22 +12,22 @@ import React.Basic.Hooks as React
 import Yoga.Theme.Styles (makeStylesJSS)
 import Yoga.WithSidebar.Styles as WithSidebar
 
-type Props
-  = Record PropsR
+type Props =
+  Record PropsR
 
-type PropsR
-  = OptionalProps
-      ( sidebarChildren ∷ Array JSX
-      , notSidebarChildren ∷ Array JSX
-      )
-
-type OptionalProps r
-  = ( className ∷ Maybe String
-    , sidebarClassName ∷ Maybe String
-    , notSidebarClassName ∷ Maybe String
-    , sidebarRight ∷ Maybe Boolean
-    | r
+type PropsR =
+  OptionalProps
+    ( sidebarChildren ∷ Array JSX
+    , notSidebarChildren ∷ Array JSX
     )
+
+type OptionalProps r =
+  ( className ∷ Maybe String
+  , sidebarClassName ∷ Maybe String
+  , notSidebarClassName ∷ Maybe String
+  , sidebarRight ∷ Maybe Boolean
+  | r
+  )
 
 makeComponent ∷ Effect (ReactComponent Props)
 makeComponent = do
