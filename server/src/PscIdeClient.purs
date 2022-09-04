@@ -135,7 +135,7 @@ compileCode code (PscIdeConnection { port, folder, serverProcessRef }) = do
   saveMainFile folder code
   makeAff \affCb -> do
     log $ "Compiling on " <> show port
-    socket <- Socket.createConnectionTCP port "localhost" mempty
+    socket <- Socket.createConnectionTCP port "127.0.0.1" mempty
     -- Socket.onError socket (affCb <<< Left)
     resultRef <- Ref.new ""
     Socket.onData socket \dataFromServer -> do

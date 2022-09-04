@@ -7,8 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "start": "npx spago run",
-    "test": "npx spago test"
+    "start": "spago run",
+    "test": "spago test"
   },
   "author": "mark.eibes@gmail.com",
   "license": "ISC",
@@ -17,9 +17,5 @@
     "fs-extra": "^9.0.0",
     "minimist": "^1.2.2",
     "uuid": "^8.3.2"
-  },
-  "devDependencies": {
-    "purescript": "^0.15.0",
-    "spago": "^0.20.0"
   }
 }

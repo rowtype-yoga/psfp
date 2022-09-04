@@ -5,7 +5,7 @@ import Prelude hiding ((/))
 
 import Auth.Handler (authHandler, readAllowedTokens)
 import Auth.Types (Token(..))
-import Control.Monad.Cont (ContT(..), lift)
+import Control.Monad.Cont (ContT(..), callCC, lift, runContT)
 import Control.Parallel (parOneOf, parTraverse)
 import Data.Argonaut (jsonParser)
 import Data.Argonaut.Core (Json)
@@ -24,15 +24,17 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (un)
 import Data.Time.Duration (class Duration, Seconds(..), fromDuration)
 import Data.Traversable (traverse)
+import Debug (spy)
 import Effect (Effect)
-import Effect.Aff (Aff, attempt, delay, launchAff_, message)
+import Effect.AVar (AVar)
+import Effect.Aff (Aff, attempt, delay, error, launchAff_, message)
+import Effect.Aff.AVar as AVar
 import Effect.Aff.Class (liftAff)
 import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Class.Console (info, log)
 import Effect.Exception (Error)
 import Foreign (unsafeToForeign)
-import HTTPurple.Json.Yoga (jsonDecoder) as YogaJson
-import HTTPurple.Json.Yoga (jsonEncoder)
+import HTTPurple.Json.Yoga (jsonDecoder, jsonEncoder) as YogaJson
 import JobQueue (EnqueueResult(..), Job, NewJob(..), Queue, ResourcePool(..))
 import JobQueue as Q
 import Middleware.JsonBodyParser (jsonBodyParser)
@@ -47,7 +49,6 @@ import Node.Express.Middleware.Static (static)
 import Node.Express.Request (getBody', getRequestHeader)
 import Node.Express.Response (end, setStatus)
 import Node.Express.Response as Response
-import Node.Express.Types (Request, Response)
 import Node.FS.Aff (readTextFile)
 import Node.OS (numCpus)
 import Node.Process (lookupEnv)
@@ -76,13 +77,10 @@ asErrorWithCode = unsafeCoerce >>> decodeJson >>> hush
 runCode ∷ ∀ d. Duration d => d -> Folder -> Aff (Maybe ExecResult)
 runCode timeout folder =
   parOneOf
-    [ Just <$> execCommand folder "exec node run.js"
+    [ Just <$> execCommand folder "exec node run.mjs"
     , Nothing <$ delay (timeout # fromDuration)
     ]
 
-
-unHandler ∷ ∀ a. Request -> Response -> Effect Unit -> HandlerM a -> Aff a
-unHandler req res next (HandlerM h) = h req res next
 
 srcFolder ∷ String
 srcFolder = "../playground"
@@ -155,50 +153,52 @@ serverSetup queue = do
   router { route: CompileAndRun, method: Post, body } = usingCont do
     { code } :: { code :: String } <- fromJson YogaJson.jsonDecoder body -- parse the json input
     -- jobId <- compileAndRunJob code
-    -- compileAndRunHandler jobId -- do your business logic
-    ok' jsonHeaders $ toJson jsonEncoder { "ok": 200 }
+    compileAndRunJobCont queue { code } -- do your business logic
+    -- whatever queue body
+    --notFound
   router _ = notFound
   makeHttpsOptions = do
     key <- readTextFile UTF8 "server.key"
     cert <- readTextFile UTF8 "server.cert"
     pure { key, cert }
 
-  -- compileAndRunHandler jobId = do
-  --   queueRes <- Q.enqueue jobId queue # liftEffect
-  --   case queueRes of
-  --     Enqueued _ -> ok' jsonHeaders $ toJson jsonEncoder { ok: "Enqueued" }
-  --     QueueFull ->
-  --       internalServerError' jsonHeaders $ toJson jsonEncoder { error: "Queue full" }
+compileAndRunJobCont :: Queue _ -> CompileRequest -> ContT Response Aff Response
+compileAndRunJobCont queue { code } = do
+      resultVar <- lift AVar.empty
+      let
+        job :: NewJob _
+        job = NewJob \jobId conn -> do
+                  stringOrErr ∷ Either Error String <- attempt $ compileCode code conn
+                  jsonOrErr ∷ Either Error (Either Error CompileResult) <- attempt $ readJsonAff `traverse` stringOrErr
+                  let folder = getFolder conn
+                  AVar.put { jsonOrErr, stringOrErr, folder } resultVar
+      enqueueResult <- lift $ liftEffect $ Q.enqueue job queue
+      case enqueueResult of
+        QueueFull -> notFound
+        _ -> do
+          { jsonOrErr, stringOrErr, folder }  <- AVar.take resultVar # lift
+          case jsonOrErr ∷ Either Error (Either Error CompileResult) of
+                  Left e -> do
+                    lift $ log $ "Aff failed with " <> message e
+                    internalServerError' jsonHeaders $ toJson YogaJson.jsonEncoder { error: show e }
+                  Right (Right res)
+                    | res.resultType == "error" -> do
+                      unprocessableEntity
+                  Right (Right res) -> do
+                    runResult <- runCode timeout folder # lift
+                    case runResult of
+                      Nothing -> do
+                        requestTimeout' jsonHeaders -- $ toJson YogaJson.jsonEncoder { error: "Timed out after running for " <> show timeout }
+                      Just rr -> do
+                        resultBody <- toBody rr # lift
+                        ok' jsonHeaders $ toJson YogaJson.jsonEncoder{ resultBody }
+                  Right (Left errs) -> do
+                    log $ "Could not decode: " <> show (lmap (const "no way") stringOrErr) <> "\nErrors: " <> show errs
+                    internalServerError' jsonHeaders $ toJson YogaJson.jsonEncoder { error: show errs }
+          -- case r of
+          --   Left err -> internalServerError' jsonHeaders $ toJson YogaJson.jsonEncoder { error: show err }
+          --   Right result -> ok' jsonHeaders $ toJson YogaJson.jsonEncoder result
 
--- compileAndRunJob ∷ CompileRequest -> ContT Response Aff (NewJob PscIdeConnection)
--- compileAndRunJob json = ContT compileAndRunJobCont
-
-
--- compileAndRunJobCont :: forall json. CompileRequest -> (json -> Aff Response) -> Aff (NewJob PscIdeConnection)
--- compileAndRunJobCont { code } handler =
---   NewJob \jobId conn -> do
---     stringOrErr ∷ Either Error String <- attempt $ compileCode code conn
---     jsonOrErr ∷ Either Error (Either Error CompileResult) <- attempt $ readJsonAff `traverse` stringOrErr
---     case jsonOrErr of
---       Left e -> do
---         log $ "Aff failed with " <> message e
---         internalServerError' jsonHeaders $ toJson jsonEncoder {}
---       Right (Right res)
---         | res.resultType == "error" -> do
---           unprocessableEntity' jsonHeaders $ toJson jsonEncoder res
---       Right (Right res) -> do
---         runResult <- runCode timeout (getFolder conn)
---         case runResult of
---           Nothing -> do
---             requestTimeout' jsonHeaders
---               $ toJson jsonEncoder
---                  { error: "Timed out after running for " <> show timeout }
---           Just rr -> do
---             resultBody <- toBody rr
---             handler $ toJson jsonEncoder (resultBody ∷ Body.RunResult)
---       Right (Left errs) -> do
---         log $ "Could not decode: " <> show (lmap (const "no way") stringOrErr) <> "\nErrors: " <> show errs
---         internalServerError' jsonHeaders $ toJson jsonEncoder {}
---   where
---   jsonBody = toJson
---   timeout = 1.0 # Seconds
+  where
+  jsonBody = toJson
+  timeout = 1.0 # Seconds
