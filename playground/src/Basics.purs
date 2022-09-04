@@ -78,7 +78,6 @@ module Basics
   , module Data.Tuple.Nested
   , module Data.Traversable
   , module Debug
-  , module Math
   , module Prelude
   , module Type.Proxy
   , module Unsafe.Coerce
@@ -165,7 +164,6 @@ import Debug (spy, spyWith, trace, traceM)
 import Effect (Effect, untilE, whileE, forE, foreachE)
 import Effect.Aff (Aff, Canceler(Canceler), apathize, attempt, cancelWith, finally, forkAff, delay, launchAff, makeAff, nonCanceler, runAff)
 import Effect.Class (liftEffect)
-import Math (Radians, acos, asin, atan, atan2, cos, e, exp, ln10, ln2, log10e, log2e, pi, pow, sin, sqrt, sqrt1_2, sqrt2, tan, (%))
 import Prelude (class Applicative, class Apply, class Bind, class BooleanAlgebra, class Bounded, class Category, class CommutativeRing, class Eq, class EuclideanRing, class Field, class Functor, class HeytingAlgebra, class Monad, class Ord, class Ring, class Semigroup, class Semigroupoid, class Semiring, class Show, Ordering(LT, EQ, GT), Unit, Void, absurd, add, ap, append, apply, between, bind, bottom, clamp, compare, comparing, compose, conj, const, degree, disj, div, eq, flip, liftA1, liftM1, map, max, min, mod, mul, negate, not, notEq, one, otherwise, pure, show, sub, top, unit, unless, void, zero, type (~>), (-), (*), (*>), (/), (/=), (&&), (#), (+), (<), (<*), (<*>), (<#>), (<<<), (<=), (<=<), (<>), (<$), (<$>), (=<<), (==), (>), (>=), (>=>), (>>=), (>>>), (||), ($), ($>))
-import Type.Proxy (Proxy(Proxy), Proxy2(Proxy2), Proxy3(Proxy3))
+import Type.Proxy (Proxy(Proxy))
 import Unsafe.Coerce (unsafeCoerce)
