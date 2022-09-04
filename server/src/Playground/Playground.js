@@ -1,5 +1,5 @@
-var fs = require("fs-extra")
+import {copy} from "fs-extra"
 
-exports.copyImpl = function(src, target) {
-        return fs.copy(src, target, { overwrite: true, dereference: true })
+export const copyImpl = function(src, target) {
+        return copy(src, target, { overwrite: true, dereference: true })
 }

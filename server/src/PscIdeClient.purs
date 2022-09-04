@@ -52,13 +52,13 @@ closeSocketCanceller s =
 
 startIdeServer ∷ Folder -> Int -> Aff ChildProcess
 startIdeServer folder port = do
-  log $ "Spawning ide server" <> infoString
+  log $ "Spawning ide server " <> infoString
   cp <- spawnProcess folder "npx" [ "purs", "ide", "server", "-p", show port, "--editor-mode", "--no-watch" ]
-  log $ "Spawned ide server" <> infoString
+  log $ "Spawned ide server " <> infoString
   -- building once
   { error, stderr, stdout } <- execCommand folder "npx spago build"
   stderrStr <- liftEffect $ Buf.toString UTF8 stderr
-  log $ "Built: " <> stderrStr
+  log $ "Built: " <> infoString <> " " <> stderrStr
   log $ "Loading modules: " <> infoString
   loadPscIde folder port
   pure cp
@@ -74,7 +74,9 @@ execCommand folder command =
   makeAff \callback -> do
     let options = CP.defaultExecOptions { cwd = Just (un Folder folder) }
     childProcess <- CP.exec command options (callback <<< Right)
-    pure $ effectCanceler ((log $ "Killing " <> show (CP.pid childProcess)) *> CP.kill SIGKILL childProcess)
+    pure $ effectCanceler do
+      log $ "Killing " <> show (CP.pid childProcess)
+      CP.kill SIGKILL childProcess
 
 restartIdeServer ∷ Folder -> Int -> Ref ChildProcess -> Aff Unit
 restartIdeServer folder port processRef = do
@@ -89,9 +91,9 @@ spawnProcess folder command args =
     let options = CP.defaultSpawnOptions { cwd = Just (un Folder folder), stdio = Just <$> [ Ignore, Ignore, Ignore ] }
     childProcess <- CP.spawn command args options
     callback (Right childProcess)
-    pure $ effectCanceler
-      $ (log $ "Killing " <> show (CP.pid childProcess))
-      *> CP.kill SIGKILL childProcess
+    pure $ effectCanceler do
+      log $ "Killing " <> show (CP.pid childProcess)
+      CP.kill SIGKILL childProcess
 
 newtype PscIdeConnection = PscIdeConnection
   { serverProcessRef ∷ Ref ChildProcess
@@ -113,7 +115,7 @@ getFolder (PscIdeConnection { folder }) = folder
 loadPscIde ∷ Folder -> Int -> Aff Unit
 loadPscIde folder port = do
   makeAff \affCb -> do
-    socket <- Socket.createConnectionTCP port "localhost" mempty
+    socket <- Socket.createConnectionTCP port "127.0.0.1" mempty
     -- maybe timeout?
     Socket.onError socket (affCb <<< Left)
     void

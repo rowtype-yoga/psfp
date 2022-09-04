@@ -13,15 +13,13 @@
   "author": "mark.eibes@gmail.com",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.19.0",
-    "express": "^4.17.1",
+    "big-integer": "^1.6.51",
     "fs-extra": "^9.0.0",
-    "json-parser": "^3.1.2",
     "minimist": "^1.2.2",
-    "uuid": "^7.0.2"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "purescript": "^0.14.0",
-    "spago": "^0.19.1"
+    "purescript": "^0.15.0",
+    "spago": "^0.20.0"
   }
 }

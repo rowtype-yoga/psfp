@@ -16,7 +16,7 @@
             "replace": "∀$1"
         },
     ],
-    "purescript.buildCommand": "npx spago build --purs-args '--json-errors'",
+    "purescript.buildCommand": "spago build --purs-args '--json-errors'",
     "vscode_custom_css.imports": [
         "file:///Users/mark/.vscode-oss/extensions/webrender.synthwave-x-fluoromachine-0.0.9/synthwave-x-fluoromachine.css"
     ]

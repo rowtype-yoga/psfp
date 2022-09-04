@@ -1,3 +1,5 @@
 "use strict";
 
-exports.jsonBodyParser = require('body-parser').json()
+import { json } from "body-parser";
+
+export const jsonBodyParser = json()

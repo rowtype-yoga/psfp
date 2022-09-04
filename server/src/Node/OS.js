@@ -1,2 +1,2 @@
-var os = require('os')
-exports.numCpus = function() { return os.cpus().length }
+import { cpus } from 'os'
+export const numCpus = function() { return cpus().length }
