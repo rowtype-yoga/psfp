@@ -53,10 +53,10 @@ closeSocketCanceller s =
 startIdeServer ∷ Folder -> Int -> Aff ChildProcess
 startIdeServer folder port = do
   log $ "Spawning ide server " <> infoString
-  cp <- spawnProcess folder "npx" [ "purs", "ide", "server", "-p", show port, "--editor-mode", "--no-watch" ]
+  cp <- spawnProcess folder "purs" [ "ide", "server", "-p", show port, "--editor-mode", "--no-watch" ]
   log $ "Spawned ide server " <> infoString
   -- building once
-  { error, stderr, stdout } <- execCommand folder "npx spago build"
+  { error, stderr, stdout } <- execCommand folder "spago build"
   stderrStr <- liftEffect $ Buf.toString UTF8 stderr
   log $ "Built: " <> infoString <> " " <> stderrStr
   log $ "Loading modules: " <> infoString
