@@ -61,7 +61,7 @@ import Unsafe.Coerce (unsafeCoerce)
 import Foreign.Object (lookup) as Object
 import Control.Alt ((<|>))
 import Data.Array (elem) as Array
-import HTTPurple.Response (notFound, unauthorized)
+import HTTPurple.Response (notFound, unauthorized, unprocessableEntity')
 import Control.Monad.Error.Class (throwError)
 import Data.Monoid (guard)
 import HTTPurple.Headers (RequestHeaders)
@@ -69,7 +69,7 @@ import Data.Map (lookup) as Mapl
 import Data.String.CaseInsensitive (CaseInsensitiveString(CaseInsensitiveString))
 import Data.Map (lookup) as Map
 import HTTPurple.Validation (fromValidated, fromValidatedE)
-import HTTPurple.Status (forbidden, unauthorized) as Status
+import HTTPurple.Status (forbidden, unauthorized, unprocessableEntity) as Status
 
 toBody ∷ ∀ r m. MonadEffect m => { stdout ∷ Buffer, stderr ∷ Buffer | r } -> m RunResult
 toBody result =
@@ -205,7 +205,8 @@ compileAndRunJobCont queue { code } = do
           internalServerError' jsonHeaders $ toJson YogaJson.jsonEncoder { error: show e }
         Right (Right res)
           | res.resultType == "error" -> do
-              unprocessableEntity
+              let body = toJson YogaJson.jsonEncoder { result: res.result }
+              response' Status.unprocessableEntity empty body
         Right (Right res) -> do
           runResult <- runCode timeout folder # lift
           case runResult of
