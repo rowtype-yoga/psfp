@@ -117,7 +117,7 @@ let additions =
 -------------------------------
 -}
 let upstream =
-      https://github.com/purescript/package-sets/releases/download/psc-0.15.4-20220901/packages.dhall
-        sha256:f1531b29c21ac437ffe5666c1b6cc76f0a9c29d3c9d107ff047aa2567744994f
+      https://github.com/purescript/package-sets/releases/download/psc-0.15.8-20230617/packages.dhall
+        sha256:292a92e32db0272db2089f3234140287c9eaf2fc15b6790a3c51f41471050eeb
 
 in  upstream
