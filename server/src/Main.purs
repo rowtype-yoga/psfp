@@ -15,12 +15,12 @@ import Data.Argonaut.Decode (class DecodeJson, decodeJson, printJsonDecodeError)
 import Data.Argonaut.Decode.Class (class DecodeJson)
 import Data.Argonaut.Decode.Decoders (decodeString)
 import Data.Argonaut.Encode (encodeJson)
-import Data.Array (elem, (..))
+import Data.Array (any, elem, (..))
 import Data.Bifunctor (lmap)
-import Data.Either (Either(..))
+import Data.Either (Either(..), note)
 import Data.Either (hush)
 import Data.Int (fromString)
-import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Maybe (Maybe(..), fromMaybe, maybe)
 import Data.Newtype (un)
 import Data.Time.Duration (class Duration, Seconds(..), fromDuration)
 import Data.Traversable (traverse)
@@ -58,6 +58,18 @@ import Shared.Json (readAff, readJsonAff)
 import Shared.Models.Body (CompileRequest, RunResult, CompileResult)
 import Shared.Models.Body as Body
 import Unsafe.Coerce (unsafeCoerce)
+import Foreign.Object (lookup) as Object
+import Control.Alt ((<|>))
+import Data.Array (elem) as Array
+import HTTPurple.Response (notFound, unauthorized)
+import Control.Monad.Error.Class (throwError)
+import Data.Monoid (guard)
+import HTTPurple.Headers (RequestHeaders)
+import Data.Map (lookup) as Mapl
+import Data.String.CaseInsensitive (CaseInsensitiveString(CaseInsensitiveString))
+import Data.Map (lookup) as Map
+import HTTPurple.Validation (fromValidated, fromValidatedE)
+import HTTPurple.Status (forbidden, unauthorized) as Status
 
 toBody ∷ ∀ r m. MonadEffect m => { stdout ∷ Buffer, stderr ∷ Buffer | r } -> m RunResult
 toBody result =
@@ -80,7 +92,6 @@ runCode timeout folder =
     [ Just <$> execCommand folder "exec node run.mjs"
     , Nothing <$ delay (timeout # fromDuration)
     ]
-
 
 srcFolder ∷ String
 srcFolder = "../playground"
@@ -113,7 +124,7 @@ main = do
         , timeout: 10.0 # Seconds # fromDuration
         }
         pool
-    void $ liftEffect (serverSetup q)
+    void $ liftEffect (serverSetup tokens q)
 
 -- makeApp ∷ Array Token -> Queue PscIdeConnection -> App
 -- makeApp tokens q = do
@@ -134,6 +145,7 @@ main = do
 --     pure { key, cert }
 
 data Route = CompileAndRun
+
 derive instance Generic Route _
 
 route :: RouteDuplex' Route
@@ -141,21 +153,31 @@ route = mkRoute
   { "CompileAndRun": "compileAndRun" / noArgs
   }
 
-serverSetup :: Queue _ -> Effect Unit
-serverSetup queue = do
+serverSetup :: Array Token -> Queue _ -> Effect Unit
+serverSetup tokens queue = do
   maybePortString <- lookupEnv "PORT" # liftEffect
   let port = maybePortString >>= fromString # fromMaybe 14188
-   --liftEffect $ (listenHttp app port) \_ ->
+  --liftEffect $ (listenHttp app port) \_ ->
   info $ "psfp server started on port " <> show port
 
   void $ serve { port } { route, router }
   where
-  router { route: CompileAndRun, method: Post, body } = usingCont do
+  getToken' headers = do
+    lookup headers "Token" # maybe
+      (Left $ "Missing Token Header")
+      (Right <<< Token)
+
+  validateToken' :: Token -> Either String Unit
+  validateToken' token = do
+        if Array.elem token tokens then Right unit else Left "Invalid Token"
+
+  router { route: CompileAndRun, headers, method: Post, body } = usingCont do
+    token <- fromValidatedE getToken' (response' Status.forbidden empty) headers
+    fromValidatedE validateToken' (response' Status.unauthorized empty) token
     { code } :: { code :: String } <- fromJson YogaJson.jsonDecoder body -- parse the json input
     -- jobId <- compileAndRunJob code
     compileAndRunJobCont queue { code } -- do your business logic
-    -- whatever queue body
-    --notFound
+  --notFound
   router _ = notFound
   makeHttpsOptions = do
     key <- readTextFile UTF8 "server.key"
@@ -164,40 +186,40 @@ serverSetup queue = do
 
 compileAndRunJobCont :: Queue _ -> CompileRequest -> ContT Response Aff Response
 compileAndRunJobCont queue { code } = do
-      resultVar <- lift AVar.empty
-      let
-        job :: NewJob _
-        job = NewJob \jobId conn -> do
-                  stringOrErr ∷ Either Error String <- attempt $ compileCode code conn
-                  jsonOrErr ∷ Either Error (Either Error CompileResult) <- attempt $ readJsonAff `traverse` stringOrErr
-                  let folder = getFolder conn
-                  AVar.put { jsonOrErr, stringOrErr, folder } resultVar
-      enqueueResult <- lift $ liftEffect $ Q.enqueue job queue
-      case enqueueResult of
-        QueueFull -> notFound
-        _ -> do
-          { jsonOrErr, stringOrErr, folder }  <- AVar.take resultVar # lift
-          case jsonOrErr ∷ Either Error (Either Error CompileResult) of
-                  Left e -> do
-                    lift $ log $ "Aff failed with " <> message e
-                    internalServerError' jsonHeaders $ toJson YogaJson.jsonEncoder { error: show e }
-                  Right (Right res)
-                    | res.resultType == "error" -> do
-                      unprocessableEntity
-                  Right (Right res) -> do
-                    runResult <- runCode timeout folder # lift
-                    case runResult of
-                      Nothing -> do
-                        requestTimeout' jsonHeaders -- $ toJson YogaJson.jsonEncoder { error: "Timed out after running for " <> show timeout }
-                      Just rr -> do
-                        resultBody <- toBody rr # lift
-                        ok' jsonHeaders $ toJson YogaJson.jsonEncoder{ resultBody }
-                  Right (Left errs) -> do
-                    log $ "Could not decode: " <> show (lmap (const "no way") stringOrErr) <> "\nErrors: " <> show errs
-                    internalServerError' jsonHeaders $ toJson YogaJson.jsonEncoder { error: show errs }
-          -- case r of
-          --   Left err -> internalServerError' jsonHeaders $ toJson YogaJson.jsonEncoder { error: show err }
-          --   Right result -> ok' jsonHeaders $ toJson YogaJson.jsonEncoder result
+  resultVar <- lift AVar.empty
+  let
+    job :: NewJob _
+    job = NewJob \jobId conn -> do
+      stringOrErr ∷ Either Error String <- attempt $ compileCode code conn
+      jsonOrErr ∷ Either Error (Either Error CompileResult) <- attempt $ readJsonAff `traverse` stringOrErr
+      let folder = getFolder conn
+      AVar.put { jsonOrErr, stringOrErr, folder } resultVar
+  enqueueResult <- lift $ liftEffect $ Q.enqueue job queue
+  case enqueueResult of
+    QueueFull -> notFound
+    _ -> do
+      { jsonOrErr, stringOrErr, folder } <- AVar.take resultVar # lift
+      case jsonOrErr ∷ Either Error (Either Error CompileResult) of
+        Left e -> do
+          lift $ log $ "Aff failed with " <> message e
+          internalServerError' jsonHeaders $ toJson YogaJson.jsonEncoder { error: show e }
+        Right (Right res)
+          | res.resultType == "error" -> do
+              unprocessableEntity
+        Right (Right res) -> do
+          runResult <- runCode timeout folder # lift
+          case runResult of
+            Nothing -> do
+              requestTimeout' jsonHeaders -- $ toJson YogaJson.jsonEncoder { error: "Timed out after running for " <> show timeout }
+            Just rr -> do
+              resultBody <- toBody rr # lift
+              ok' jsonHeaders $ toJson YogaJson.jsonEncoder { resultBody }
+        Right (Left errs) -> do
+          log $ "Could not decode: " <> show (lmap (const "no way") stringOrErr) <> "\nErrors: " <> show errs
+          internalServerError' jsonHeaders $ toJson YogaJson.jsonEncoder { error: show errs }
+  -- case r of
+  --   Left err -> internalServerError' jsonHeaders $ toJson YogaJson.jsonEncoder { error: show err }
+  --   Right result -> ok' jsonHeaders $ toJson YogaJson.jsonEncoder result
 
   where
   jsonBody = toJson
